@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superseller Creators — Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #060d1a;
+  --surface:  #091526;
+  --panel:    #0d1c30;
+  --panel-h:  #112236;
+  --inp-bg:   #06111f;
+  --border:   #1a304e;
+  --border-l: #132540;
+
+  --red:      #e94560;
+  --red-d:    #c73652;
+  --red-a:    rgba(233,69,96,.12);
+
+  --t1: #dce9f5;
+  --t2: #7fa8c8;
+  --t3: #415f7a;
+  --t4: #243649;
+
+  --green:  #10b981;
+  --amber:  #f59e0b;
+  --ruby:   #ef4444;
+
+  --r:  7px;
+  --rl: 11px;
+  --sw: 308px;
+  --hh: 56px;
+  --sb: 36px;
+  --eb: 46px;
+}
+
+body {
+  font-family: -apple-system, 'SF Pro Text', 'Segoe UI', Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TOPBAR ────────────────────────────────────────── */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--hh); z-index: 200;
+  background: linear-gradient(180deg, #0d1c32 0%, #091526 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 2px 24px rgba(0,0,0,.6);
+}
+
+.brand { display: flex; align-items: center; gap: 11px; }
+
+.brand-badge {
+  width: 32px; height: 32px; border-radius: 7px;
+  background: linear-gradient(135deg, #e94560 0%, #a02040 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; color: #fff; letter-spacing: -.5px;
+  box-shadow: 0 0 14px rgba(233,69,96,.35);
+  flex-shrink: 0;
+}
+
+.brand-text h1 {
+  font-size: 14px; font-weight: 700; color: var(--t1);
+  letter-spacing: .3px;
+}
+.brand-text p {
+  font-size: 10px; color: var(--t3); margin-top: 1px;
+  letter-spacing: .6px; text-transform: uppercase;
+}
+
+.topbar-actions { display: flex; gap: 7px; align-items: center; }
+
+/* ── BUTTONS ───────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 13px; border-radius: var(--r); border: none;
+  cursor: pointer; font-size: 12px; font-weight: 600;
+  letter-spacing: .2px; transition: all .15s; white-space: nowrap;
+  font-family: inherit;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #e94560, #c73652);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(233,69,96,.28);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(233,69,96,.4); }
+.btn-ghost {
+  background: transparent; color: var(--t2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--panel); color: var(--t1); }
+.btn-danger {
+  background: #4a0f18; color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+.btn-danger:hover { background: #7f1d1d; }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+
+.btn-xs {
+  padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border);
+  background: transparent; color: var(--t2); font-size: 10px;
+  cursor: pointer; font-weight: 600; letter-spacing: .2px;
+  transition: all .12s; font-family: inherit;
+}
+.btn-xs:hover { background: var(--panel); color: var(--t1); }
+.btn-xs.red { border-color: var(--red); color: var(--red); }
+.btn-xs.red:hover { background: var(--red-a); }
+
+/* ── LAYOUT ────────────────────────────────────────── */
+.app { display: flex; padding-top: var(--hh); min-height: 100vh; }
+
+/* ── SIDEBAR ───────────────────────────────────────── */
+.sidebar {
+  width: var(--sw); flex-shrink: 0;
+  height: calc(100vh - var(--hh));
+  position: sticky; top: var(--hh);
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--surface);
+  border-right: 1px solid var(--border-l);
+  padding-bottom: 40px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── SECTIONS ──────────────────────────────────────── */
+.sec { border-bottom: 1px solid var(--border-l); }
+
+.sec-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; cursor: pointer;
+  font-size: 10px; font-weight: 700; color: var(--t3);
+  letter-spacing: 1px; text-transform: uppercase;
+  user-select: none; transition: color .12s;
+}
+.sec-hd:hover { color: var(--t2); background: rgba(255,255,255,.02); }
+.sec-hd .ico { margin-right: 5px; font-size: 11px; }
+.sec-hd .chev { font-size: 8px; transition: transform .2s; color: var(--t4); }
+.sec.open .chev { transform: rotate(180deg); }
+
+.sec-bd { display: none; padding: 4px 14px 14px; }
+.sec.open .sec-bd { display: block; }
+
+/* ── FORM ELEMENTS ─────────────────────────────────── */
+.fl {
+  display: block; font-size: 10px; font-weight: 600;
+  color: var(--t3); margin-bottom: 4px;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+
+.inp {
+  width: 100%; background: var(--inp-bg);
+  border: 1px solid var(--border-l); border-radius: 5px;
+  color: var(--t1); font-size: 12px; padding: 7px 10px;
+  outline: none; transition: border-color .15s, box-shadow .15s;
+  font-family: inherit;
+}
+.inp:focus { border-color: rgba(233,69,96,.4); box-shadow: 0 0 0 3px rgba(233,69,96,.07); }
+.inp::placeholder { color: var(--t4); font-size: 11px; }
+.inp-sm { width: 68px; padding: 5px 8px; text-align: right; }
+.inp-n  { width: 54px; padding: 5px 8px; text-align: right; }
+
+select.inp option { background: #0d1c30; }
+
+textarea.inp {
+  height: 76px; resize: vertical;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  line-height: 1.5; font-size: 11px;
+}
+
+.row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.lbl { font-size: 11px; color: var(--t3); white-space: nowrap; }
+
+.fld { margin-bottom: 10px; }
+
+/* ── CHECKBOX ROWS ─────────────────────────────────── */
+.chk-r {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(26,48,80,.35);
+}
+.chk-r:last-child { border-bottom: none; }
+.chk-r input[type=checkbox] { accent-color: var(--red); width: 13px; height: 13px; flex-shrink: 0; cursor: pointer; }
+.chk-r label { font-size: 11px; color: var(--t2); cursor: pointer; line-height: 1.4; flex: 1; }
+.chk-r .inp-n { font-size: 11px; }
+.warn-lbl { color: var(--amber) !important; }
+
+/* ── CATS GRID ─────────────────────────────────────── */
+.cats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-bottom: 8px; }
+.cat-item { display: flex; align-items: center; gap: 6px; padding: 4px 4px; border-radius: 4px; cursor: pointer; transition: background .1s; }
+.cat-item:hover { background: var(--panel); }
+.cat-item input { accent-color: var(--red); width: 12px; height: 12px; cursor: pointer; }
+.cat-item label { font-size: 11px; color: var(--t2); cursor: pointer; }
+
+.btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+
+.hint { font-size: 10px; color: var(--t4); line-height: 1.5; margin-bottom: 8px; }
+
+.divider { height: 1px; background: var(--border-l); margin: 10px 0; }
+
+input[type=file] {
+  font-size: 11px; color: var(--t2);
+  background: var(--inp-bg); border: 1px solid var(--border-l);
+  border-radius: 5px; padding: 5px 8px; cursor: pointer; width: 100%;
+  margin-bottom: 7px; font-family: inherit;
+}
+
+/* ── MAIN ──────────────────────────────────────────── */
+.main {
+  flex: 1; min-width: 0;
+  padding: 16px 20px calc(var(--eb) + var(--sb) + 16px);
+}
+
+/* ── WELCOME ───────────────────────────────────────── */
+.welcome {
+  margin-top: 40px;
+  background: var(--panel);
+  border: 1px solid var(--border-l);
+  border-radius: var(--rl);
+  padding: 48px 40px;
+  text-align: center;
+}
+.welcome .w-icon { font-size: 42px; margin-bottom: 14px; }
+.welcome h2 { font-size: 19px; font-weight: 700; color: var(--t1); margin-bottom: 8px; }
+.welcome p { font-size: 13px; color: var(--t3); line-height: 1.7; }
+.welcome strong { color: var(--red); }
+
+/* ── METRICS STRIP ─────────────────────────────────── */
+.metrics {
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 16px;
+}
+.metrics.on { display: grid; }
+
+.m-card {
+  background: var(--panel); border: 1px solid var(--border-l);
+  border-radius: var(--r); padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+.m-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--red), transparent);
+}
+.m-label { font-size: 9px; font-weight: 700; color: var(--t3); letter-spacing: .9px; text-transform: uppercase; }
+.m-val   { font-size: 24px; font-weight: 700; color: var(--t1); margin: 5px 0 2px; line-height: 1; }
+.m-sub   { font-size: 10px; color: var(--t4); }
+
+/* ── STATUS BAR ────────────────────────────────────── */
+#status {
+  position: fixed; bottom: 0; left: var(--sw); right: 0;
+  height: var(--sb); z-index: 100;
+  background: rgba(6,13,26,.96);
+  border-top: 1px solid var(--border-l);
+  display: flex; align-items: center;
+  padding: 0 18px; font-size: 11px; color: var(--t3);
+  backdrop-filter: blur(10px);
+}
+#status.running { color: var(--red); }
+#status.done    { color: var(--green); }
+#status.error   { color: var(--ruby); }
+
+.spinner {
+  display: inline-block; width: 10px; height: 10px;
+  border: 2px solid rgba(233,69,96,.25); border-top-color: var(--red);
+  border-radius: 50%; animation: spin .7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── EXPORT BAR ────────────────────────────────────── */
+#exportBar {
+  position: fixed; bottom: var(--sb); left: var(--sw); right: 0;
+  height: var(--eb); z-index: 100;
+  display: none;
+  align-items: center; gap: 8px;
+  padding: 0 18px;
+  background: rgba(9,21,38,.97);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+/* ── RESULTS ───────────────────────────────────────── */
+#results { display: none; }
+
+#results-count {
+  font-size: 11px; color: var(--t3); margin-bottom: 12px;
+  padding: 6px 12px; background: var(--panel);
+  border: 1px solid var(--border-l); border-radius: 5px;
+  display: inline-block;
+}
+
+#resumen-busqueda {
+  display: none; margin-bottom: 14px;
+  padding: 12px 16px;
+  background: rgba(14,165,233,.05);
+  border: 1px solid rgba(14,165,233,.18);
+  border-radius: var(--r);
+  font-size: 11px; color: #7aaccc; line-height: 2;
+}
+
+#fecha-guardada-bar {
+  display: none; margin-bottom: 10px;
+  padding: 8px 14px;
+  background: rgba(233,69,96,.07);
+  border: 1px solid rgba(233,69,96,.22);
+  border-radius: var(--r);
+  align-items: center; gap: 10px; font-size: 11px;
+}
+
+#fecha-filtros {
+  display: none; margin-bottom: 14px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+}
+#fecha-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* ── PRODUCT GRID ──────────────────────────────────── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+  gap: 13px;
+}
+
+.product-card {
+  background: var(--panel); border: 1px solid var(--border-l);
+  border-radius: var(--rl); overflow: hidden;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+}
+.product-card:hover {
+  border-color: rgba(233,69,96,.35);
+  box-shadow: 0 6px 24px rgba(0,0,0,.55);
+  transform: translateY(-2px);
+}
+.product-card.selected {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px rgba(233,69,96,.18);
+}
+.product-card img {
+  width: 100%; height: 148px; object-fit: contain;
+  background: #fff; padding: 10px;
+}
+.product-info { padding: 11px; }
+.product-title {
+  font-size: 11px; color: var(--t2); line-height: 1.45; margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.product-prices { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; }
+.price-disc { font-size: 15px; font-weight: 700; color: var(--t1); }
+.price-orig { font-size: 11px; color: var(--t4); text-decoration: line-through; }
+.discount-badge {
+  display: inline-flex; align-items: center;
+  background: rgba(16,185,129,.1); color: var(--green);
+  font-size: 10px; font-weight: 700; padding: 2px 6px;
+  border-radius: 4px; border: 1px solid rgba(16,185,129,.18);
+}
+.vigencia-badge {
+  display: inline-block; font-size: 10px; padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(14,165,233,.08); color: #6898b8;
+  border: 1px solid rgba(14,165,233,.12);
+}
+.vigencia-badge.relampago { background: rgba(245,158,11,.08); color: var(--amber); border-color: rgba(245,158,11,.18); }
+.vigencia-badge.permanente { background: rgba(65,95,122,.1); color: var(--t3); border-color: var(--border-l); }
+
+.btn-ver {
+  display: block; width: 100%; margin-top: 9px; padding: 7px;
+  background: var(--panel-h); color: var(--t2);
+  border: 1px solid var(--border); border-radius: 5px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  text-align: center; text-decoration: none;
+  transition: all .15s;
+}
+.btn-ver:hover { background: var(--red); color: #fff; border-color: var(--red); }
+
+.card-wrap { position: relative; cursor: pointer; }
+.card-checkbox {
+  position: absolute; top: 8px; left: 8px;
+  width: 15px; height: 15px; accent-color: var(--red);
+  cursor: pointer; z-index: 2;
+}
+
+#badges-detectados { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+
+#lista-texto {
+  width: 100%; height: 260px; background: var(--inp-bg);
+  border: 1px solid var(--border); border-radius: 7px;
+  color: var(--t2); font-size: 11px; padding: 11px;
+  font-family: 'SF Mono', 'Menlo', monospace; resize: vertical; line-height: 1.6;
+}
+
+.inline-st { font-size: 11px; color: var(--t3); margin-top: 5px; min-height: 16px; }
+
+.fecha-fld { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.fecha-fld .lbl { font-size: 10px; color: var(--t3); width: 52px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ─────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-badge">SS</div>
+    <div class="brand-text">
+      <h1>SUPERSELLER CREATORS</h1>
+      <p>Amazon México &nbsp;·&nbsp; Creators API &nbsp;·&nbsp; v1.0</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="verFeeds()">📋 Ver Feeds</button>
+    <button id="btnDetener" onclick="detenerProceso()" style="display:none;" class="btn btn-danger">⏹ Detener</button>
+    <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar Ofertas</button>
+  </div>
+</header>
+
+<!-- ── APP LAYOUT ─────────────────────────────────── -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- Categorías -->
+    <div class="sec open">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">📦</span>Categorías</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <div class="cats-grid" id="cats"></div>
+        <div id="subcats-panel" style="display:none;margin-top:10px;border-top:1px solid var(--border-l);padding-top:10px;">
+          <div id="subcats-loading" style="display:none;font-size:11px;color:var(--red);padding:4px 0;">⏳ Cargando subcategorías...</div>
+          <div class="cats-grid" id="subcats"></div>
+          <div class="btn-row" id="subcats-btns" style="display:none;">
+            <button class="btn-xs" onclick="toggleSubAll(true)">Todas</button>
+            <button class="btn-xs" onclick="toggleSubAll(false)">Ninguna</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-xs" onclick="toggleAll(true)">Todas</button>
+          <button class="btn-xs" onclick="toggleAll(false)">Ninguna</button>
+          <button class="btn-xs red" onclick="toggleSubcats()">⚡ Subcategorías</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Búsqueda directa -->
+    <div class="sec open">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">🔎</span>Búsqueda Directa</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <div class="fld">
+          <label class="fl">Keyword o ASIN</label>
+          <textarea id="searchInput" class="inp" placeholder="Keyword, ASIN, o varios ASINs&#10;(uno por línea)&#10;B0BFWQTZ7V"></textarea>
+        </div>
+        <div class="row">
+          <span class="lbl">Desde $</span>
+          <input type="number" id="searchPrecioMin" value="0" min="0" class="inp inp-sm">
+          <span class="lbl">Hasta $</span>
+          <input type="number" id="searchPrecioMax" value="0" min="0" class="inp inp-sm">
+        </div>
+        <div class="row">
+          <span class="lbl">Desc. mín.</span>
+          <input type="number" id="searchDescMin" value="1" min="1" max="99" class="inp inp-n">
+          <span class="lbl">%</span>
+        </div>
+        <button class="btn btn-primary" onclick="buscarDirecto()" style="width:100%;justify-content:center;margin-top:4px;font-size:11px;">🚀 Buscar por API</button>
+        <div id="busqueda-status" class="inline-st"></div>
+      </div>
+    </div>
+
+    <!-- Precio y búsqueda -->
+    <div class="sec open">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">💰</span>Precio y Búsqueda</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <div class="row">
+          <span class="lbl">Desde $</span>
+          <input type="number" id="precioMin" value="0" min="0" class="inp inp-sm">
+          <span class="lbl">Hasta $</span>
+          <input type="number" id="precioMax" value="0" min="0" class="inp inp-sm">
+          <span class="lbl" style="color:var(--t4);font-size:10px;">MXN</span>
+        </div>
+        <div class="row">
+          <span class="lbl">Desc. mín.</span>
+          <input type="number" id="descMin" value="15" min="1" max="99" class="inp inp-n">
+          <span class="lbl">%</span>
+          <span class="lbl" style="margin-left:8px;">Páginas</span>
+          <input type="number" id="paginas" value="3" min="1" max="10" class="inp inp-n">
+        </div>
+        <div class="fld" style="margin-top:6px;">
+          <label class="fl">Ordenar por</label>
+          <select id="sortBy" class="inp">
+            <option value="NewestArrivals">Más recientes</option>
+            <option value="Relevance">Relevancia</option>
+            <option value="Featured">Destacados</option>
+            <option value="Price:LowToHigh">Precio: menor a mayor</option>
+            <option value="Price:HighToLow">Precio: mayor a menor</option>
+            <option value="AvgCustomerReviews">Mejor calificados</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vigencia -->
+    <div class="sec">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">⏱</span>Vigencia</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <div class="chk-r"><input type="checkbox" id="f_solo_perm"><label for="f_solo_perm">Solo permanentes ⭐</label></div>
+        <div class="chk-r"><input type="checkbox" id="f_solo_fecha"><label for="f_solo_fecha">Solo con fecha de fin</label></div>
+        <div class="chk-r"><input type="checkbox" id="f_excl_rel"><label for="f_excl_rel" class="warn-lbl">Excluir ⚡ Lightning Deals</label></div>
+        <div class="chk-r"><input type="checkbox" id="f_solo_rel"><label for="f_solo_rel" class="warn-lbl">Solo ⚡ Lightning Deals</label></div>
+        <div class="chk-r">
+          <input type="checkbox" id="f_hrs_activo">
+          <label for="f_hrs_activo">Mín. hrs restantes:</label>
+          <input type="number" id="f_hrs_min" value="6" min="1" max="72" class="inp inp-n">
+          <span class="lbl">h</span>
+        </div>
+        <div class="chk-r">
+          <input type="checkbox" id="f_con_inicio">
+          <label for="f_con_inicio">Solo con fecha de inicio ▶</label>
+        </div>
+        <div id="campo-fecha-inicio" style="margin-top:8px;">
+          <div class="fecha-fld">
+            <span class="lbl">▶ Inicio:</span>
+            <input type="text" id="f_fecha_especifica" placeholder="dd/mm/aa" class="inp" style="flex:1;">
+            <button onclick="usarFechaEspecifica()" class="btn-xs red" style="padding:4px 8px;">📌</button>
+          </div>
+          <div class="fecha-fld">
+            <span class="lbl">⏹ Fin:</span>
+            <input type="text" id="f_fecha_fin" placeholder="dd/mm/aa" class="inp" style="flex:1;">
+            <button onclick="usarFechaFin()" class="btn-xs" style="padding:4px 8px;">📌</button>
+          </div>
+        </div>
+        <div class="chk-r" style="margin-top:4px;flex-wrap:wrap;gap:6px;">
+          <input type="checkbox" id="f_badge_activo">
+          <label for="f_badge_activo">Solo badge:</label>
+          <input type="text" id="f_badge_texto" placeholder="ej. Oferta de Primavera" class="inp" style="flex:1;min-width:100px;font-size:11px;padding:4px 8px;">
+        </div>
+        <div id="badges-detectados"></div>
+      </div>
+    </div>
+
+    <!-- Tendencia -->
+    <div class="sec">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">🔥</span>Tendencia</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <div class="chk-r">
+          <input type="checkbox" id="f_trending">
+          <label for="f_trending">En tendencia ≥</label>
+          <input type="number" id="f_tpct" value="50" min="10" max="99" class="inp inp-n">
+          <span class="lbl">%</span>
+        </div>
+        <div class="chk-r"><input type="checkbox" id="f_prime_e"><label for="f_prime_e">Prime Early Access</label></div>
+        <div class="chk-r"><input type="checkbox" id="f_prime_x"><label for="f_prime_x">Prime Exclusive (solo Prime)</label></div>
+        <div class="chk-r"><input type="checkbox" id="f_scarce"><label for="f_scarce" class="warn-lbl">⚠️ Poco inventario</label></div>
+      </div>
+    </div>
+
+    <!-- Herramientas -->
+    <div class="sec">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">📁</span>Herramientas</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint">Carga un HTML de Amazon para extraer ASINs y ver productos con imágenes.</p>
+        <input type="file" id="html-file-input" accept=".html">
+        <button onclick="procesarHTML()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;">🚀 Extraer y Ver en App</button>
+        <div id="html-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
+        <p class="hint">Sube el CSV exportado para generar texto listo para Telegram.</p>
+        <input type="file" id="lista-file-input" accept=".csv">
+        <button onclick="generarListaDesdeCSV()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-bottom:6px;">📋 Generar Lista</button>
+        <div id="lista-status" class="inline-st"></div>
+        <div id="lista-output" style="display:none;margin-top:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span id="lista-count" style="font-size:10px;color:var(--t3);"></span>
+            <button onclick="copiarLista()" class="btn-xs">📋 Copiar todo</button>
+          </div>
+          <textarea id="lista-texto" readonly></textarea>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- Metrics strip (hidden until results) -->
+    <div class="metrics" id="metrics-strip">
+      <div class="m-card">
+        <div class="m-label">Productos</div>
+        <div class="m-val" id="m-total">—</div>
+        <div class="m-sub">encontrados</div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Seleccionados</div>
+        <div class="m-val" id="m-sel">—</div>
+        <div class="m-sub">para exportar</div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Desc. promedio</div>
+        <div class="m-val" id="m-disc">—</div>
+        <div class="m-sub">off precio original</div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Precio promedio</div>
+        <div class="m-val" id="m-price">—</div>
+        <div class="m-sub">MXN con descuento</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results">
+      <div id="resumen-busqueda"></div>
+
+      <div id="fecha-guardada-bar">
+        <span style="font-size:12px;color:var(--red);font-weight:700;">📌 Fecha:</span>
+        <span id="fecha-guardada-label" style="font-size:12px;color:var(--t1);"></span>
+        <span style="font-size:11px;color:var(--t3);">— se aplica en cada búsqueda</span>
+        <button onclick="limpiarFecha()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--t3);font-size:10px;padding:2px 8px;border-radius:4px;cursor:pointer;">✕ Quitar</button>
+      </div>
+
+      <div id="fecha-filtros">
+        <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">▶ Filtrar por fecha de inicio</div>
+        <div id="fecha-chips"></div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn-xs" onclick="selectAllFechas(true)">Todas</button>
+          <button class="btn-xs" onclick="selectAllFechas(false)">Ninguna</button>
+          <button class="btn-xs red" onclick="aplicarFiltroFecha()">Aplicar filtro</button>
+        </div>
+      </div>
+
+      <div id="results-count"></div>
+      <div class="product-grid" id="product-grid"></div>
+    </div>
+
+    <!-- Welcome state -->
+    <div class="welcome" id="welcome">
+      <div class="w-icon">⚡</div>
+      <h2>Superseller Creators Dashboard</h2>
+      <p>Configura categorías y filtros en el panel lateral,<br>luego presiona <strong>Buscar Ofertas</strong> para comenzar.</p>
+    </div>
+
+  </main>
+</div>
+
+<!-- STATUS BAR -->
+<div id="status">Listo — presiona Buscar Ofertas para comenzar</div>
+
+<!-- EXPORT BAR -->
+<div id="exportBar">
+  <button class="btn btn-ghost" onclick="selectAll(true)" style="font-size:11px;padding:5px 11px;">✅ Sel. todos</button>
+  <button class="btn btn-ghost" onclick="selectAll(false)" style="font-size:11px;padding:5px 11px;">⬜ Ninguno</button>
+  <button class="btn btn-primary" onclick="exportCSV()" style="font-size:11px;padding:5px 13px;">⬇️ Exportar</button>
+  <button id="btnFiltroSuper" onclick="aplicarFiltroSuperseller()" style="background:#f59e0b;color:#000;border:none;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🧹 Filtro Superseller</button>
+  <button id="btnVerTodas" onclick="verTodasLasOfertas()" style="display:none;" class="btn btn-ghost" >↩ Ver todas</button>
+  <span style="font-size:11px;color:var(--t3);" id="exportInfo"></span>
+  <span id="filtroSuperInfo" style="font-size:10px;color:var(--amber);display:none;"></span>
+</div>
+
+<script>
+const CATS = {
+  "Electrónica":"Electronics","Hogar y Cocina":"HomeAndKitchen","Deportes":"SportsAndOutdoors",
+  "Juguetes":"ToysAndGames","Herramientas":"ToolsAndHomeImprovement","Belleza":"HealthPersonalCare",
+  "Ropa Hombres":"FashionMen","Ropa Mujeres":"FashionWomen","Libros":"Books",
+  "Videojuegos":"VideoGames","Automotriz":"Automotive","Mascotas":"PetSupplies",
+  "Oficina":"OfficeProducts","Alimentos":"GroceryAndGourmetFood","Bebé":"Baby",
+  "Relojes":"Watches","Música":"MusicalInstruments"
+}
+
+const catsEl = document.getElementById("cats")
+Object.keys(CATS).forEach(nombre => {
+  const id = "cat_"+nombre.replace(/\s/g,"_")
+  catsEl.innerHTML += `<div class="cat-item">
+    <input type="checkbox" id="${id}" checked>
+    <label for="${id}">${nombre}</label>
+  </div>`
+})
+
+let fechasDisponibles = {}
+
+function construirFiltroFechas(items) {
+  fechasDisponibles = {}
+  items.forEach(p => {
+    if (p.start_time) {
+      const fecha = new Date(p.start_time).toLocaleDateString('es-MX', {day:'2-digit',month:'2-digit',year:'2-digit'})
+      if (!fechasDisponibles[fecha]) fechasDisponibles[fecha] = []
+      fechasDisponibles[fecha].push(p)
+    }
+  })
+
+  const chips = document.getElementById("fecha-chips")
+  const panel = document.getElementById("fecha-filtros")
+
+  if (Object.keys(fechasDisponibles).length === 0) {
+    panel.style.display = "none"
+    return
+  }
+
+  panel.style.display = "block"
+  chips.innerHTML = Object.entries(fechasDisponibles).map(([fecha, items]) =>
+    `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#1a1a2e;padding:4px 10px;border-radius:6px;border:1px solid ${fechaFiltroGuardada===fecha?'#e94560':'#333'};">
+      <input type="checkbox" class="fecha-chk" value="${fecha}" ${fechaFiltroGuardada===fecha?'checked':''} style="accent-color:#e94560;">
+      <span style="font-size:12px;color:#fff;">${fecha}</span>
+      <span style="font-size:10px;color:#888;">(${items.length})</span>
+      <span onclick="event.preventDefault();guardarFecha('${fecha}')" style="cursor:pointer;background:#e94560;color:white;font-size:9px;padding:1px 6px;border-radius:4px;margin-left:4px;">📌 Guardar</span>
+    </label>`
+  ).join("")
+
+  actualizarIndicadorFecha()
+}
+
+function selectAllFechas(v) {
+  document.querySelectorAll(".fecha-chk").forEach(c => c.checked = v)
+  aplicarFiltroFecha()
+}
+
+function parsearFecha(val) {
+  if (!val) return null
+  const partes = val.replace(/[-\/.]/g, "/").split("/")
+  if (partes.length < 3) return null
+  let [d, m, y] = partes
+  if (y.length === 4) y = y.slice(2)
+  return d.padStart(2,"0") + "/" + m.padStart(2,"0") + "/" + y
+}
+
+function usarFechaFin() {
+  const val = document.getElementById("f_fecha_fin").value.trim()
+  const fecha = parsearFecha(val)
+  if (!fecha) { alert("Formato: dd/mm/aa  (ej. 15/04/26)"); return }
+  fechaFinGuardada = fecha
+  actualizarIndicadorFecha()
+  alert("✅ Fecha fin guardada: " + fecha)
+}
+
+function usarFechaEspecifica() {
+  const val = document.getElementById("f_fecha_especifica").value.trim()
+  const fecha = parsearFecha(val)
+  if (!fecha) { alert("Formato: dd/mm/aa  (ej. 08/04/26)"); return }
+  fechaFiltroGuardada = fecha
+  actualizarIndicadorFecha()
+  if (allItems.length) {
+    construirFiltroFechas(allItems)
+    setTimeout(() => {
+      document.querySelectorAll(".fecha-chk").forEach(c => {
+        c.checked = c.value === fecha
+        if (c.closest("label")) c.closest("label").style.border = c.value === fecha ? "1px solid #e94560" : "1px solid #333"
+      })
+      aplicarFiltroFecha()
+    }, 100)
+  }
+  alert("✅ Fecha guardada: " + fecha + "\nSe aplicará en la próxima búsqueda")
+}
+
+function guardarFecha(fecha) {
+  fechaFiltroGuardada = fecha
+  actualizarIndicadorFecha()
+  document.querySelectorAll(".fecha-chk").forEach(c => {
+    c.checked = c.value === fecha
+    c.closest("label").style.border = c.value === fecha ? "1px solid #e94560" : "1px solid #333"
+  })
+  aplicarFiltroFecha()
+}
+
+function limpiarFecha() {
+  fechaFiltroGuardada = null
+  fechaFinGuardada = null
+  document.getElementById("f_fecha_especifica").value = ""
+  document.getElementById("f_fecha_fin").value = ""
+  actualizarIndicadorFecha()
+  document.querySelectorAll(".fecha-chk").forEach(c => {
+    c.checked = true
+    if (c.closest("label")) c.closest("label").style.border = "1px solid #333"
+  })
+  aplicarFiltroFecha()
+}
+
+function actualizarIndicadorFecha() {
+  const bar = document.getElementById("fecha-guardada-bar")
+  const label = document.getElementById("fecha-guardada-label")
+  if (fechaFiltroGuardada || fechaFinGuardada) {
+    bar.style.display = "flex"
+    let txt = ""
+    if (fechaFiltroGuardada) txt += "▶ Inicio: " + fechaFiltroGuardada
+    if (fechaFiltroGuardada && fechaFinGuardada) txt += "  |  "
+    if (fechaFinGuardada) txt += "⏹ Fin: " + fechaFinGuardada
+    label.textContent = txt
+  } else {
+    bar.style.display = "none"
+  }
+}
+
+function aplicarFiltroFecha() {
+  const seleccionadas = [...document.querySelectorAll(".fecha-chk:checked")].map(c => c.value)
+
+  allItems.forEach((p, i) => {
+    const card = document.getElementById("card_"+i)
+    const chk  = document.getElementById("chk_"+i)
+    if (!card || !chk) return
+
+    if (fechaFiltroGuardada || fechaFinGuardada) {
+      const tieneFecha = !!p.start_time
+      if (!tieneFecha) {
+        card.style.display = "none"
+        chk.checked = false
+        card.classList.remove("selected")
+        return
+      }
+      const fechaProducto = new Date(p.start_time)
+      const parsear = (f) => {
+        if (!f) return null
+        const [d,m,y] = f.split("/")
+        return new Date(`20${y}-${m}-${d}`)
+      }
+      const inicio = parsear(fechaFiltroGuardada)
+      const fin    = parsear(fechaFinGuardada)
+      const dentroDeRango = (!inicio || fechaProducto >= inicio) && (!fin || fechaProducto <= fin)
+      card.style.display = dentroDeRango ? "" : "none"
+      chk.checked = dentroDeRango
+      card.classList.toggle("selected", dentroDeRango)
+      return
+    }
+
+    if (!seleccionadas.length) {
+      card.style.display = ""
+      return
+    }
+    const tieneFecha = !!p.start_time
+    const fecha = tieneFecha
+      ? new Date(p.start_time).toLocaleDateString('es-MX', {day:'2-digit',month:'2-digit',year:'2-digit'})
+      : null
+    const coincide = tieneFecha && seleccionadas.includes(fecha)
+    card.style.display = coincide ? "" : "none"
+    chk.checked = coincide
+    card.classList.toggle("selected", coincide)
+  })
+  updateCount()
+}
+
+function mostrarResumen(cats, filtros, total) {
+  const lineas = []
+
+  const numCats = Object.keys(cats).length
+  const nombresCats = Object.keys(cats).map(k => {
+    const v = cats[k]
+    return typeof v === "object" ? (v.label || k) : k
+  })
+  lineas.push(`📦 <b>Categorías buscadas (${numCats}):</b> ${nombresCats.join(", ")}`)
+
+  const pags = document.getElementById("paginas").value
+  const sortVal = document.getElementById("sortBy").value
+  const sortLabels = {"NewestArrivals":"Más recientes","Relevance":"Relevancia","Featured":"Destacados","Price:LowToHigh":"Precio menor a mayor","Price:HighToLow":"Precio mayor a menor","AvgCustomerReviews":"Mejor calificados"}
+  lineas.push(`📄 <b>Páginas por categoría:</b> ${pags} &nbsp;|&nbsp; <b>Orden:</b> ${sortLabels[sortVal]||sortVal}`)
+
+  const descMin = document.getElementById("descMin").value
+  const pMin = document.getElementById("precioMin").value
+  const pMax = document.getElementById("precioMax").value
+  let precioStr = `<b>Descuento mínimo:</b> ${descMin}%`
+  if (parseFloat(pMin) > 0 || parseFloat(pMax) > 0) {
+    precioStr += ` &nbsp;|&nbsp; <b>Precio:</b> $${pMin} – $${parseFloat(pMax)>0?pMax:"∞"} MXN`
+  }
+  lineas.push(`💰 ${precioStr}`)
+
+  const vigencia = []
+  if (filtros.solo_permanentes) vigencia.push("Solo permanentes ⭐")
+  if (filtros.solo_con_fecha) vigencia.push("Solo con fecha de fin")
+  if (filtros.excluir_relampago) vigencia.push("Excluir ⚡ Lightning")
+  if (filtros.solo_relampago) vigencia.push("Solo ⚡ Lightning")
+  if (filtros.hrs_activo) vigencia.push(`Mín. ${filtros.hrs_min}h restantes`)
+  if (document.getElementById("f_con_inicio").checked) vigencia.push("Solo con fecha de inicio ▶")
+  if (vigencia.length) lineas.push(`⏱ <b>Vigencia:</b> ${vigencia.join(", ")}`)
+
+  const tend = []
+  if (filtros.trending) tend.push(`En tendencia ≥ ${filtros.tpct}% reclamado`)
+  if (filtros.prime_e) tend.push("Prime Early Access")
+  if (filtros.prime_x) tend.push("Prime Exclusive")
+  if (filtros.scarce) tend.push("Poco inventario")
+  if (tend.length) lineas.push(`🔥 <b>Tendencia:</b> ${tend.join(", ")}`)
+
+  if (document.getElementById("f_badge_activo").checked && document.getElementById("f_badge_texto").value) {
+    lineas.push(`🏷️ <b>Badge:</b> "${document.getElementById("f_badge_texto").value}"`)
+  }
+
+  lineas.push(`✅ <b>Resultado:</b> ${total} productos encontrados`)
+
+  const el = document.getElementById("resumen-busqueda")
+  el.innerHTML = lineas.join("<br>")
+  el.style.display = "block"
+}
+
+function filtrarPorBadge(badge) {
+  document.getElementById("f_badge_activo").checked = true
+  document.getElementById("f_badge_texto").value = badge
+  renderResults(allItems)
+}
+
+function toggleAll(v) {
+  Object.keys(CATS).forEach(n => {
+    document.getElementById("cat_"+n.replace(/\s/g,"_")).checked = v
+  })
+}
+
+let subcatData = {}
+let fechaFiltroGuardada = null
+let fechaFinGuardada = null
+
+function toggleSubcats() {
+  const panel = document.getElementById("subcats-panel")
+  if (panel.style.display === "none") {
+    panel.style.display = "block"
+    cargarSubcatsDeSeleccion()
+  } else {
+    panel.style.display = "none"
+    subcatData = {}
+  }
+}
+
+async function cargarSubcatsDeSeleccion() {
+  const catsSeleccionadas = Object.keys(getSelectedCats())
+  if (!catsSeleccionadas.length) {
+    document.getElementById("subcats-loading").textContent = "⚠️ Selecciona primero una categoría"
+    document.getElementById("subcats-loading").style.display = "block"
+    return
+  }
+  const loading = document.getElementById("subcats-loading")
+  loading.style.display = "block"
+  loading.textContent = `⏳ Cargando subcategorías de: ${catsSeleccionadas.join(", ")}...`
+  document.getElementById("subcats").innerHTML = ""
+  subcatData = {}
+
+  for (const cat of catsSeleccionadas) {
+    try {
+      const r = await fetch(`http://localhost:8765/subcategorias?cat=${encodeURIComponent(cat)}`)
+      const d = await r.json()
+      if (!d.ok || !d.subcategorias.length) continue
+      const el = document.getElementById("subcats")
+      el.innerHTML += `<div style="grid-column:1/-1;margin-top:10px;margin-bottom:4px;color:#e94560;font-size:11px;font-weight:700;border-bottom:1px solid #333;padding-bottom:4px;">📦 ${cat} (${d.subcategorias.length})</div>`
+      d.subcategorias.forEach(sub => {
+        subcatData[cat+"__"+sub.nombre] = { nodeId: sub.id, searchIndex: sub.searchIndex, label: sub.nombre }
+        el.innerHTML += `<div class="cat-item">
+          <input type="checkbox" id="sub_${sub.id}" checked>
+          <label for="sub_${sub.id}" style="font-size:11px;">${sub.nombre}</label>
+        </div>`
+      })
+    } catch(e) { console.log("Error cargando", cat, e) }
+  }
+  loading.style.display = "none"
+  document.getElementById("subcats-btns").style.display = "flex"
+  const total = Object.keys(subcatData).length
+  document.getElementById("subcats").innerHTML =
+    `<p style="grid-column:1/-1;font-size:11px;color:#888;margin-bottom:8px;">${total} subcategorías</p>` +
+    document.getElementById("subcats").innerHTML
+}
+
+async function cargarTodasSubcats() {
+  const loading = document.getElementById("subcats-loading")
+  loading.style.display = "block"
+  loading.textContent = "⏳ Cargando subcategorías de todas las categorías..."
+  document.getElementById("subcats").innerHTML = ""
+  subcatData = {}
+  try {
+    const r = await fetch("http://localhost:8765/todas_subcategorias")
+    const d = await r.json()
+    if (!d.ok) { loading.textContent = `❌ ${d.error}`; return }
+    loading.style.display = "none"
+    document.getElementById("subcats-btns").style.display = "flex"
+    const el = document.getElementById("subcats")
+    el.style.gridTemplateColumns = "1fr 1fr"
+    let total = 0
+    Object.entries(d.todas).forEach(([cat, subs]) => {
+      if (!subs.length) return
+      el.innerHTML += `<div style="grid-column:1/-1;margin-top:10px;margin-bottom:4px;color:#e94560;font-size:11px;font-weight:700;border-bottom:1px solid #333;padding-bottom:4px;">📦 ${cat} (${subs.length})</div>`
+      subs.forEach(sub => {
+        subcatData[cat+"__"+sub.nombre] = { nodeId: sub.id, searchIndex: sub.searchIndex, label: sub.nombre }
+        el.innerHTML += `<div class="cat-item">
+          <input type="checkbox" id="sub_${sub.id}" checked>
+          <label for="sub_${sub.id}" style="font-size:11px;">${sub.nombre}</label>
+        </div>`
+        total++
+      })
+    })
+    el.innerHTML = `<p style="grid-column:1/-1;font-size:11px;color:#888;margin-bottom:8px;">${total} subcategorías en total</p>` + el.innerHTML
+  } catch(e) {
+    loading.textContent = `❌ Error: ${e.message}`
+  }
+}
+
+async function cargarSubcats(cat) {
+  await cargarTodasSubcats()
+}
+
+function getSelectedSubcats() {
+  const sel = {}
+  Object.entries(subcatData).forEach(([key, data]) => {
+    const el = document.getElementById("sub_"+data.nodeId)
+    if (!el || el.checked) {
+      sel[key] = { nodeId: data.nodeId, searchIndex: data.searchIndex }
+    }
+  })
+  return sel
+}
+
+function toggleSubAll(v) {
+  Object.values(subcatData).forEach(data => {
+    const el = document.getElementById("sub_"+data.nodeId)
+    if (el) el.checked = v
+  })
+}
+
+function getSelectedCats() {
+  const sel = {}
+  Object.entries(CATS).forEach(([nombre, id]) => {
+    if (document.getElementById("cat_"+nombre.replace(/\s/g,"_")).checked) sel[nombre] = id
+  })
+  return sel
+}
+
+function setStatus(msg, cls="") {
+  const el = document.getElementById("status")
+  el.className = cls
+  el.innerHTML = cls === "running" ? `<span class="spinner"></span>${msg}` : msg
+}
+
+let allItems = []
+
+async function buscar() {
+  const subcats = getSelectedSubcats()
+  const maincats = getSelectedCats()
+  const cats = Object.keys(subcats).length > 0 ? subcats : maincats
+  if (!Object.keys(cats).length) { alert("Selecciona al menos una categoría"); return }
+
+  setStatus("Conectando a Amazon Creators API...", "running")
+  document.getElementById("btnBuscar").disabled = true
+  document.getElementById("results").style.display = "none"
+  document.getElementById("exportBar").style.display = "none"
+
+  const filtros = {
+    solo_permanentes: document.getElementById("f_solo_perm").checked,
+    solo_con_fecha:   document.getElementById("f_solo_fecha").checked,
+    excluir_relampago:document.getElementById("f_excl_rel").checked,
+    solo_relampago:   document.getElementById("f_solo_rel").checked,
+    hrs_activo:       document.getElementById("f_hrs_activo").checked,
+    hrs_min:          parseInt(document.getElementById("f_hrs_min").value) || 6,
+    trending:         document.getElementById("f_trending").checked,
+    tpct:             parseInt(document.getElementById("f_tpct").value) || 50,
+    prime_e:          document.getElementById("f_prime_e").checked,
+    prime_x:          document.getElementById("f_prime_x").checked,
+    scarce:           document.getElementById("f_scarce").checked,
+    descuento_min:    parseInt(document.getElementById("descMin").value) || 15,
+    precio_min:       parseFloat(document.getElementById("precioMin").value) || 0,
+    precio_max:       parseFloat(document.getElementById("precioMax").value) || 0,
+  }
+
+  try {
+    mostrarBtnDetener(true)
+    _abortController = new AbortController()
+    setStatus(`Buscando en ${Object.keys(cats).length} categorías...`, "running")
+    window._ultimosFiltros = filtros
+    const r = await fetch("http://localhost:8765/buscar", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ categorias: cats, paginas: parseInt(document.getElementById("paginas").value) || 3, filtros, sortBy: document.getElementById("sortBy").value })
+    })
+    const data = await r.json()
+    if (!data.ok) throw new Error(data.error)
+    allItems = data.items
+    renderResults(allItems)
+    setStatus(`✅ ${allItems.length} productos encontrados`, "done")
+    mostrarResumen(cats, window._ultimosFiltros || filtros, allItems.length)
+  } catch(e) {
+    setStatus(`❌ Error: ${e.message} — ¿El servidor está corriendo?`, "error")
+  }
+  mostrarBtnDetener(false)
+  document.getElementById("btnBuscar").disabled = false
+}
+
+function renderResults(items) {
+  construirFiltroFechas(items)
+  if (fechaFiltroGuardada) {
+    setTimeout(() => {
+      const existe = [...document.querySelectorAll(".fecha-chk")].some(c => c.value === fechaFiltroGuardada)
+      if (existe) {
+        document.querySelectorAll(".fecha-chk").forEach(c => {
+          c.checked = c.value === fechaFiltroGuardada
+          if (c.closest("label")) c.closest("label").style.border = c.value === fechaFiltroGuardada ? "1px solid #e94560" : "1px solid #333"
+        })
+        aplicarFiltroFecha()
+      }
+    }, 500)
+  }
+  const filtroBadge = document.getElementById("f_badge_activo").checked
+  const badgeTexto = document.getElementById("f_badge_texto").value.trim().toLowerCase()
+  const filtroInicio = document.getElementById("f_con_inicio").checked
+
+  if (filtroBadge && badgeTexto) {
+    items = items.filter(p => p.badge && p.badge.toLowerCase().includes(badgeTexto))
+  }
+  if (filtroInicio) {
+    items = items.filter(p => p.start_time && p.start_time !== "")
+  }
+
+  const badgesSet = new Set(items.map(p => p.badge).filter(Boolean))
+  const badgesEl = document.getElementById("badges-detectados")
+  badgesEl.innerHTML = [...badgesSet].map(b =>
+    `<span onclick="filtrarPorBadge('${b}')" style="cursor:pointer;background:#1a1a3a;color:#e94560;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid #e9456044;">${b}</span>`
+  ).join("")
+
+  const grid = document.getElementById("product-grid")
+  grid.innerHTML = items.map((p, i) => `
+    <div class="product-card card-wrap" id="card_${i}">
+      <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'">
+      <div class="product-info">
+        <div class="product-title">${p.title}</div>
+        <div class="product-prices">
+          <span class="price-disc">$${p.price_discounted.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
+          ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
+        </div>
+        ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+          <span class="vigencia-badge ${p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${p.vigencia}</span>
+          ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
+          ${p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
+        </div>
+        <div style="margin-top:4px;font-size:10px;color:#415f7a;line-height:1.7;">
+          ${p.badge ? `<div>🏷️ <span style="color:#f59e0b;">${p.badge}</span></div>` : ''}
+          ${p.access_type && p.access_type !== 'ALL' ? `<div>🔒 <span style="color:#7090ff;">${p.access_type === 'PRIME_EXCLUSIVE' ? 'Prime Exclusive' : 'Prime Early Access'}</span></div>` : ''}
+          ${p.start_time ? `<div>▶ Inicio: ${new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
+          ${p.end_time ? `<div>⏹ Fin: ${new Date(p.end_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
+        </div>
+        <a class="btn-ver" href="${p.link}" target="_blank" onclick="event.stopPropagation()">Ver en Amazon →</a>
+      </div>
+    </div>
+  `).join("")
+  updateCount()
+  document.getElementById("results").style.display = "block"
+  document.getElementById("exportBar").style.display = "flex"
+}
+
+function toggleCard(i) {
+  const chk = document.getElementById("chk_"+i)
+  const card = document.getElementById("card_"+i)
+  card.classList.toggle("selected", chk.checked)
+  updateCount()
+}
+
+function selectAll(v) {
+  allItems.forEach((_, i) => {
+    const chk = document.getElementById("chk_"+i)
+    const card = document.getElementById("card_"+i)
+    if (!chk || !card) return
+    if (card.style.display === "none") return
+    chk.checked = v
+    card.classList.toggle("selected", v)
+  })
+  updateCount()
+}
+
+function updateCount() {
+  const sel = allItems.filter((_, i) => document.getElementById("chk_"+i) && document.getElementById("chk_"+i).checked).length
+  document.getElementById("results-count").textContent = `${allItems.length} productos  •  ${sel} seleccionados`
+  document.getElementById("exportInfo").textContent = `${sel} seleccionados para exportar`
+
+  // Update metrics strip
+  const total = allItems.length
+  document.getElementById("m-total").textContent = total > 0 ? total.toLocaleString('es-MX') : "—"
+  document.getElementById("m-sel").textContent = sel > 0 ? sel.toLocaleString('es-MX') : "—"
+  if (total > 0) {
+    const avgDisc = Math.round(allItems.reduce((a,p) => a + (p.descuento_pct||0), 0) / total)
+    const avgPrice = Math.round(allItems.reduce((a,p) => a + (p.price_discounted||0), 0) / total)
+    document.getElementById("m-disc").textContent = avgDisc + "%"
+    document.getElementById("m-price").textContent = "$" + avgPrice.toLocaleString('es-MX',{maximumFractionDigits:0})
+  }
+}
+
+function exportCSV() {
+  const selected = allItems.filter((_, i) => document.getElementById("chk_"+i) && document.getElementById("chk_"+i).checked)
+  if (!selected.length) { alert("Selecciona al menos un producto"); return }
+  const cols = ["img","link","title","price_original","price_discounted","vigencia_export","start_time_fmt","end_time_fmt"]
+  selected.forEach(p => {
+    let vig = ""
+    if (p.badge) vig = p.badge
+    else if (p.start_time) vig = "Inicio: " + new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})
+    else vig = p.vigencia || ""
+    p.vigencia_export = vig
+    p.start_time_fmt = p.start_time ? new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}) : ""
+    p.end_time_fmt   = p.end_time   ? new Date(p.end_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})   : ""
+  })
+  const rows = [cols.join(","), ...selected.map(p => cols.map(c => `"${(p[c]||"").toString().replace(/"/g,'""')}"`).join(","))]
+  const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8;"})
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement("a"); a.href=url
+  a.download = `superseller_${new Date().toISOString().slice(0,16).replace(/[T:]/g,"-")}.csv`
+  a.click(); URL.revokeObjectURL(url)
+}
+
+async function verFeeds() {
+  setStatus("Consultando feeds disponibles en Amazon...", "running")
+  try {
+    const r = await fetch("http://localhost:8765/feeds")
+    const d = await r.json()
+    if (!d.ok) {
+      setStatus(`❌ Error: ${d.error}`, "error")
+      return
+    }
+    const feeds = d.data.feeds || d.data.feedList || []
+    if (!feeds.length) {
+      setStatus(`⚠️ Sin feeds disponibles. Respuesta: ${JSON.stringify(d.data)}`, "error")
+    } else {
+      setStatus(`✅ ${feeds.length} feeds encontrados`, "done")
+      document.getElementById("results-count").textContent = `${feeds.length} feeds disponibles`
+      document.getElementById("product-grid").innerHTML = feeds.map(f =>
+        `<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="color:var(--red);font-size:12px;font-weight:700;margin-bottom:6px;">📦 Feed</div>
+          <pre style="color:var(--t2);font-size:10px;white-space:pre-wrap;">${JSON.stringify(f, null, 2)}</pre>
+        </div>`
+      ).join("")
+      document.getElementById("results").style.display = "block"
+    }
+  } catch(e) {
+    setStatus("❌ Servidor no disponible — ¿corriste servidor.py?", "error")
+  }
+}
+
+async function buscarDirecto() {
+  const rawInput = document.getElementById("searchInput").value.trim()
+  const precioMin = parseFloat(document.getElementById("searchPrecioMin").value) || 0
+  const precioMax = parseFloat(document.getElementById("searchPrecioMax").value) || 0
+  const descMin = parseInt(document.getElementById("searchDescMin").value) || 1
+
+  if (!rawInput) { alert("Ingresa keyword o ASIN"); return }
+
+  const lineas = rawInput.split("\n").map(l => l.trim()).filter(Boolean)
+  const esListaASINs = lineas.length > 1 && lineas.every(l => /^[A-Z0-9]{10}$/.test(l))
+
+  const statusEl = document.getElementById("busqueda-status")
+  statusEl.style.display = "block"
+  statusEl.style.color = "#e94560"
+  document.getElementById("results").style.display = "block"
+
+  if (esListaASINs) {
+    statusEl.textContent = "🔍 Buscando " + lineas.length + " ASINs..."
+    setStatus("Buscando lista de " + lineas.length + " ASINs...", "running")
+    mostrarBtnDetener(true)
+    _abortController = new AbortController()
+    const todosItems = []
+    let sinOferta = 0
+    for (let i = 0; i < lineas.length; i++) {
+      const asin = lineas[i]
+      statusEl.textContent = "🔍 ASIN " + (i+1) + "/" + lineas.length + ": " + asin
+      try {
+        const r = await fetch("http://localhost:8765/buscar-directo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: asin }),
+          signal: _abortController.signal
+        })
+        const d = await r.json()
+        if (d.ok && d.items && d.items.length > 0) todosItems.push(...d.items)
+        else sinOferta++
+      } catch(e) {
+        if (e.name === "AbortError") { mostrarBtnDetener(false); return }
+        sinOferta++
+      }
+    }
+    mostrarBtnDetener(false)
+    const apiRetorno = todosItems.length
+    const vistos = new Set()
+    let items = todosItems.filter(p => { if (vistos.has(p.asin)) return false; vistos.add(p.asin); return true })
+    items = items.filter(p => {
+      if (precioMin > 0 && p.price_discounted < precioMin) return false
+      if (precioMax > 0 && p.price_discounted > precioMax) return false
+      if (p.descuento_pct < descMin) return false
+      return true
+    })
+    const diagMsg = lineas.length + " ASINs → API devolvió " + apiRetorno + " (" + sinOferta + " sin oferta) → filtro dejó " + items.length
+    allItems = items
+    renderResults(items)
+    updateCount()
+    setStatus("✅ " + diagMsg, "done")
+    statusEl.textContent = "✅ " + diagMsg
+    statusEl.style.color = "#10b981"
+    return
+  }
+
+  const query = rawInput
+  statusEl.textContent = "🔍 Buscando..."
+  setStatus("Buscando: " + query, "running")
+
+  try {
+    const r = await fetch("http://localhost:8765/buscar-directo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: query })
+    })
+    const d = await r.json()
+    if (!d.ok) {
+      setStatus(`❌ Error: ${d.error}`, "error")
+      statusEl.textContent = "❌ Error en búsqueda"
+      statusEl.style.color = "#ef4444"
+      return
+    }
+    let items = d.items || []
+    items = items.filter(p => {
+      if (precioMin > 0 && p.price_discounted < precioMin) return false
+      if (precioMax > 0 && p.price_discounted > precioMax) return false
+      if (p.descuento_pct < descMin) return false
+      return true
+    })
+    if (items.length === 0) {
+      setStatus("⚠️ No se encontraron productos con esos filtros", "done")
+      statusEl.textContent = "⚠️ Sin resultados"
+      statusEl.style.color = "#f59e0b"
+      document.getElementById("results-count").textContent = "0 productos encontrados"
+      document.getElementById("product-grid").innerHTML = "<div style='color:#415f7a;padding:20px;text-align:center;'>No hay resultados para tu búsqueda con esos filtros</div>"
+      return
+    }
+    setStatus(`✅ ${items.length} producto(s) encontrado(s)`, "done")
+    statusEl.textContent = `✅ ${items.length} producto(s)`
+    statusEl.style.color = "#10b981"
+    document.getElementById("results-count").textContent = `${items.length} producto(s) encontrado(s) para: "${query}"`
+    const grid = document.getElementById("product-grid")
+    grid.innerHTML = items.map((p, i) => `
+      <div class="product-card" style="position:relative;">
+        <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:148px;object-fit:contain;background:#fff;padding:10px;">
+        <div class="product-info">
+          <div class="product-title">${p.title}</div>
+          <div class="product-prices">
+            <span class="price-disc">$${p.price_discounted.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
+            ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
+          </div>
+          ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
+          <div style="margin-top:4px;">
+            <span class="vigencia-badge">${p.vigencia || 'oferta'}</span>
+          </div>
+          <a href="${p.link}" target="_blank" class="btn-ver">Ver en Amazon →</a>
+        </div>
+      </div>
+    `).join("")
+  } catch(e) {
+    setStatus(`❌ Error: ${e.message}`, "error")
+    statusEl.textContent = "❌ Error de conexión"
+    statusEl.style.color = "#ef4444"
+  }
+}
+
+async function procesarHTML() {
+  const fileInput = document.getElementById("html-file-input")
+  const statusEl = document.getElementById("html-status")
+  if (!fileInput.files.length) {
+    statusEl.textContent = "⚠️ Selecciona un archivo HTML primero"
+    statusEl.style.color = "#e94560"; statusEl.style.display = "block"; return
+  }
+  const file = fileInput.files[0]
+  statusEl.textContent = `⏳ Leyendo ${file.name}...`
+  statusEl.style.color = "#415f7a"; statusEl.style.display = "block"
+  const texto = await file.text()
+  statusEl.textContent = "⏳ Consultando API..."
+  mostrarBtnDetener(true)
+  _abortController = new AbortController()
+  setStatus("⏳ Extrayendo ASINs y consultando API... ~1 minuto", "running")
+  try {
+    const r = await fetch("http://localhost:8765/procesar-html", {
+      method: "POST",
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+      body: texto,
+      signal: _abortController.signal
+    })
+    const d = await r.json()
+    if (!d.ok) {
+      statusEl.textContent = "❌ " + d.error
+      statusEl.style.color = "#e94560"
+      setStatus("❌ Error: " + d.error, ""); return
+    }
+    statusEl.textContent = "✅ " + d.items.length + " productos de " + d.total_asins + " ASINs"
+    statusEl.style.color = "#10b981"
+    setStatus("✅ " + d.items.length + " productos encontrados de " + d.total_asins + " ASINs", "")
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+  } catch(e) {
+    if (e.name !== "AbortError") {
+      statusEl.textContent = "❌ " + e.message
+      statusEl.style.color = "#e94560"
+      setStatus("❌ Error: " + e.message, "")
+    }
+  } finally {
+    mostrarBtnDetener(false)
+  }
+}
+
+async function generarListaDesdeCSV() {
+  const fileInput = document.getElementById("lista-file-input")
+  const statusEl = document.getElementById("lista-status")
+  if (!fileInput.files.length) {
+    statusEl.textContent = "⚠️ Selecciona un archivo CSV primero"
+    statusEl.style.color = "#e94560"; statusEl.style.display = "block"; return
+  }
+  const file = fileInput.files[0]
+  statusEl.textContent = "⏳ Procesando..."
+  statusEl.style.color = "#415f7a"; statusEl.style.display = "block"
+  document.getElementById("lista-output").style.display = "none"
+
+  try {
+    const texto = await file.text()
+    const lineas = texto.trim().split("\n")
+    const headers = lineas[0].split(",").map(h => h.replace(/"/g, "").trim())
+
+    const rows = lineas.slice(1).map(linea => {
+      const cols = []
+      let current = ""
+      let inQuotes = false
+      for (let i = 0; i < linea.length; i++) {
+        if (linea[i] === '"' ) { inQuotes = !inQuotes }
+        else if (linea[i] === "," && !inQuotes) { cols.push(current); current = "" }
+        else { current += linea[i] }
+      }
+      cols.push(current)
+      const row = {}
+      headers.forEach((h, i) => row[h] = (cols[i] || "").trim())
+      return row
+    }).filter(r => r.link || r.title)
+
+    if (!rows.length) {
+      statusEl.textContent = "⚠️ No se encontraron productos en el CSV"
+      statusEl.style.color = "#e94560"; return
+    }
+
+    const textos = rows.map(r => {
+      const titulo = (r.title || "").length > 80 ? r.title.substring(0, 77) + "..." : (r.title || "")
+      const po = parseFloat(r.price_original || 0)
+      const pd = parseFloat(r.price_discounted || 0)
+      const desc = po > pd ? Math.round((po - pd) / po * 100) : 0
+      const asinMatch = (r.link || "").match(/\/dp\/([A-Z0-9]{10})/)
+      const link = asinMatch
+        ? "https://www.amazon.com.mx/dp/" + asinMatch[1] + "?tag=elsuperseller-20"
+        : (r.link || "")
+      const precioOrig = po > pd ? " (antes $" + po.toLocaleString("es-MX", {minimumFractionDigits:0, maximumFractionDigits:0}) + ")" : ""
+      const descTxt = desc > 0 ? " -" + desc + "%" : ""
+      const precioFmt = pd.toLocaleString("es-MX", {minimumFractionDigits:0, maximumFractionDigits:0})
+      return "📦 " + titulo + "\n💵 $" + precioFmt + precioOrig + descTxt + "\n🔗 " + link
+    })
+
+    const textoFinal = textos.join("\n\n---\n\n")
+    document.getElementById("lista-texto").value = textoFinal
+    document.getElementById("lista-count").textContent = rows.length + " productos convertidos"
+    document.getElementById("lista-output").style.display = "block"
+    statusEl.textContent = "✅ Lista generada"
+    statusEl.style.color = "#10b981"
+
+  } catch(e) {
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#e94560"
+  }
+}
+
+function copiarLista() {
+  const txt = document.getElementById("lista-texto")
+  txt.select()
+  document.execCommand("copy")
+  const btn = event.target
+  btn.textContent = "✅ Copiado"
+  setTimeout(() => btn.textContent = "📋 Copiar todo", 2000)
+}
+
+let _abortController = null
+
+function mostrarBtnDetener(show) {
+  document.getElementById("btnDetener").style.display = show ? "inline-flex" : "none"
+  document.getElementById("btnBuscar").disabled = show
+}
+
+function detenerProceso() {
+  if (_abortController) {
+    _abortController.abort()
+    _abortController = null
+  }
+  mostrarBtnDetener(false)
+  setStatus("⏹ Proceso detenido por el usuario", "")
+}
+
+let _allItemsOriginal = []
+
+const ANTI_NICHO = [
+  "uniforme","bata medica","quirurgico","estetoscopio",
+  "dental","dentista","odontolog","ortodoncia",
+  "veterinari","antiparasitario","desparasitante","parvovirus",
+  "refaccion","industrial","maquinaria","soldadora","torno","fresadora",
+  "tequila","whisky","whiskey","mezcal","vodka","ron ","cerveza","vino tinto",
+  "vino blanco","champana","champagne","ginebra","brandy","cognac",
+  "reacondicionado","reconditioned"
+]
+
+function normalizarT(str) {
+  return (str || "").toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim()
+}
+
+function tieneKw(texto, kws) {
+  const n = normalizarT(texto)
+  return kws.some(k => n.includes(normalizarT(k)))
+}
+
+function extraerMarcaS(titulo) {
+  const palabras = normalizarT(titulo).split(" ").filter(p => p.length > 2)
+  return palabras[0] || ""
+}
+
+function extraerTipoS(titulo) {
+  const SW = ["para","con","sin","de","del","la","el","los","las","un","una","en","y","o","compatible"]
+  return normalizarT(titulo).split(" ")
+    .filter(p => p.length > 3 && !SW.includes(p))
+    .slice(0, 3).join(" ")
+}
+
+function aplicarFiltroSuperseller() {
+  if (!allItems.length) return
+  _allItemsOriginal = [...allItems]
+  const antes = allItems.length
+  let items = [...allItems]
+  const log = []
+
+  let prev = antes
+  items = items.filter(p => p.descuento_pct >= 15 && p.descuento_pct <= 70)
+  log.push("Descuento 15-70%: " + items.length + " (-" + (prev - items.length) + ")")
+
+  prev = items.length
+  items = items.filter(p => !tieneKw(p.title, ANTI_NICHO))
+  log.push("Anti-nicho: " + items.length + " (-" + (prev - items.length) + ")")
+
+  prev = items.length
+  items = items.filter(p => {
+    if (p.vigencia === "relampago" || p.tipo === "LIGHTNING_DEAL") return false
+    if (p.start_time && p.end_time) {
+      const start = new Date(p.start_time).toDateString()
+      const end = new Date(p.end_time).toDateString()
+      if (start === end) return false
+    }
+    return true
+  })
+  log.push("Anti-lightning/1dia: " + items.length + " (-" + (prev - items.length) + ")")
+
+  prev = items.length
+  const links = new Set()
+  items = items.filter(p => { if (links.has(p.link)) return false; links.add(p.link); return true })
+  log.push("Dedupe: " + items.length + " (-" + (prev - items.length) + ")")
+
+  prev = items.length
+  const cMarca = {}
+  items = items.filter(p => {
+    const m = extraerMarcaS(p.title)
+    cMarca[m] = (cMarca[m] || 0) + 1
+    return cMarca[m] <= 3
+  })
+  log.push("Cap marca: " + items.length + " (-" + (prev - items.length) + ")")
+
+  prev = items.length
+  const cTipo = {}
+  items = items.filter(p => {
+    const t = extraerTipoS(p.title)
+    cTipo[t] = (cTipo[t] || 0) + 1
+    return cTipo[t] <= 2
+  })
+  log.push("Cap tipo: " + items.length + " (-" + (prev - items.length) + ")")
+
+  allItems = items
+  renderResults(items)
+  updateCount()
+
+  const infoEl = document.getElementById("filtroSuperInfo")
+  infoEl.style.display = "inline"
+  infoEl.textContent = antes + " → " + items.length + " | " + log.join(" | ")
+  document.getElementById("btnVerTodas").style.display = "inline-flex"
+  document.getElementById("btnFiltroSuper").style.background = "#374151"
+  document.getElementById("btnFiltroSuper").style.color = "#d1d5db"
+}
+
+function verTodasLasOfertas() {
+  if (!_allItemsOriginal.length) return
+  allItems = [..._allItemsOriginal]
+  renderResults(allItems)
+  updateCount()
+  document.getElementById("filtroSuperInfo").style.display = "none"
+  document.getElementById("btnVerTodas").style.display = "none"
+  document.getElementById("btnFiltroSuper").style.background = "#f59e0b"
+  document.getElementById("btnFiltroSuper").style.color = "#000"
+}
+
+// Show/hide welcome card and metrics based on results visibility
+new MutationObserver(() => {
+  const shown = document.getElementById("results").style.display !== "none"
+  document.getElementById("welcome").style.display = shown ? "none" : "block"
+  document.getElementById("metrics-strip").classList.toggle("on", shown)
+}).observe(document.getElementById("results"), { attributes: true, attributeFilter: ["style"] })
+</script>
+</body>
+</html>
