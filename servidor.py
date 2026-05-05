@@ -17,6 +17,12 @@ try:
 except ImportError:
     _ML_OK = False
 
+try:
+    import historial_variedad as _hv
+    _HV_OK = True
+except ImportError:
+    _HV_OK = False
+
 # CREDENCIALES (reemplazar con las tuyas)
 CREDS = {
     "client_id": "amzn1.application-oa2-client.71a0b70614ce461580b328d6122e4b4e",  # Reemplazar
@@ -381,6 +387,44 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path == "/historial":
+            try:
+                if not _HV_OK:
+                    raise ImportError("historial_variedad no disponible")
+                length = int(self.headers.get("Content-Length", 0))
+                body   = json.loads(self.rfile.read(length))
+                action = body.get("action", "score")
+                items  = body.get("items", [])
+
+                if action == "score":
+                    resultado = _hv.aplicar_scores(items)
+                    resp = {"ok": True, "items": resultado}
+
+                elif action == "filtrar":
+                    min_score = float(body.get("min_score", 0.1))
+                    resultado = _hv.filtrar(items, min_score=min_score)
+                    resp = {"ok": True, "items": resultado, "total": len(resultado)}
+
+                elif action == "marcar":
+                    n = _hv.marcar_varios(items)
+                    resp = {"ok": True, "marcados": n}
+
+                elif action == "limpiar":
+                    dias = int(body.get("dias", 60))
+                    resp = {"ok": True, **_hv.limpiar(dias=dias)}
+
+                else:
+                    resp = {"ok": False, "error": f"Acción desconocida: {action}"}
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps(resp).encode())
+            except Exception as e:
+                print(f"❌ /historial: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -547,6 +591,18 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200); self._cors()
             self.send_header("Content-Type", "application/json"); self.end_headers()
             self.wfile.write(json.dumps({"ok": True, "todas": SUBCATS_POR_CAT}).encode())
+
+        elif path == "/historial":
+            try:
+                if not _HV_OK:
+                    raise ImportError("historial_variedad no disponible")
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, **_hv.stats()}).encode())
+            except Exception as e:
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
         elif path == "/nodos":
             try:

@@ -66,6 +66,7 @@ def normalizar(item):
 
     return {
         "id":               pid,
+        "asin":             pid,   # compatibilidad con frontend Amazon
         "source":           "ml",
         "title":            item.get("title", ""),
         "link":             item.get("permalink", ""),
