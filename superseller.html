@@ -605,6 +605,35 @@ input[type=file] {
       </div>
     </div>
 
+    <!-- Mercado Libre -->
+    <div class="sec open">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">🛒</span>Mercado Libre</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint">Scraping directo de páginas de ofertas de ML. Sin API key.</p>
+        <div class="fld">
+          <label class="fl">Categorías</label>
+          <div id="ml-cats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:6px;"></div>
+        </div>
+        <div class="row">
+          <span class="lbl">Desc. mín.</span>
+          <input type="number" id="ml-desc-min" value="20" min="1" max="90" class="inp inp-n">
+          <span class="lbl">%</span>
+        </div>
+        <button onclick="buscarML()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;background:linear-gradient(135deg,#3483fa,#1259c3);">🛒 Buscar en ML</button>
+        <div id="ml-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
+        <p class="hint">O carga una página HTML descargada de ML desde tu navegador.</p>
+        <input type="file" id="ml-html-input" accept=".html,.htm">
+        <button onclick="procesarHTMLML()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">📄 Procesar HTML de ML</button>
+        <div id="ml-html-status" class="inline-st"></div>
+      </div>
+    </div>
+
   </aside>
 
   <!-- MAIN CONTENT -->
@@ -1612,6 +1641,105 @@ function verTodasLasOfertas() {
   document.getElementById("btnVerTodas").style.display = "none"
   document.getElementById("btnFiltroSuper").style.background = "#f59e0b"
   document.getElementById("btnFiltroSuper").style.color = "#000"
+}
+
+// ── MERCADO LIBRE ──────────────────────────────────────────────────
+const ML_CATS = {
+  "Todas las ofertas": "ofertas",
+  "Electrónica":       "electronica",
+  "Hogar":             "hogar",
+  "Deportes":          "deportes",
+  "Juguetes":          "juguetes",
+  "Belleza":           "belleza",
+  "Ropa":              "ropa",
+  "Herramientas":      "herramientas",
+  "Automotriz":        "automotriz",
+  "Mascotas":          "mascotas",
+}
+
+// Construir grid de categorías ML
+const mlGrid = document.getElementById("ml-cats-grid")
+Object.keys(ML_CATS).forEach(nombre => {
+  const id = "mlcat_" + ML_CATS[nombre]
+  mlGrid.innerHTML += `<div class="cat-item">
+    <input type="checkbox" id="${id}" ${nombre === "Todas las ofertas" ? "checked" : ""}>
+    <label for="${id}" style="font-size:11px;">${nombre}</label>
+  </div>`
+})
+
+async function buscarML() {
+  const categorias = Object.entries(ML_CATS)
+    .filter(([n, v]) => document.getElementById("mlcat_"+v)?.checked)
+    .map(([n, v]) => v)
+
+  if (!categorias.length) { alert("Selecciona al menos una categoría ML"); return }
+
+  const descMin = parseInt(document.getElementById("ml-desc-min").value) || 20
+  const statusEl = document.getElementById("ml-status")
+  statusEl.style.display = "block"
+  statusEl.style.color = "#3483fa"
+  statusEl.textContent = `⏳ Buscando en ${categorias.length} categoría(s) de ML...`
+  setStatus("⏳ Buscando en Mercado Libre...", "running")
+  mostrarBtnDetener(true)
+  _abortController = new AbortController()
+
+  try {
+    const r = await fetch("http://localhost:8765/buscar-ml", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categorias, filtros: { descuento_min: descMin } }),
+      signal: _abortController.signal
+    })
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+    statusEl.textContent = `✅ ${d.total} ofertas de ML`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${d.total} ofertas de Mercado Libre`, "done")
+  } catch(e) {
+    if (e.name === "AbortError") return
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ Error ML: " + e.message, "error")
+  } finally {
+    mostrarBtnDetener(false)
+  }
+}
+
+async function procesarHTMLML() {
+  const fileInput = document.getElementById("ml-html-input")
+  const statusEl  = document.getElementById("ml-html-status")
+  if (!fileInput.files.length) {
+    statusEl.textContent = "⚠️ Selecciona un archivo HTML de ML"
+    statusEl.style.color = "#e94560"; statusEl.style.display = "block"; return
+  }
+  const texto = await fileInput.files[0].text()
+  statusEl.textContent = "⏳ Procesando..."
+  statusEl.style.color = "#3483fa"; statusEl.style.display = "block"
+  const descMin = parseInt(document.getElementById("ml-desc-min").value) || 1
+  setStatus("⏳ Procesando HTML de ML...", "running")
+
+  try {
+    const r = await fetch("http://localhost:8765/procesar-html-ml", {
+      method: "POST",
+      headers: { "Content-Type": "text/html; charset=utf-8", "X-Min-Discount": String(descMin) },
+      body: texto
+    })
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+    statusEl.textContent = `✅ ${d.items.length} productos de ${d.total_raw} en el HTML`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${d.items.length} productos ML desde HTML`, "done")
+  } catch(e) {
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ " + e.message, "error")
+  }
 }
 
 // Show/hide welcome card and metrics based on results visibility
