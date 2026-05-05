@@ -387,6 +387,29 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path == "/procesar-html-ml":
+            try:
+                if not _ML_OK:
+                    raise ImportError("scraper_ml no disponible")
+                length   = int(self.headers.get("Content-Length", 0))
+                html_txt = self.rfile.read(length).decode("utf-8", errors="ignore")
+                min_disc = 1
+                try:
+                    qs = self.headers.get("X-Min-Discount", "1")
+                    min_disc = int(qs)
+                except Exception:
+                    pass
+                items, total_raw = _ml.scrape_html_texto(html_txt, min_discount=min_disc)
+                print(f"📦 /procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "items": items, "total_raw": total_raw}).encode())
+            except Exception as e:
+                print(f"❌ /procesar-html-ml: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         elif self.path == "/historial":
             try:
                 if not _HV_OK:
