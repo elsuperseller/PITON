@@ -11,6 +11,12 @@ import time
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+try:
+    import scraper_ml as _ml
+    _ML_OK = True
+except ImportError:
+    _ML_OK = False
+
 # CREDENCIALES (reemplazar con las tuyas)
 CREDS = {
     "client_id": "amzn1.application-oa2-client.71a0b70614ce461580b328d6122e4b4e",  # Reemplazar
@@ -339,6 +345,38 @@ class Handler(BaseHTTPRequestHandler):
 
             except Exception as e:
                 print(f"❌ /procesar-html: {str(e)}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/buscar-ml":
+            try:
+                if not _ML_OK:
+                    raise ImportError("scraper_ml no disponible — instala: pip install beautifulsoup4")
+                length = int(self.headers.get("Content-Length", 0))
+                body   = json.loads(self.rfile.read(length))
+                filtros      = body.get("filtros", {})
+                queries      = body.get("queries")      or None
+                urls         = body.get("urls")         or None
+                categorias   = body.get("categorias")   or None
+                min_discount = int(filtros.get("descuento_min", 15))
+                precio_min   = float(filtros.get("precio_min", 0))
+                precio_max   = float(filtros.get("precio_max", 0))
+                max_por_query= int(body.get("max_por_query", 50))
+
+                print(f"🛒 /buscar-ml → queries={queries} cats={categorias} urls={len(urls or [])} desc≥{min_discount}%", flush=True)
+
+                items = _ml.scrape(
+                    queries=queries, urls=urls, categorias=categorias,
+                    min_discount=min_discount, max_per_query=max_por_query,
+                    precio_min=precio_min, precio_max=precio_max,
+                )
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "items": items, "total": len(items)}).encode())
+            except Exception as e:
+                print(f"❌ /buscar-ml: {e}", flush=True)
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
