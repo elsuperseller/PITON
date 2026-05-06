@@ -106,7 +106,7 @@ def _normalizar(raw):
                 desc_pct = round((price_orig - price_disc) / price_orig * 100, 1)
 
         elif t == "highlight":
-            hl_text = comp.get("highlight", {}).get("text", "").upper()
+            hl_text = re.sub(r'\{[^}]+\}', '', comp.get("highlight", {}).get("text", "")).strip().upper()
             badge   = hl_text
             if "RELÁMPAGO" in hl_text or "RELAMPAGO" in hl_text or "FLASH" in hl_text:
                 vigencia = "relampago"

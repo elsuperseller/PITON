@@ -674,6 +674,8 @@ input[type=file] {
         <button onclick="limpiarFecha()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--t3);font-size:10px;padding:2px 8px;border-radius:4px;cursor:pointer;">✕ Quitar</button>
       </div>
 
+      <div id="promo-filtros" style="display:none;margin-bottom:14px;padding:12px 16px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);"></div>
+
       <div id="fecha-filtros">
         <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">▶ Filtrar por fecha de inicio</div>
         <div id="fecha-chips"></div>
@@ -1130,6 +1132,7 @@ async function buscar() {
 }
 
 function renderResults(items) {
+  renderPromoFiltros(items)
   construirFiltroFechas(items)
   if (fechaFiltroGuardada) {
     setTimeout(() => {
@@ -1641,6 +1644,84 @@ function verTodasLasOfertas() {
   document.getElementById("btnVerTodas").style.display = "none"
   document.getElementById("btnFiltroSuper").style.background = "#f59e0b"
   document.getElementById("btnFiltroSuper").style.color = "#000"
+}
+
+// ── FILTRO TIPOS DE PROMOCIÓN (Amazon + ML) ────────────────────────
+let promoDisponibles = {}
+
+function getPromoLabel(p) {
+  const tipo  = (p.tipo   || "").toUpperCase()
+  const badge = (p.badge  || "").replace(/\{[^}]+\}/g, "").trim().toUpperCase()
+  const vig   = (p.vigencia || "").toLowerCase()
+
+  if (tipo === "LIGHTNING_DEAL" || vig === "relampago" || badge.includes("RELÁMPAGO") || badge.includes("RELAMPAGO") || badge.includes("FLASH"))
+    return "⚡ Relámpago"
+  if (badge.includes("IMPERDIBLE"))             return "🔥 Imperdible"
+  if (badge.includes("MÁS VENDIDO") || badge.includes("MAS VENDIDO")) return "📈 Más vendido"
+  if (tipo === "DEAL_OF_DAY" || badge.includes("OFERTA DEL DÍA") || badge.includes("OFERTA DEL DIA")) return "🌟 Oferta del día"
+  if (badge.includes("LANZAMIENTO"))            return "🆕 Lanzamiento"
+  if (badge.includes("DESTACAD"))               return "⭐ Destacada"
+  if (badge.includes("PRIME"))                  return "🔵 Prime"
+  if (badge.includes("HOT SALE") || badge.includes("HOTSALE")) return "🔴 Hot Sale"
+  if (badge.includes("BLACK FRIDAY") || badge.includes("BLACKFRIDAY")) return "🖤 Black Friday"
+  if (vig === "permanente")                     return "✅ Permanente"
+  if (badge)                                    return `🏷️ ${badge.charAt(0) + badge.slice(1).toLowerCase()}`
+  return "💰 Oferta"
+}
+
+function renderPromoFiltros(items) {
+  promoDisponibles = {}
+  items.forEach((p, i) => {
+    const lbl = getPromoLabel(p)
+    if (!promoDisponibles[lbl]) promoDisponibles[lbl] = []
+    promoDisponibles[lbl].push(i)
+  })
+
+  const panel = document.getElementById("promo-filtros")
+  const tipos = Object.keys(promoDisponibles)
+  if (tipos.length <= 1) { panel.style.display = "none"; return }
+
+  panel.style.display = "block"
+  const sorted = Object.entries(promoDisponibles).sort((a,b) => b[1].length - a[1].length)
+  panel.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">🏷️ Tipo de Promoción</div>
+    <div id="promo-chips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button class="btn-xs" onclick="selectAllPromos(true)">Todas</button>
+      <button class="btn-xs red" onclick="selectAllPromos(false)">Ninguna</button>
+    </div>`
+
+  const chips = document.getElementById("promo-chips")
+  sorted.forEach(([lbl, indices]) => {
+    const label = document.createElement("label")
+    label.style.cssText = "display:flex;align-items:center;gap:5px;cursor:pointer;background:rgba(26,48,78,.6);padding:4px 10px;border-radius:20px;border:1px solid var(--border);font-size:11px;color:var(--t1);transition:border-color .15s;"
+    label.innerHTML = `<input type="checkbox" class="promo-chk" value="${lbl}" checked style="accent-color:#e94560;"> ${lbl} <span style="font-size:10px;color:var(--t3);">(${indices.length})</span>`
+    label.querySelector("input").addEventListener("change", () => { label.style.borderColor = label.querySelector("input").checked ? "var(--border)" : "var(--red)"; aplicarFiltroPromos() })
+    chips.appendChild(label)
+  })
+}
+
+function aplicarFiltroPromos() {
+  const sel = new Set([...document.querySelectorAll(".promo-chk:checked")].map(c => c.value))
+  const total = Object.keys(promoDisponibles).length
+  allItems.forEach((p, i) => {
+    const card = document.getElementById("card_"+i)
+    const chk  = document.getElementById("chk_"+i)
+    if (!card || !chk) return
+    const mostrar = sel.size === 0 || sel.size === total || sel.has(getPromoLabel(p))
+    card.style.display = mostrar ? "" : "none"
+    if (!mostrar) { chk.checked = false; card.classList.remove("selected") }
+  })
+  updateCount()
+}
+
+function selectAllPromos(v) {
+  document.querySelectorAll(".promo-chk").forEach(c => {
+    c.checked = v
+    const lbl = c.closest("label")
+    if (lbl) lbl.style.borderColor = v ? "var(--border)" : "var(--red)"
+  })
+  aplicarFiltroPromos()
 }
 
 // ── MERCADO LIBRE ──────────────────────────────────────────────────
