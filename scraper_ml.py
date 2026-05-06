@@ -132,8 +132,8 @@ def _normalizar(raw):
     }
 
 # ── SCRAPER DE URL ───────────────────────────────────────────────────
-def scrape_url(url, min_discount=1):
-    """Extrae ofertas de cualquier URL de ML que tenga JSON embebido."""
+def scrape_url(url, min_discount=0):
+    """Extrae todos los productos de cualquier URL de ML que tenga JSON embebido."""
     try:
         r = requests.get(url, headers=_HEADERS, timeout=20)
         r.raise_for_status()
@@ -142,17 +142,13 @@ def scrape_url(url, min_discount=1):
         return []
 
     raw_items  = _extraer_items_de_html(r.text)
-    resultados = []
-    for raw in raw_items:
-        p = _normalizar(raw)
-        if p and p["descuento_pct"] >= min_discount:
-            resultados.append(p)
+    resultados = [p for raw in raw_items if (p := _normalizar(raw)) is not None]
 
-    print(f"  📄 {url.split('/')[-1] or 'ofertas'} → {len(raw_items)} raw → {len(resultados)} con ≥{min_discount}% desc", flush=True)
+    print(f"  📄 {url.split('/')[-1] or 'ofertas'} → {len(raw_items)} raw → {len(resultados)} productos", flush=True)
     return resultados
 
 # ── SCRAPER DESDE HTML DESCARGADO (mismo flow que Amazon) ────────────
-def scrape_html_texto(html_texto, min_discount=1):
+def scrape_html_texto(html_texto, min_discount=0):
     """
     Procesa HTML descargado manualmente por el usuario desde su navegador.
     Compatible con páginas de búsqueda, categoría y ofertas de ML.
@@ -176,7 +172,7 @@ def deduplicar(items):
 
 # ── PUNTO DE ENTRADA ────────────────────────────────────────────────
 def scrape(queries=None, urls=None, categorias=None,
-           min_discount=15, max_per_query=50, precio_min=0, precio_max=0):
+           min_discount=0, max_per_query=50, precio_min=0, precio_max=0):
     """
     queries   : ignorado (ML no tiene API pública, usar urls/categorias)
     urls      : list[str] — URLs completas de ML
@@ -207,12 +203,6 @@ def scrape(queries=None, urls=None, categorias=None,
     if not categorias and not urls and not queries:
         print("📦 ML: scrapeando ofertas generales", flush=True)
         resultados.extend(scrape_url(URLS_PREDEFINIDAS["ofertas"], min_discount=min_discount))
-
-    # Filtro de precio (post-processing)
-    if precio_min > 0:
-        resultados = [p for p in resultados if p["price_discounted"] >= precio_min]
-    if precio_max > 0:
-        resultados = [p for p in resultados if p["price_discounted"] <= precio_max]
 
     resultados = deduplicar(resultados)
     print(f"✅ ML total: {len(resultados)} ofertas únicas", flush=True)
