@@ -1645,16 +1645,16 @@ function verTodasLasOfertas() {
 
 // ── MERCADO LIBRE ──────────────────────────────────────────────────
 const ML_CATS = {
-  "Todas las ofertas": "ofertas",
-  "Electrónica":       "electronica",
-  "Hogar":             "hogar",
-  "Deportes":          "deportes",
-  "Juguetes":          "juguetes",
-  "Belleza":           "belleza",
-  "Ropa":              "ropa",
-  "Herramientas":      "herramientas",
-  "Automotriz":        "automotriz",
-  "Mascotas":          "mascotas",
+  "⭐ Ofertas del día": "ofertas_dia",
+  "Electrónica":        "electronica",
+  "Hogar":              "hogar",
+  "Deportes":           "deportes",
+  "Juguetes":           "juguetes",
+  "Belleza":            "belleza",
+  "Ropa":               "ropa",
+  "Herramientas":       "herramientas",
+  "Automotriz":         "automotriz",
+  "Mascotas":           "mascotas",
 }
 
 // Construir grid de categorías ML
@@ -1662,7 +1662,7 @@ const mlGrid = document.getElementById("ml-cats-grid")
 Object.keys(ML_CATS).forEach(nombre => {
   const id = "mlcat_" + ML_CATS[nombre]
   mlGrid.innerHTML += `<div class="cat-item">
-    <input type="checkbox" id="${id}" ${nombre === "Todas las ofertas" ? "checked" : ""}>
+    <input type="checkbox" id="${id}" ${nombre === "⭐ Ofertas del día" ? "checked" : ""}>
     <label for="${id}" style="font-size:11px;">${nombre}</label>
   </div>`
 })

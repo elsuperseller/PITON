@@ -16,17 +16,24 @@ from bs4 import BeautifulSoup
 ML_BASE = "https://www.mercadolibre.com.mx"
 IMG_TPL = "https://http2.mlstatic.com/D_NQ_NP_{pic_id}-F.webp"
 
+# Fuentes principales de ofertas diarias
+URLS_DIARIAS = [
+    f"{ML_BASE}/ofertas#nav-header",
+    f"{ML_BASE}/ofertas?container_id=MLM1297614-1&deal_ids=MLM27723",
+    f"{ML_BASE}/ofertas?container_id=MLM1321208-1&deal_ids=MLM1321208",
+]
+
 URLS_PREDEFINIDAS = {
-    "ofertas":        f"{ML_BASE}/ofertas",
-    "electronica":    f"{ML_BASE}/ofertas/tecnologia",
-    "hogar":          f"{ML_BASE}/ofertas/hogar-y-muebles",
-    "deportes":       f"{ML_BASE}/ofertas/deportes-y-fitness",
-    "juguetes":       f"{ML_BASE}/ofertas/juguetes-y-bebes",
-    "belleza":        f"{ML_BASE}/ofertas/salud-y-belleza",
-    "ropa":           f"{ML_BASE}/ofertas/moda",
-    "herramientas":   f"{ML_BASE}/ofertas/herramientas",
-    "automotriz":     f"{ML_BASE}/ofertas/autos-motos-y-otros",
-    "mascotas":       f"{ML_BASE}/ofertas/animales-y-mascotas",
+    "ofertas_dia":    URLS_DIARIAS,   # las 3 fuentes principales
+    "electronica":    [f"{ML_BASE}/ofertas/tecnologia"],
+    "hogar":          [f"{ML_BASE}/ofertas/hogar-y-muebles"],
+    "deportes":       [f"{ML_BASE}/ofertas/deportes-y-fitness"],
+    "juguetes":       [f"{ML_BASE}/ofertas/juguetes-y-bebes"],
+    "belleza":        [f"{ML_BASE}/ofertas/salud-y-belleza"],
+    "ropa":           [f"{ML_BASE}/ofertas/moda"],
+    "herramientas":   [f"{ML_BASE}/ofertas/herramientas"],
+    "automotriz":     [f"{ML_BASE}/ofertas/autos-motos-y-otros"],
+    "mascotas":       [f"{ML_BASE}/ofertas/animales-y-mascotas"],
 }
 
 _HEADERS = {
@@ -184,25 +191,26 @@ def scrape(queries=None, urls=None, categorias=None,
         print(f"⚠️  Búsqueda por keyword no disponible sin API key ML — usa categorias o urls", flush=True)
 
     for cat in (categorias or []):
-        url = URLS_PREDEFINIDAS.get(cat)
-        if not url:
+        cat_urls = URLS_PREDEFINIDAS.get(cat)
+        if not cat_urls:
             print(f"  ⚠️  Categoría desconocida: {cat} — opciones: {list(URLS_PREDEFINIDAS)}", flush=True)
             continue
-        print(f"📦 ML categoría: {cat}", flush=True)
-        items = scrape_url(url, min_discount=min_discount)
-        resultados.extend(items)
-        time.sleep(1.5)
+        print(f"📦 ML categoría: {cat} ({len(cat_urls)} URL(s))", flush=True)
+        for u in cat_urls:
+            resultados.extend(scrape_url(u))
+            time.sleep(1.2)
 
     for url in (urls or []):
         print(f"📄 ML URL: {url[:70]}", flush=True)
-        items = scrape_url(url, min_discount=min_discount)
-        resultados.extend(items)
-        time.sleep(1.5)
+        resultados.extend(scrape_url(url))
+        time.sleep(1.2)
 
-    # Si no se especificó nada, usar página general de ofertas
+    # Si no se especificó nada, usar las 3 fuentes diarias principales
     if not categorias and not urls and not queries:
-        print("📦 ML: scrapeando ofertas generales", flush=True)
-        resultados.extend(scrape_url(URLS_PREDEFINIDAS["ofertas"], min_discount=min_discount))
+        print(f"📦 ML: scrapeando {len(URLS_DIARIAS)} fuentes diarias", flush=True)
+        for u in URLS_DIARIAS:
+            resultados.extend(scrape_url(u))
+            time.sleep(1.2)
 
     resultados = deduplicar(resultados)
     print(f"✅ ML total: {len(resultados)} ofertas únicas", flush=True)
