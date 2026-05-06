@@ -24,16 +24,7 @@ URLS_DIARIAS = [
 ]
 
 URLS_PREDEFINIDAS = {
-    "ofertas_dia":    URLS_DIARIAS,   # las 3 fuentes principales
-    "electronica":    [f"{ML_BASE}/ofertas/tecnologia"],
-    "hogar":          [f"{ML_BASE}/ofertas/hogar-y-muebles"],
-    "deportes":       [f"{ML_BASE}/ofertas/deportes-y-fitness"],
-    "juguetes":       [f"{ML_BASE}/ofertas/juguetes-y-bebes"],
-    "belleza":        [f"{ML_BASE}/ofertas/salud-y-belleza"],
-    "ropa":           [f"{ML_BASE}/ofertas/moda"],
-    "herramientas":   [f"{ML_BASE}/ofertas/herramientas"],
-    "automotriz":     [f"{ML_BASE}/ofertas/autos-motos-y-otros"],
-    "mascotas":       [f"{ML_BASE}/ofertas/animales-y-mascotas"],
+    "ofertas_dia": URLS_DIARIAS,
 }
 
 _HEADERS = {

@@ -612,25 +612,28 @@ input[type=file] {
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
-        <p class="hint">Scraping directo de páginas de ofertas de ML. Sin API key.</p>
-        <div class="fld">
-          <label class="fl">Categorías</label>
-          <div id="ml-cats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:6px;"></div>
-        </div>
-        <div class="row">
-          <span class="lbl">Desc. mín.</span>
-          <input type="number" id="ml-desc-min" value="20" min="1" max="90" class="inp inp-n">
-          <span class="lbl">%</span>
-        </div>
-        <button onclick="buscarML()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;background:linear-gradient(135deg,#3483fa,#1259c3);">🛒 Buscar en ML</button>
+
+        <!-- Fuentes diarias -->
+        <p class="hint" style="margin-bottom:8px;">Scrapea las ofertas diarias de ML (3 fuentes).</p>
+        <button onclick="buscarMLDiario()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;background:linear-gradient(135deg,#3483fa,#1259c3);">🛒 Ofertas del día</button>
         <div id="ml-status" class="inline-st"></div>
 
         <div class="divider"></div>
 
-        <p class="hint">O carga una página HTML descargada de ML desde tu navegador.</p>
+        <!-- URLs custom -->
+        <p class="hint">Pega URLs específicas de ML (una por línea).</p>
+        <textarea id="ml-urls-custom" class="inp" style="height:70px;font-size:11px;" placeholder="https://www.mercadolibre.com.mx/ofertas?container_id=...&#10;https://www.mercadolibre.com.mx/ofertas?..."></textarea>
+        <button onclick="buscarMLUrls()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs</button>
+        <div id="ml-urls-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
+        <!-- HTML descargado -->
+        <p class="hint">O carga un HTML descargado de ML desde Chrome (Cmd+S).</p>
         <input type="file" id="ml-html-input" accept=".html,.htm">
         <button onclick="procesarHTMLML()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">📄 Procesar HTML de ML</button>
         <div id="ml-html-status" class="inline-st"></div>
+
       </div>
     </div>
 
@@ -1725,50 +1728,17 @@ function selectAllPromos(v) {
 }
 
 // ── MERCADO LIBRE ──────────────────────────────────────────────────
-const ML_CATS = {
-  "⭐ Ofertas del día": "ofertas_dia",
-  "Electrónica":        "electronica",
-  "Hogar":              "hogar",
-  "Deportes":           "deportes",
-  "Juguetes":           "juguetes",
-  "Belleza":            "belleza",
-  "Ropa":               "ropa",
-  "Herramientas":       "herramientas",
-  "Automotriz":         "automotriz",
-  "Mascotas":           "mascotas",
-}
-
-// Construir grid de categorías ML
-const mlGrid = document.getElementById("ml-cats-grid")
-Object.keys(ML_CATS).forEach(nombre => {
-  const id = "mlcat_" + ML_CATS[nombre]
-  mlGrid.innerHTML += `<div class="cat-item">
-    <input type="checkbox" id="${id}" ${nombre === "⭐ Ofertas del día" ? "checked" : ""}>
-    <label for="${id}" style="font-size:11px;">${nombre}</label>
-  </div>`
-})
-
-async function buscarML() {
-  const categorias = Object.entries(ML_CATS)
-    .filter(([n, v]) => document.getElementById("mlcat_"+v)?.checked)
-    .map(([n, v]) => v)
-
-  if (!categorias.length) { alert("Selecciona al menos una categoría ML"); return }
-
-  const descMin = parseInt(document.getElementById("ml-desc-min").value) || 20
-  const statusEl = document.getElementById("ml-status")
+async function _llamarML(body, statusEl) {
   statusEl.style.display = "block"
   statusEl.style.color = "#3483fa"
-  statusEl.textContent = `⏳ Buscando en ${categorias.length} categoría(s) de ML...`
   setStatus("⏳ Buscando en Mercado Libre...", "running")
   mostrarBtnDetener(true)
   _abortController = new AbortController()
-
   try {
     const r = await fetch("http://localhost:8765/buscar-ml", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ categorias, filtros: { descuento_min: descMin } }),
+      body: JSON.stringify(body),
       signal: _abortController.signal
     })
     const d = await r.json()
@@ -1776,7 +1746,7 @@ async function buscarML() {
     allItems = d.items
     renderResults(d.items)
     updateCount()
-    statusEl.textContent = `✅ ${d.total} ofertas de ML`
+    statusEl.textContent = `✅ ${d.total} productos`
     statusEl.style.color = "#10b981"
     setStatus(`✅ ${d.total} ofertas de Mercado Libre`, "done")
   } catch(e) {
@@ -1787,6 +1757,21 @@ async function buscarML() {
   } finally {
     mostrarBtnDetener(false)
   }
+}
+
+async function buscarMLDiario() {
+  const statusEl = document.getElementById("ml-status")
+  statusEl.textContent = "⏳ Cargando ofertas del día..."
+  await _llamarML({ categorias: ["ofertas_dia"], filtros: {} }, statusEl)
+}
+
+async function buscarMLUrls() {
+  const statusEl = document.getElementById("ml-urls-status")
+  const raw = document.getElementById("ml-urls-custom").value.trim()
+  const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
+  if (!urls.length) { alert("Pega al menos una URL de ML"); return }
+  statusEl.textContent = `⏳ Buscando en ${urls.length} URL(s)...`
+  await _llamarML({ urls, filtros: {} }, statusEl)
 }
 
 async function procesarHTMLML() {
