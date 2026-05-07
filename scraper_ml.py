@@ -8,6 +8,7 @@ Normaliza al objeto oferta común compatible con Amazon.
 import json
 import re
 import time
+from urllib.parse import urlparse, parse_qs
 
 import requests
 from bs4 import BeautifulSoup
@@ -16,15 +17,8 @@ from bs4 import BeautifulSoup
 ML_BASE = "https://www.mercadolibre.com.mx"
 IMG_TPL = "https://http2.mlstatic.com/D_NQ_NP_{pic_id}-F.webp"
 
-# Fuentes principales de ofertas diarias
-URLS_DIARIAS = [
-    f"{ML_BASE}/ofertas#nav-header",
-    f"{ML_BASE}/ofertas?container_id=MLM1297614-1&deal_ids=MLM27723",
-    f"{ML_BASE}/ofertas?container_id=MLM1321208-1&deal_ids=MLM1321208",
-]
-
 URLS_PREDEFINIDAS = {
-    "ofertas_dia": URLS_DIARIAS,
+    "ofertas_dia": [f"{ML_BASE}/ofertas"],   # punto de entrada; se expande automáticamente
 }
 
 _HEADERS = {
@@ -33,6 +27,33 @@ _HEADERS = {
     "Accept-Language": "es-MX,es;q=0.9",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
+
+# ── DESCUBRIDOR DE CONTAINERS ───────────────────────────────────────
+def _descubrir_containers(base_url):
+    """
+    Scrapea una página de ofertas ML y extrae todos los container_ids
+    embebidos en el JSON. Devuelve lista de URLs listas para scrapearse.
+    """
+    try:
+        r = requests.get(base_url, headers=_HEADERS, timeout=20)
+        r.raise_for_status()
+    except Exception as e:
+        print(f"  ❌ Error descubriendo containers: {e}", flush=True)
+        return [base_url]
+
+    containers = set()
+    for script in re.findall(r'<script[^>]*>(.*?)</script>', r.text, re.S):
+        if '"container_id"' in script:
+            for cid in re.findall(r'"container_id"\s*:\s*"([A-Z0-9_\-]+)"', script):
+                containers.add(cid)
+
+    if not containers:
+        print(f"  ⚠️  Sin containers encontrados, usando URL base", flush=True)
+        return [base_url]
+
+    urls = [f"{ML_BASE}/ofertas?container_id={cid}" for cid in sorted(containers)]
+    print(f"  🔍 {len(urls)} containers descubiertos", flush=True)
+    return urls
 
 # ── EXTRACTOR DE JSON EMBEBIDO ───────────────────────────────────────
 def _extraer_items_de_html(html):
@@ -66,12 +87,21 @@ def _normalizar(raw):
     meta = card.get("metadata", {})
 
     pid  = meta.get("id", "")
-    url  = "https://" + meta.get("url", "").lstrip("/")
+    raw_url = meta.get("url", "")
+    url  = "https://" + raw_url.lstrip("/") if raw_url else ""
+
+    # Ignorar links de publicidad (no generan link de afiliado)
+    if not url or "click1.mercadolibre" in url or "click2.mercadolibre" in url:
+        return None
 
     # Imagen: usar la primera picture disponible
     pics = card.get("pictures", {}).get("pictures", [])
     pic_id = pics[0].get("id", "") if pics else ""
     img  = IMG_TPL.format(pic_id=pic_id) if pic_id else ""
+
+    # Fechas de inicio/fin de la oferta
+    start_time = meta.get("start_time") or meta.get("deal_start_time") or raw.get("start_time")
+    end_time   = meta.get("stop_time")  or meta.get("deal_stop_time")  or meta.get("end_time") or raw.get("end_time")
 
     # Componentes (title, price, highlight/badge)
     title      = ""
@@ -109,6 +139,11 @@ def _normalizar(raw):
                 vigencia = "oferta"
                 tipo     = "DEAL"
 
+        elif t == "countdown" or t == "timer":
+            # Algunos containers incluyen un componente de cuenta regresiva con end_time
+            if not end_time:
+                end_time = comp.get("end_time") or comp.get("countdown", {}).get("end_time")
+
     if not pid or not title or price_disc == 0:
         return None
 
@@ -125,13 +160,49 @@ def _normalizar(raw):
         "vigencia":         vigencia,
         "tipo":             tipo,
         "badge":            badge,
-        "start_time":       None,
-        "end_time":         None,
+        "start_time":       start_time,
+        "end_time":         end_time,
     }
+
+# ── CONVERSOR DE URLs LISTADO → OFERTAS ─────────────────────────────
+def _convertir_listado_url(url):
+    """
+    Las páginas listado.mercadolibre.com.mx/_Container_* son SPAs vacías.
+    El container_id real está en el fragment (#). Lo extrae y construye
+    la URL de ofertas equivalente que sí tiene JSON embebido.
+    """
+    if "listado.mercadolibre.com.mx" not in url:
+        return url
+
+    parsed   = urlparse(url)
+    fragment = parsed.fragment  # todo lo que viene después del #
+
+    # Buscar container_id en el fragment
+    m = re.search(r'container_id=([A-Z0-9_\-]+)', fragment)
+    if m:
+        container_id = m.group(1)
+        nueva = f"{ML_BASE}/ofertas?container_id={container_id}"
+        print(f"  🔄 Listado → ofertas: container_id={container_id}", flush=True)
+        return nueva
+
+    # Si no hay fragment, intentar con la URL base sin fragment (algunos tienen query param)
+    m2 = re.search(r'container_id=([A-Z0-9_\-]+)', url)
+    if m2:
+        container_id = m2.group(1)
+        nueva = f"{ML_BASE}/ofertas?container_id={container_id}"
+        print(f"  🔄 Listado → ofertas: container_id={container_id}", flush=True)
+        return nueva
+
+    print(f"  ⚠️  Listado sin container_id reconocible, ignorando: {url[:70]}", flush=True)
+    return None
 
 # ── SCRAPER DE URL ───────────────────────────────────────────────────
 def scrape_url(url, min_discount=0):
     """Extrae todos los productos de cualquier URL de ML que tenga JSON embebido."""
+    url = _convertir_listado_url(url)
+    if not url:
+        return []
+
     try:
         r = requests.get(url, headers=_HEADERS, timeout=20)
         r.raise_for_status()
@@ -186,8 +257,14 @@ def scrape(queries=None, urls=None, categorias=None,
         if not cat_urls:
             print(f"  ⚠️  Categoría desconocida: {cat} — opciones: {list(URLS_PREDEFINIDAS)}", flush=True)
             continue
-        print(f"📦 ML categoría: {cat} ({len(cat_urls)} URL(s))", flush=True)
+        expanded = []
         for u in cat_urls:
+            if "container_id" not in u:
+                expanded.extend(_descubrir_containers(u))
+            else:
+                expanded.append(u)
+        print(f"📦 ML categoría: {cat} → {len(expanded)} URL(s)", flush=True)
+        for u in expanded:
             resultados.extend(scrape_url(u))
             time.sleep(1.2)
 
@@ -196,10 +273,11 @@ def scrape(queries=None, urls=None, categorias=None,
         resultados.extend(scrape_url(url))
         time.sleep(1.2)
 
-    # Si no se especificó nada, usar las 3 fuentes diarias principales
+    # Si no se especificó nada, descubrir y scrapear todas las fuentes diarias
     if not categorias and not urls and not queries:
-        print(f"📦 ML: scrapeando {len(URLS_DIARIAS)} fuentes diarias", flush=True)
-        for u in URLS_DIARIAS:
+        daily_urls = _descubrir_containers(f"{ML_BASE}/ofertas")
+        print(f"📦 ML: scrapeando {len(daily_urls)} fuentes diarias", flush=True)
+        for u in daily_urls:
             resultados.extend(scrape_url(u))
             time.sleep(1.2)
 

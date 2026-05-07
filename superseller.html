@@ -1532,10 +1532,28 @@ const ANTI_NICHO = [
   "dental","dentista","odontolog","ortodoncia",
   "veterinari","antiparasitario","desparasitante","parvovirus",
   "refaccion","industrial","maquinaria","soldadora","torno","fresadora",
-  "tequila","whisky","whiskey","mezcal","vodka","ron ","cerveza","vino tinto",
-  "vino blanco","champana","champagne","ginebra","brandy","cognac",
   "reacondicionado","reconditioned"
 ]
+
+// Variantes a ignorar para agrupar productos similares (diferente color/talla)
+const VARIANTES_STRIP = [
+  "rojo","roja","rosa","azul","verde","negro","negra","blanco","blanca","gris",
+  "amarillo","amarilla","naranja","morado","morada","cafe","beige","dorado","dorada",
+  "plateado","plateada","marron","violeta","lila","turquesa","celeste","coral",
+  "fucsia","salmon","cian","magenta","red","blue","green","black","white","gray",
+  "grey","yellow","orange","purple","brown","pink","gold","silver",
+  "xs","s","m","l","xl","xxl","xxxl","4xl","5xl",
+  "chico","chica","mediano","mediana","grande","pequeno","pequena","mini","micro",
+  "slim","fit","regular","plus"
+]
+
+function normalizarDedup(titulo) {
+  let n = normalizarT(titulo)
+  VARIANTES_STRIP.forEach(v => { n = n.replace(new RegExp('(?:^|\\s)' + v + '(?:\\s|$)', 'g'), ' ') })
+  n = n.replace(/\b\d+\s*(?:gb|tb|mb|ml|lt?|kg|g|cm|mm|mah|hz|mp|w|oz)\b/gi, '')
+  n = n.replace(/\b\d+"\b/g, '').replace(/\b\d+\b/g, '')
+  return n.replace(/\s+/g, ' ').trim()
+}
 
 function normalizarT(str) {
   return (str || "").toLowerCase()
@@ -1563,13 +1581,19 @@ function extraerTipoS(titulo) {
 function aplicarFiltroSuperseller() {
   if (!allItems.length) return
   _allItemsOriginal = [...allItems]
-  const antes = allItems.length
-  let items = [...allItems]
+
+  // Respetar el filtro de promo activo: solo procesar lo que el usuario ya filtró
+  const selPromos = new Set([...document.querySelectorAll(".promo-chk:checked")].map(c => c.value))
+  const totalPromos = Object.keys(promoDisponibles || {}).length
+  const sinFiltroPromo = selPromos.size === 0 || selPromos.size === totalPromos
+  let items = sinFiltroPromo ? [...allItems] : allItems.filter(p => selPromos.has(getPromoLabel(p)))
+
+  const antes = items.length
   const log = []
 
   let prev = antes
-  items = items.filter(p => p.descuento_pct >= 15 && p.descuento_pct <= 70)
-  log.push("Descuento 15-70%: " + items.length + " (-" + (prev - items.length) + ")")
+  items = items.filter(p => p.descuento_pct >= 1)
+  log.push("Descuento ≥1%: " + items.length + " (-" + (prev - items.length) + ")")
 
   prev = items.length
   items = items.filter(p => !tieneKw(p.title, ANTI_NICHO))
@@ -1588,9 +1612,20 @@ function aplicarFiltroSuperseller() {
   log.push("Anti-lightning/1dia: " + items.length + " (-" + (prev - items.length) + ")")
 
   prev = items.length
-  const links = new Set()
-  items = items.filter(p => { if (links.has(p.link)) return false; links.add(p.link); return true })
-  log.push("Dedupe: " + items.length + " (-" + (prev - items.length) + ")")
+  const grupos = {}
+  items.forEach(p => {
+    const key = normalizarDedup(p.title)
+    const k = key.length >= 8 ? key : "uid_" + p.id
+    if (!grupos[k]) grupos[k] = []
+    grupos[k].push(p)
+  })
+  items = Object.values(grupos).map(g =>
+    g.reduce((mejor, p) =>
+      p.descuento_pct > mejor.descuento_pct ? p :
+      (p.descuento_pct === mejor.descuento_pct && p.price_discounted < mejor.price_discounted ? p : mejor)
+    )
+  )
+  log.push("Smart dedup: " + items.length + " (-" + (prev - items.length) + ")")
 
   prev = items.length
   const cMarca = {}
