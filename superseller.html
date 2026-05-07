@@ -605,6 +605,34 @@ input[type=file] {
       </div>
     </div>
 
+    <!-- Amazon Deals -->
+    <div class="sec open">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">🔥</span>Amazon Deals</span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint" style="margin-bottom:8px;">Ofertas activas en Amazon MX (acceso automático).</p>
+        <button onclick="buscarAmazonDeals(['deals_hoy'])" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;background:linear-gradient(135deg,#ff9900,#e47911);">🔥 Ofertas del Día</button>
+        <div style="height:5px;"></div>
+        <button onclick="buscarAmazonDeals(['trending'])" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;background:linear-gradient(135deg,#ff9900,#e47911);">📈 Trending Ahora</button>
+        <div style="height:5px;"></div>
+        <button onclick="buscarAmazonDeals(['deals_hoy','trending'])" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">🔥+📈 Ambas</button>
+        <div id="amz-deals-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
+        <p class="hint" style="font-size:10px;">Si Amazon bloquea el acceso: abre la URL en Chrome, guarda el HTML (Cmd+S) y usa el botón de abajo.</p>
+        <div style="display:flex;gap:5px;margin-bottom:5px;">
+          <button onclick="abrirUrlDeals('deals_hoy')" class="btn-xs" style="flex:1;font-size:10px;">🔥 Abrir Ofertas del Día</button>
+          <button onclick="abrirUrlDeals('trending')" class="btn-xs" style="flex:1;font-size:10px;">📈 Abrir Trending</button>
+        </div>
+        <input type="file" id="amz-deals-html-input" accept=".html,.htm">
+        <button onclick="procesarHTMLAmazonDeals()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">📄 Procesar HTML de Deals</button>
+        <div id="amz-deals-html-status" class="inline-st"></div>
+      </div>
+    </div>
+
     <!-- Mercado Libre -->
     <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
@@ -1852,6 +1880,94 @@ function selectAllPromos(v) {
     if (lbl) lbl.style.borderColor = v ? "var(--border)" : "var(--red)"
   })
   aplicarFiltroPromos()
+}
+
+// ── AMAZON DEALS ───────────────────────────────────────────────────
+const AMZ_DEALS_URLS = {
+  deals_hoy: "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&bubble-id=discounts-collection-deals-started-today",
+  trending:  "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&bubble-id=trending-bubble",
+}
+
+function abrirUrlDeals(bucket) {
+  const url = AMZ_DEALS_URLS[bucket]
+  if (url) window.open(url, "_blank")
+}
+
+async function buscarAmazonDeals(buckets) {
+  const statusEl = document.getElementById("amz-deals-status")
+  statusEl.style.display = "block"
+  statusEl.style.color = "#ff9900"
+  statusEl.textContent = "⏳ Buscando ofertas..."
+  setStatus("⏳ Buscando Amazon Deals...", "running")
+  mostrarBtnDetener(true)
+  _abortController = new AbortController()
+  try {
+    const r = await fetch("http://localhost:8765/buscar-amazon-deals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ buckets, min_discount: 1 }),
+      signal: _abortController.signal
+    })
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+
+    if (d.total === 0 && d.hint) {
+      statusEl.textContent = "⚠️ Sin resultados — " + d.hint
+      statusEl.style.color = "#f59e0b"
+      setStatus("⚠️ Amazon bloqueó el acceso automático", "error")
+      return
+    }
+
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+    statusEl.textContent = `✅ ${d.total} productos (${d.asins_encontrados} ASINs)`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${d.total} ofertas Amazon Deals`, "done")
+
+    if (d.advertencias && d.advertencias.length) {
+      console.warn("Amazon Deals advertencias:", d.advertencias)
+    }
+  } catch(e) {
+    if (e.name === "AbortError") return
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ Error Amazon Deals: " + e.message, "error")
+  } finally {
+    mostrarBtnDetener(false)
+  }
+}
+
+async function procesarHTMLAmazonDeals() {
+  const fileInput = document.getElementById("amz-deals-html-input")
+  const statusEl  = document.getElementById("amz-deals-html-status")
+  if (!fileInput.files.length) {
+    statusEl.textContent = "⚠️ Selecciona un archivo HTML"
+    statusEl.style.color = "#e94560"; statusEl.style.display = "block"; return
+  }
+  const texto = await fileInput.files[0].text()
+  statusEl.textContent = "⏳ Procesando..."
+  statusEl.style.color = "#ff9900"; statusEl.style.display = "block"
+  setStatus("⏳ Procesando HTML de Amazon Deals...", "running")
+  try {
+    const r = await fetch("http://localhost:8765/procesar-html", {
+      method: "POST",
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+      body: texto
+    })
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error || "Sin productos")
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+    statusEl.textContent = `✅ ${d.items.length} productos de ${d.total_asins} ASINs`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${d.items.length} productos Amazon desde HTML`, "done")
+  } catch(e) {
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ " + e.message, "error")
+  }
 }
 
 // ── MERCADO LIBRE ──────────────────────────────────────────────────

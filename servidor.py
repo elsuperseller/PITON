@@ -18,6 +18,12 @@ except ImportError:
     _ML_OK = False
 
 try:
+    import scraper_amazon as _az
+    _AZ_OK = True
+except ImportError:
+    _AZ_OK = False
+
+try:
     import historial_variedad as _hv
     _HV_OK = True
 except ImportError:
@@ -406,6 +412,103 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"ok": True, "items": items, "total_raw": total_raw}).encode())
             except Exception as e:
                 print(f"❌ /procesar-html-ml: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/buscar-amazon-deals":
+            try:
+                if not _AZ_OK:
+                    raise ImportError("scraper_amazon no disponible")
+                length  = int(self.headers.get("Content-Length", 0))
+                body    = json.loads(self.rfile.read(length)) if length else {}
+                buckets = body.get("buckets", list(_az.DEALS_URLS.keys()))
+                min_discount = int(body.get("min_discount", 1))
+
+                # 1. Extraer ASINs de cada bucket
+                all_asins = []
+                vistos_asins = set()
+                advertencias = []
+                for bucket in buckets:
+                    asins, estado = _az.scrape_url(bucket)
+                    if estado == "bot_challenge":
+                        advertencias.append(f"{bucket}: bot_challenge — descarga el HTML manualmente")
+                    for a in asins:
+                        if a not in vistos_asins:
+                            vistos_asins.add(a)
+                            all_asins.append(a)
+
+                print(f"🛒 /buscar-amazon-deals → {len(all_asins)} ASINs únicos de {buckets}", flush=True)
+
+                if not all_asins:
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True, "items": [], "total": 0,
+                        "advertencias": advertencias,
+                        "hint": "Amazon bloqueó el acceso automático. Abre la URL en Chrome, guarda el HTML (Cmd+S) y usa 'Procesar HTML'."
+                    }).encode())
+                    return
+
+                # 2. Enriquecer vía Creators API
+                token = get_token()
+                api_headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "x-marketplace": "www.amazon.com.mx"
+                }
+                resultados = []
+                for asin in all_asins:
+                    try:
+                        payload = {
+                            "partnerTag": CREDS["partner_tag"],
+                            "marketplace": "www.amazon.com.mx",
+                            "searchIndex": "All",
+                            "keywords": asin,
+                            "itemCount": 1,
+                            "itemPage": 1,
+                            "languagesOfPreference": ["es_MX"],
+                            "currencyOfPreference": "MXN",
+                            "resources": [
+                                "itemInfo.title", "images.primary.medium",
+                                "offersV2.listings.price", "offersV2.listings.dealDetails",
+                                "offersV2.listings.isBuyBoxWinner"
+                            ]
+                        }
+                        r = requests.post(
+                            "https://creatorsapi.amazon/catalog/v1/searchItems",
+                            headers=api_headers, json=payload, timeout=15
+                        )
+                        if r.status_code != 200:
+                            continue
+                        items = r.json().get("searchResult", {}).get("items", [])
+                        if not items:
+                            continue
+                        p = parsear_item(items[0])
+                        if p and p["descuento_pct"] >= min_discount:
+                            resultados.append(p)
+                            print(f"  ✅ {asin} → ${p['price_discounted']} ({p['descuento_pct']}% off)", flush=True)
+                        time.sleep(0.4)
+                    except Exception as e:
+                        print(f"  ❌ {asin}: {e}", flush=True)
+
+                # dedup por ASIN
+                seen, unicos = set(), []
+                for p in resultados:
+                    if p["asin"] not in seen:
+                        seen.add(p["asin"])
+                        unicos.append(p)
+
+                print(f"  → {len(unicos)} productos con descuento", flush=True)
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True, "items": unicos, "total": len(unicos),
+                    "asins_encontrados": len(all_asins),
+                    "advertencias": advertencias
+                }).encode())
+            except Exception as e:
+                print(f"❌ /buscar-amazon-deals: {e}", flush=True)
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
