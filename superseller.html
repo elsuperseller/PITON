@@ -1179,7 +1179,7 @@ function renderResults(items) {
         </div>
         ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
-          <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${p.tipo==='LIGHTNING_DEAL'?'⚡ Relámpago':p.vigencia}</span>
+          <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${getPromoLabel(p)}</span>
           ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
           ${p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
         </div>
@@ -1566,16 +1566,94 @@ function tieneKw(texto, kws) {
   return kws.some(k => n.includes(normalizarT(k)))
 }
 
+// Palabras genéricas que NO son marca (se saltan para encontrar la marca real)
+const PALABRAS_GENERICAS_MARCA = new Set([
+  "smartphone","celular","telefono","tablet","laptop","notebook","computadora",
+  "monitor","teclado","mouse","bocina","camara","audifonos","auriculares",
+  "impresora","proyector","router","consola","smartwatch","reloj","foco",
+  "licuadora","cafetera","aspiradora","freidora","hervidor","batidora"
+])
+
+// Categorías para cap máximo por tipo de producto
+const CATEGORIAS_CAP = {
+  "telefono":   ["smartphone","celular","iphone","galaxy","moto g","moto e","moto edge","redmi","poco","xiaomi","redmagic","pixel","oneplus","oppo","realme","telefono"],
+  "laptop":     ["laptop","notebook","macbook","chromebook","thinkpad","vivobook","zenbook","ideapad"],
+  "tablet":     ["tablet","ipad","kindle"],
+  "auricular":  ["auriculares","audifonos","earbuds","airpods","headphone","buds"],
+  "smart_tv":   ["smart tv","television","televisor","qled","oled tv","pantalla tv"],
+  "camara_foto":["camara fotografica","camara digital","mirrorless","dslr"],
+  "consola":    ["playstation","xbox","nintendo switch","ps5","ps4"],
+}
+const CAP_CATEGORIA = 2  // máximo por categoría de producto
+
 function extraerMarcaS(titulo) {
   const palabras = normalizarT(titulo).split(" ").filter(p => p.length > 2)
+  for (const p of palabras) {
+    if (!PALABRAS_GENERICAS_MARCA.has(p)) return p
+  }
   return palabras[0] || ""
 }
 
+function extraerCategoriaS(titulo) {
+  const n = normalizarT(titulo)
+  for (const [cat, kws] of Object.entries(CATEGORIAS_CAP)) {
+    if (kws.some(k => n.includes(normalizarT(k)))) return cat
+  }
+  return null
+}
+
+// ── RANK POR TIPO ────────────────────────────────────────────────────
+// Filtro 6: de N productos del mismo tipo → devuelve top 3 por score
+function rankPorTipo(grupo, topN = 3) {
+  if (grupo.length <= topN) return grupo
+
+  const precios = grupo.map(p => p.price_discounted || 0)
+  const pMin    = Math.min(...precios)
+  const pMax    = Math.max(...precios)
+  const sorted  = [...precios].sort((a, b) => a - b)
+  const mid     = Math.floor(sorted.length / 2)
+  const mediana = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2
+
+  function precioRel(precio) {
+    return pMax === pMin ? 1.0 : (pMax - precio) / (pMax - pMin)
+  }
+
+  function novedadScore(p) {
+    const nd = p.novedad_score
+    if (nd === undefined || nd === null || nd >= 1.0) return 1.0  // nunca publicado
+    if (nd >= 0.8) return 0.8   // >3 días
+    if (nd >= 0.5) return 0.5   // 1-3 días
+    return 0.2                   // <1 día
+  }
+
+  const scored = grupo.map(p => {
+    const desc = (p.descuento_pct || 0) / 100
+    const prel = precioRel(p.price_discounted || 0)
+    const vend = Math.min((p.vendidos || 0) / 2000, 1.0)
+    const rat  = (p.rating || 4.0) / 5
+    const nov  = novedadScore(p)
+    let sc = desc*0.35 + prel*0.20 + vend*0.20 + rat*0.15 + nov*0.10
+    if ((p.price_discounted || 0) > 3 * mediana) sc -= 0.3
+    if ((p.vendidos || 0) > 0 && (p.vendidos || 0) < 10) sc -= 0.2
+    return { ...p, _rank_score: Math.round(sc * 10000) / 10000 }
+  })
+
+  scored.sort((a, b) => b._rank_score - a._rank_score)
+  return scored.slice(0, topN)
+}
+
 function extraerTipoS(titulo) {
-  const SW = ["para","con","sin","de","del","la","el","los","las","un","una","en","y","o","compatible"]
-  return normalizarT(titulo).split(" ")
-    .filter(p => p.length > 3 && !SW.includes(p))
-    .slice(0, 3).join(" ")
+  const SW = new Set([
+    "para","con","sin","de","del","la","el","los","las","un","una","en","y","o","compatible",
+    "dual","sim","ram","rom","gen","pro","max","plus","lite","mini","ultra","serie",
+    "smartphone","celular","telefono","tablet","laptop","notebook"
+  ])
+  let n = normalizarT(titulo)
+  n = n.replace(/\b\w*\d+\w*\b/g, '')  // quita tokens con números (A36, G86, 5G, 256GB, XT2433…)
+  n = n.replace(/\s+/g, ' ').trim()
+  return n.split(" ")
+    .filter(p => p.length > 3 && !SW.has(p))
+    .slice(0, 2).join(" ")
 }
 
 function aplicarFiltroSuperseller() {
@@ -1627,6 +1705,19 @@ function aplicarFiltroSuperseller() {
   )
   log.push("Smart dedup: " + items.length + " (-" + (prev - items.length) + ")")
 
+  // Ordenar por descuento desc antes de los caps para que siempre sobrevivan las mejores ofertas
+  items.sort((a, b) => (b.descuento_pct || 0) - (a.descuento_pct || 0))
+
+  prev = items.length
+  const cCat = {}
+  items = items.filter(p => {
+    const cat = extraerCategoriaS(p.title)
+    if (!cat) return true
+    cCat[cat] = (cCat[cat] || 0) + 1
+    return cCat[cat] <= CAP_CATEGORIA
+  })
+  log.push("Cap categoría: " + items.length + " (-" + (prev - items.length) + ")")
+
   prev = items.length
   const cMarca = {}
   items = items.filter(p => {
@@ -1637,13 +1728,14 @@ function aplicarFiltroSuperseller() {
   log.push("Cap marca: " + items.length + " (-" + (prev - items.length) + ")")
 
   prev = items.length
-  const cTipo = {}
-  items = items.filter(p => {
+  const porTipo = {}
+  items.forEach(p => {
     const t = extraerTipoS(p.title)
-    cTipo[t] = (cTipo[t] || 0) + 1
-    return cTipo[t] <= 2
+    if (!porTipo[t]) porTipo[t] = []
+    porTipo[t].push(p)
   })
-  log.push("Cap tipo: " + items.length + " (-" + (prev - items.length) + ")")
+  items = Object.values(porTipo).flatMap(g => rankPorTipo(g, 3))
+  log.push("Rank tipo top3: " + items.length + " (-" + (prev - items.length) + ")")
 
   allItems = items
   renderResults(items)
@@ -1717,7 +1809,7 @@ function renderPromoFiltros(items) {
 
   const panel = document.getElementById("promo-filtros")
   const tipos = Object.keys(promoDisponibles)
-  if (tipos.length <= 1) { panel.style.display = "none"; return }
+  if (tipos.length === 0) { panel.style.display = "none"; return }
 
   panel.style.display = "block"
   const sorted = Object.entries(promoDisponibles).sort((a,b) => b[1].length - a[1].length)
