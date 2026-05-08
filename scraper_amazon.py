@@ -78,11 +78,55 @@ def _es_bot_challenge(html):
 
 # ── FETCH CON PLAYWRIGHT ────────────────────────────────────────────
 
+def _extraer_asins_js(page):
+    """
+    Extrae ASINs directamente del DOM vivo via JavaScript.
+    Más confiable que regex sobre el HTML serializado porque captura
+    atributos de React aunque no aparezcan en el innerHTML.
+    """
+    try:
+        return page.evaluate("""
+            () => {
+                const asins = new Set()
+                const pat = /^[B0-9][A-Z0-9]{9}$/
+
+                // 1. data-asin en cualquier elemento
+                document.querySelectorAll('[data-asin]').forEach(el => {
+                    const a = el.getAttribute('data-asin')
+                    if (a && pat.test(a)) asins.add(a)
+                })
+
+                // 2. Links /dp/ASIN
+                document.querySelectorAll('a[href*="/dp/"]').forEach(el => {
+                    const m = el.href.match(/\\/dp\\/([A-Z0-9]{10})/)
+                    if (m && pat.test(m[1])) asins.add(m[1])
+                })
+
+                // 3. Links /gp/product/ASIN
+                document.querySelectorAll('a[href*="/gp/product/"]').forEach(el => {
+                    const m = el.href.match(/\\/gp\\/product\\/([A-Z0-9]{10})/)
+                    if (m && pat.test(m[1])) asins.add(m[1])
+                })
+
+                // 4. JSON embebido en scripts
+                document.querySelectorAll('script').forEach(s => {
+                    const matches = s.textContent.matchAll(/"asin"\s*:\s*"([A-Z0-9]{10})"/g)
+                    for (const m of matches) if (pat.test(m[1])) asins.add(m[1])
+                })
+
+                return Array.from(asins)
+            }
+        """)
+    except Exception as e:
+        print(f"  ⚠️  JS extraction error: {e}", flush=True)
+        return []
+
+
 def _fetch_playwright(url, scrolls=6):
     """
     Abre la URL en Chromium headless, espera a que cargue la SPA y scrollea
     para disparar lazy-loading de más productos.
-    scrolls × ~1.5s ≈ tiempo de carga adicional.
+    Usa extracción JS directa sobre el DOM vivo (más confiable que regex en HTML).
     """
     print(f"  🎭 Playwright: {url[:60]}", flush=True)
     with sync_playwright() as p:
@@ -97,25 +141,35 @@ def _fetch_playwright(url, scrolls=6):
             )
             page = ctx.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=35000)
-            page.wait_for_timeout(3000)  # Dejar que React monte los componentes
+            page.wait_for_timeout(4000)  # Dejar que React monte los componentes
 
+            # Diagnóstico inicial
+            titulo = page.title()
+            html_len = page.evaluate("document.documentElement.innerHTML.length")
+            print(f"  📋 Título: {titulo[:60]} | HTML: {html_len} chars", flush=True)
+
+            if _es_bot_challenge(page.content()):
+                return [], "bot_challenge"
+
+            # Extraer ASINs antes del scroll (productos above the fold)
+            asins = set(_extraer_asins_js(page))
+            print(f"  📦 Antes de scroll: {len(asins)} ASINs", flush=True)
+
+            # Scroll progresivo para disparar lazy-load
             for i in range(scrolls):
-                page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                page.wait_for_timeout(1500)  # Esperar lazy-load por scroll
+                page.evaluate("window.scrollBy(0, window.innerHeight * 2)")
+                page.wait_for_timeout(1800)
+                nuevos = set(_extraer_asins_js(page))
+                if len(nuevos) > len(asins):
+                    print(f"  📦 Scroll {i+1}: {len(nuevos)} ASINs (+{len(nuevos)-len(asins)})", flush=True)
+                    asins = nuevos
 
-            # Scroll de vuelta arriba para capturar cualquier contenido inicial
-            page.evaluate("window.scrollTo(0, 0)")
-            page.wait_for_timeout(800)
-
-            html = page.content()
-
-            if _es_bot_challenge(html):
-                return None, "bot_challenge"
-            return html, "ok"
+            print(f"  ✅ Total ASINs extraídos por JS: {len(asins)}", flush=True)
+            return list(asins), "ok"
         except PWTimeout:
-            return None, "timeout"
+            return [], "timeout"
         except Exception as e:
-            return None, str(e)[:80]
+            return [], str(e)[:80]
         finally:
             browser.close()
 
@@ -142,39 +196,32 @@ def _fetch_requests(url):
         return None, str(e)[:80]
 
 
-# ── FETCH PRINCIPAL ─────────────────────────────────────────────────
-
-def _fetch_html(url):
-    """
-    Intenta obtener el HTML completo de una URL de Amazon.
-    Usa Playwright si está instalado; si no, cae a requests.
-    """
-    if _PLAYWRIGHT_OK:
-        html, estado = _fetch_playwright(url)
-        if html is not None:
-            return html, estado
-        print(f"  ⚠️  Playwright falló ({estado}), intentando con requests…", flush=True)
-
-    return _fetch_requests(url)
-
-
 # ── API PÚBLICA ─────────────────────────────────────────────────────
 
 def scrape_url(url_key_or_url):
     """
     Extrae ASINs de una URL de deals. Acepta key de DEALS_URLS o URL completa.
     Retorna (asins_list, estado).
+    Usa Playwright (DOM JS) si disponible; si no, fallback a requests + regex.
     """
     url   = DEALS_URLS.get(url_key_or_url, url_key_or_url)
     label = url_key_or_url if url_key_or_url in DEALS_URLS else url[:60]
 
-    html, estado = _fetch_html(url)
+    if _PLAYWRIGHT_OK:
+        asins, estado = _fetch_playwright(url)
+        if estado == "ok":
+            print(f"  📄 {label} → {len(asins)} ASINs (Playwright)", flush=True)
+            return asins, "ok"
+        print(f"  ⚠️  Playwright falló ({estado}), intentando requests…", flush=True)
+
+    # Fallback: requests + regex sobre HTML
+    html, estado = _fetch_requests(url)
     if html is None:
         print(f"  ⚠️  {label}: {estado}", flush=True)
         return [], estado
 
     asins = extraer_asins(html)
-    print(f"  📄 {label} → {len(asins)} ASINs extraídos", flush=True)
+    print(f"  📄 {label} → {len(asins)} ASINs (requests)", flush=True)
     return asins, "ok"
 
 
