@@ -165,11 +165,31 @@ def _fetch_playwright(url, scrolls=15):
                 # Pausa 5-6s: Amazon tarda ~5s en cargar el siguiente batch
                 page.wait_for_timeout(random.randint(5000, 6200))
 
+                # Detectar y pulsar el botón "Cargar ofertas" si aparece
+                boton_cargado = page.evaluate("""
+                    () => {
+                        const candidatos = Array.from(document.querySelectorAll(
+                            'button, a[role="button"], span[role="button"], [data-action]'
+                        ))
+                        const btn = candidatos.find(el => {
+                            const t = el.textContent.trim().toLowerCase()
+                            return t.includes('cargar') || t.includes('load more') ||
+                                   t.includes('ver más') || t.includes('ver mas') ||
+                                   t.includes('mostrar más') || t.includes('mostrar mas')
+                        })
+                        if (btn) { btn.click(); return btn.textContent.trim() }
+                        return null
+                    }
+                """)
+                if boton_cargado:
+                    print(f"  🖱️  Botón '{boton_cargado[:40]}' pulsado — esperando carga…", flush=True)
+                    page.wait_for_timeout(5500)  # esperar que cargue el nuevo batch
+
                 nuevos = set(_extraer_asins_js(page))
                 delta = len(nuevos) - len(asins)
                 print(f"  📦 Scroll {i+1}: {len(nuevos)} ASINs ({'+' if delta >= 0 else ''}{delta})", flush=True)
 
-                if delta == 0:
+                if delta == 0 and not boton_cargado:
                     sin_cambios += 1
                     if sin_cambios >= 3:
                         print(f"  ⏹  3 scrolls sin nuevos ASINs — página completa", flush=True)
