@@ -8,7 +8,7 @@ Normaliza al objeto oferta común compatible con Amazon.
 import json
 import re
 import time
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -56,13 +56,24 @@ def _descubrir_containers(base_url):
     return urls
 
 # ── EXTRACTOR DE JSON EMBEBIDO ───────────────────────────────────────
+def _paginar_url(url, pagina):
+    """Agrega ?_from=N para paginación ML (48 ítems por página)."""
+    if pagina <= 1:
+        return url
+    parsed  = urlparse(url)
+    params  = parse_qs(parsed.query, keep_blank_values=True)
+    params["_from"] = [str((pagina - 1) * 48)]
+    return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
+
+
 def _extraer_items_de_html(html):
     """
     Extrae el array 'items' del JSON embebido en cualquier página ML.
-    Funciona en páginas de ofertas, categorías y búsqueda.
+    Funciona en páginas de ofertas, categorías y búsqueda (cualquier página).
     """
     for script in re.findall(r'<script[^>]*>(.*?)</script>', html, re.S):
-        if '"items":[{"position":1' not in script:
+        # Buscar cualquier posición inicial, no solo 1 (para páginas 2, 3…)
+        if '"items":[{"position":' not in script:
             continue
         idx   = script.find('"items":[')
         start = script.find('[', idx)
@@ -197,23 +208,41 @@ def _convertir_listado_url(url):
     return None
 
 # ── SCRAPER DE URL ───────────────────────────────────────────────────
-def scrape_url(url, min_discount=0):
-    """Extrae todos los productos de cualquier URL de ML que tenga JSON embebido."""
+def scrape_url(url, min_discount=0, pages=1):
+    """
+    Extrae todos los productos de una URL de ML, paginando hasta `pages` páginas.
+    Usa ?_from=N (48 ítems/página). Se detiene si una página devuelve 0 ítems.
+    """
     url = _convertir_listado_url(url)
     if not url:
         return []
 
-    try:
-        r = requests.get(url, headers=_HEADERS, timeout=20)
-        r.raise_for_status()
-    except Exception as e:
-        print(f"  ❌ {url}: {e}", flush=True)
-        return []
+    resultados = []
+    label = url.split("/")[-1] or "ofertas"
 
-    raw_items  = _extraer_items_de_html(r.text)
-    resultados = [p for raw in raw_items if (p := _normalizar(raw)) is not None]
+    for pagina in range(1, pages + 1):
+        url_pag = _paginar_url(url, pagina)
+        try:
+            r = requests.get(url_pag, headers=_HEADERS, timeout=20)
+            r.raise_for_status()
+        except Exception as e:
+            print(f"  ❌ {url_pag}: {e}", flush=True)
+            break
 
-    print(f"  📄 {url.split('/')[-1] or 'ofertas'} → {len(raw_items)} raw → {len(resultados)} productos", flush=True)
+        raw_items = _extraer_items_de_html(r.text)
+        if not raw_items:
+            print(f"  📄 {label} p{pagina} → 0 raw, deteniendo", flush=True)
+            break
+
+        page_prods = [p for raw in raw_items if (p := _normalizar(raw)) is not None]
+        print(f"  📄 {label} p{pagina} → {len(raw_items)} raw → {len(page_prods)} productos", flush=True)
+        resultados.extend(page_prods)
+
+        if len(raw_items) < 20:  # Página parcial = última disponible
+            break
+        if pagina < pages:
+            time.sleep(1.2)
+
     return resultados
 
 # ── SCRAPER DESDE HTML DESCARGADO (mismo flow que Amazon) ────────────
@@ -241,11 +270,13 @@ def deduplicar(items):
 
 # ── PUNTO DE ENTRADA ────────────────────────────────────────────────
 def scrape(queries=None, urls=None, categorias=None,
-           min_discount=0, max_per_query=50, precio_min=0, precio_max=0):
+           min_discount=0, max_per_query=50, precio_min=0, precio_max=0,
+           pages=1):
     """
     queries   : ignorado (ML no tiene API pública, usar urls/categorias)
     urls      : list[str] — URLs completas de ML
     categorias: list[str] — keys de URLS_PREDEFINIDAS (ej. ['ofertas', 'electronica'])
+    pages     : páginas a scrapear por URL (para categorías/URLs personalizadas)
     """
     resultados = []
 
@@ -265,12 +296,13 @@ def scrape(queries=None, urls=None, categorias=None,
                 expanded.append(u)
         print(f"📦 ML categoría: {cat} → {len(expanded)} URL(s)", flush=True)
         for u in expanded:
-            resultados.extend(scrape_url(u))
+            # Las categorías ya usan discovery de containers; 1 página por container
+            resultados.extend(scrape_url(u, pages=1))
             time.sleep(1.2)
 
     for url in (urls or []):
         print(f"📄 ML URL: {url[:70]}", flush=True)
-        resultados.extend(scrape_url(url))
+        resultados.extend(scrape_url(url, pages=pages))
         time.sleep(1.2)
 
     # Si no se especificó nada, descubrir y scrapear todas las fuentes diarias
@@ -278,7 +310,7 @@ def scrape(queries=None, urls=None, categorias=None,
         daily_urls = _descubrir_containers(f"{ML_BASE}/ofertas")
         print(f"📦 ML: scrapeando {len(daily_urls)} fuentes diarias", flush=True)
         for u in daily_urls:
-            resultados.extend(scrape_url(u))
+            resultados.extend(scrape_url(u, pages=1))
             time.sleep(1.2)
 
     resultados = deduplicar(resultados)

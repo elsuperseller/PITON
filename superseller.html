@@ -622,7 +622,7 @@ input[type=file] {
 
         <div class="divider"></div>
 
-        <p class="hint" style="font-size:10px;">Si Amazon bloquea el acceso: abre la URL en Chrome, guarda el HTML (Cmd+S) y usa el botón de abajo.</p>
+        <p class="hint" style="font-size:10px;">Para máximos resultados instala Playwright (abre Terminal): <code style="background:#1e293b;padding:1px 4px;border-radius:3px;">pip install playwright &amp;&amp; playwright install chromium</code><br>Sin Playwright usa HTML manual: abre en Chrome, guarda (Cmd+S), sube abajo.</p>
         <div style="display:flex;gap:5px;margin-bottom:5px;">
           <button onclick="abrirUrlDeals('deals_hoy')" class="btn-xs" style="flex:1;font-size:10px;">🔥 Abrir Ofertas del Día</button>
           <button onclick="abrirUrlDeals('trending')" class="btn-xs" style="flex:1;font-size:10px;">📈 Abrir Trending</button>
@@ -1911,19 +1911,22 @@ async function buscarAmazonDeals(buckets) {
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
 
+    const pwLabel = d.playwright ? "🎭 Playwright" : "⚡ requests"
+
     if (d.total === 0 && d.hint) {
-      statusEl.textContent = "⚠️ Sin resultados — " + d.hint
+      const pwMsg = d.playwright ? "" : " — instala Playwright para mejor extracción"
+      statusEl.innerHTML = `⚠️ Sin resultados${pwMsg}<br><small style="opacity:.7">${d.hint}</small>`
       statusEl.style.color = "#f59e0b"
-      setStatus("⚠️ Amazon bloqueó el acceso automático", "error")
+      setStatus("⚠️ Amazon: sin ASINs extraídos", "error")
       return
     }
 
     allItems = d.items
     renderResults(d.items)
     updateCount()
-    statusEl.textContent = `✅ ${d.total} productos (${d.asins_encontrados} ASINs)`
+    statusEl.textContent = `✅ ${d.total} productos · ${d.asins_encontrados} ASINs · ${pwLabel}`
     statusEl.style.color = "#10b981"
-    setStatus(`✅ ${d.total} ofertas Amazon Deals`, "done")
+    setStatus(`✅ ${d.total} ofertas Amazon Deals (${pwLabel})`, "done")
 
     if (d.advertencias && d.advertencias.length) {
       console.warn("Amazon Deals advertencias:", d.advertencias)
@@ -2013,8 +2016,8 @@ async function buscarMLUrls() {
   const raw = document.getElementById("ml-urls-custom").value.trim()
   const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
   if (!urls.length) { alert("Pega al menos una URL de ML"); return }
-  statusEl.textContent = `⏳ Buscando en ${urls.length} URL(s)...`
-  await _llamarML({ urls, filtros: {} }, statusEl)
+  statusEl.textContent = `⏳ Buscando 3 páginas en ${urls.length} URL(s)...`
+  await _llamarML({ urls, filtros: {}, paginas: 3 }, statusEl)
 }
 
 async function procesarHTMLML() {

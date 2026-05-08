@@ -375,13 +375,15 @@ class Handler(BaseHTTPRequestHandler):
                 precio_min   = float(filtros.get("precio_min", 0))
                 precio_max   = float(filtros.get("precio_max", 0))
                 max_por_query= int(body.get("max_por_query", 50))
+                paginas      = int(body.get("paginas", 1))
 
-                print(f"🛒 /buscar-ml → queries={queries} cats={categorias} urls={len(urls or [])} desc≥{min_discount}%", flush=True)
+                print(f"🛒 /buscar-ml → queries={queries} cats={categorias} urls={len(urls or [])} desc≥{min_discount}% pages={paginas}", flush=True)
 
                 items = _ml.scrape(
                     queries=queries, urls=urls, categorias=categorias,
                     min_discount=min_discount, max_per_query=max_por_query,
                     precio_min=precio_min, precio_max=precio_max,
+                    pages=paginas,
                 )
 
                 self.send_response(200); self._cors()
@@ -424,6 +426,8 @@ class Handler(BaseHTTPRequestHandler):
                 body    = json.loads(self.rfile.read(length)) if length else {}
                 buckets = body.get("buckets", list(_az.DEALS_URLS.keys()))
                 min_discount = int(body.get("min_discount", 1))
+                pw_ok = _az.playwright_disponible()
+                print(f"🛒 /buscar-amazon-deals → buckets={buckets} playwright={'✅' if pw_ok else '❌'}", flush=True)
 
                 # 1. Extraer ASINs de cada bucket
                 all_asins = []
@@ -441,12 +445,18 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"🛒 /buscar-amazon-deals → {len(all_asins)} ASINs únicos de {buckets}", flush=True)
 
                 if not all_asins:
+                    hint = ("Amazon bloqueó el acceso automático. "
+                            "Instala Playwright (pip install playwright && playwright install chromium) "
+                            "para acceso completo, o abre la URL en Chrome, guarda el HTML (Cmd+S) y usa 'Procesar HTML'."
+                            if not pw_ok else
+                            "No se encontraron ASINs con Playwright. Prueba con 'Procesar HTML'.")
                     self.send_response(200); self._cors()
                     self.send_header("Content-Type", "application/json"); self.end_headers()
                     self.wfile.write(json.dumps({
                         "ok": True, "items": [], "total": 0,
+                        "playwright": pw_ok,
                         "advertencias": advertencias,
-                        "hint": "Amazon bloqueó el acceso automático. Abre la URL en Chrome, guarda el HTML (Cmd+S) y usa 'Procesar HTML'."
+                        "hint": hint,
                     }).encode())
                     return
 
@@ -505,6 +515,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({
                     "ok": True, "items": unicos, "total": len(unicos),
                     "asins_encontrados": len(all_asins),
+                    "playwright": pw_ok,
                     "advertencias": advertencias
                 }).encode())
             except Exception as e:
