@@ -10,6 +10,7 @@ Estrategia (en orden de preferencia):
      páginas SPA como /deals ya que Amazon las renderiza 100% client-side.
 """
 
+import random
 import re
 import time
 import requests
@@ -141,7 +142,8 @@ def _fetch_playwright(url, scrolls=6):
             )
             page = ctx.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=35000)
-            page.wait_for_timeout(4000)  # Dejar que React monte los componentes
+            # Espera inicial larga — Amazon tarda en montar React y cargar el primer bloque
+            page.wait_for_timeout(5000)
 
             # Diagnóstico inicial
             titulo = page.title()
@@ -151,18 +153,23 @@ def _fetch_playwright(url, scrolls=6):
             if _es_bot_challenge(page.content()):
                 return [], "bot_challenge"
 
-            # Extraer ASINs antes del scroll (productos above the fold)
+            # ASINs antes del primer scroll (above the fold)
             asins = set(_extraer_asins_js(page))
             print(f"  📦 Antes de scroll: {len(asins)} ASINs", flush=True)
 
-            # Scroll progresivo para disparar lazy-load
+            # Scroll humano: una pantalla a la vez, espera larga entre scrolls
             for i in range(scrolls):
-                page.evaluate("window.scrollBy(0, window.innerHeight * 2)")
-                page.wait_for_timeout(1800)
+                # Scroll suave de una pantalla — simula usuario leyendo la página
+                page.evaluate("window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })")
+
+                # Pausa de 5-6 segundos: Amazon necesita ~5s para cargar el siguiente batch
+                pausa = random.randint(5000, 6200)
+                page.wait_for_timeout(pausa)
+
                 nuevos = set(_extraer_asins_js(page))
-                if len(nuevos) > len(asins):
-                    print(f"  📦 Scroll {i+1}: {len(nuevos)} ASINs (+{len(nuevos)-len(asins)})", flush=True)
-                    asins = nuevos
+                delta = len(nuevos) - len(asins)
+                print(f"  📦 Scroll {i+1}: {len(nuevos)} ASINs ({'+' if delta >= 0 else ''}{delta})", flush=True)
+                asins = nuevos
 
             print(f"  ✅ Total ASINs extraídos por JS: {len(asins)}", flush=True)
             return list(asins), "ok"
