@@ -165,19 +165,32 @@ def _fetch_playwright(url, scrolls=15):
                 # Pausa 5-6s: Amazon tarda ~5s en cargar el siguiente batch
                 page.wait_for_timeout(random.randint(5000, 6200))
 
-                # Detectar y pulsar el botón "Cargar ofertas" si aparece
+                # Detectar y pulsar el botón "Ver más ofertas" / "Cargar ofertas" si aparece
                 boton_cargado = page.evaluate("""
                     () => {
+                        const norm = s => s.normalize('NFD')
+                            .replace(/[\\u0300-\\u036f]/g, '')
+                            .trim().toLowerCase()
+                        const CLAVES = [
+                            'ver mas ofertas', 'ver mas', 'cargar ofertas',
+                            'cargar mas', 'load more', 'mostrar mas',
+                            'show more', 'more deals'
+                        ]
+                        // Buscar en todos los elementos visibles e interactivos
                         const candidatos = Array.from(document.querySelectorAll(
-                            'button, a[role="button"], span[role="button"], [data-action]'
+                            'button, a, input[type="button"], input[type="submit"], ' +
+                            '[role="button"], [data-action], span[class*="load"], ' +
+                            'div[class*="load"], div[class*="more"], span[class*="more"]'
                         ))
                         const btn = candidatos.find(el => {
-                            const t = el.textContent.trim().toLowerCase()
-                            return t.includes('cargar') || t.includes('load more') ||
-                                   t.includes('ver más') || t.includes('ver mas') ||
-                                   t.includes('mostrar más') || t.includes('mostrar mas')
+                            const t = norm(el.textContent)
+                            return CLAVES.some(c => t.includes(c))
                         })
-                        if (btn) { btn.click(); return btn.textContent.trim() }
+                        if (btn) {
+                            btn.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                            btn.click()
+                            return btn.textContent.trim()
+                        }
                         return null
                     }
                 """)
