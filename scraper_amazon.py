@@ -241,8 +241,6 @@ def _fetch_playwright(url, scrolls=25):
             ctx.add_init_script(_STEALTH_SCRIPT)
             page = ctx.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=35000)
-            # Espera inicial larga — Amazon tarda en montar React y cargar el primer bloque
-            page.wait_for_timeout(5000)
 
             # Diagnóstico inicial
             titulo = page.title()
@@ -252,9 +250,24 @@ def _fetch_playwright(url, scrolls=25):
             if _es_bot_challenge(page.content()):
                 return [], "bot_challenge"
 
-            # ASINs antes del primer scroll — acumulados, nunca se pierden
+            # Espera hasta que el primer batch se estabilice (Amazon carga en dos etapas).
+            # Revisamos cada 4s; si el conteo no cambia dos veces seguidas, empezamos a scrollear.
+            print(f"  ⏳ Esperando carga inicial…", flush=True)
+            conteo_prev, estable = 0, 0
+            for _ in range(8):  # máximo 32s de espera inicial
+                page.wait_for_timeout(4000)
+                conteo_ahora = len(set(_extraer_asins_js(page)))
+                if conteo_ahora > 0 and conteo_ahora == conteo_prev:
+                    estable += 1
+                    if estable >= 2:
+                        break
+                else:
+                    estable = 0
+                conteo_prev = conteo_ahora
+
+            # ASINs antes del primer scroll
             asins = set(_extraer_asins_js(page))
-            print(f"  📦 Antes de scroll: {len(asins)} ASINs", flush=True)
+            print(f"  📦 Carga inicial estable: {len(asins)} ASINs", flush=True)
 
             # Scroll humano: 70% de pantalla a la vez para no saltarse el botón.
             # NOTA: Amazon usa scroll virtual — items de arriba desaparecen del DOM.
