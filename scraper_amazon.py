@@ -200,34 +200,35 @@ def _fetch_playwright(url, scrolls=15):
             if _es_bot_challenge(page.content()):
                 return [], "bot_challenge"
 
-            # ASINs antes del primer scroll (above the fold)
+            # ASINs antes del primer scroll — acumulados, nunca se pierden
             asins = set(_extraer_asins_js(page))
             print(f"  📦 Antes de scroll: {len(asins)} ASINs", flush=True)
 
             # Scroll humano: una pantalla a la vez, espera larga entre scrolls
-            sin_cambios = 0  # scrolls consecutivos sin nuevos ASINs
+            # NOTA: Amazon usa scroll virtual — los items de arriba desaparecen del DOM.
+            # Por eso acumulamos en `asins` en lugar de reemplazar.
+            sin_nuevos = 0  # scrolls consecutivos sin ASINs verdaderamente nuevos
             for i in range(scrolls):
                 page.evaluate("window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })")
 
-                # Pausa 5-6s: Amazon tarda ~5s en cargar el siguiente batch
-                page.wait_for_timeout(random.randint(5000, 6200))
+                # Pausa 7-9s: Amazon tarda ~5-7s en cargar el siguiente batch
+                page.wait_for_timeout(random.randint(7000, 9000))
 
-                # Detectar y pulsar el botón "Ver más ofertas" / "Cargar ofertas" si aparece
+                # Detectar y pulsar botón "Ver más ofertas" (solo coincidencia exacta)
                 boton_cargado = page.evaluate("""
                     () => {
                         const norm = s => s.normalize('NFD')
                             .replace(/[\\u0300-\\u036f]/g, '')
                             .trim().toLowerCase()
+                        // Claves que requieren la palabra "oferta/deal" para evitar falsos positivos
                         const CLAVES = [
-                            'ver mas ofertas', 'ver mas', 'cargar ofertas',
-                            'cargar mas', 'load more', 'mostrar mas',
-                            'show more', 'more deals'
+                            'ver mas ofertas', 'cargar mas ofertas', 'cargar ofertas',
+                            'mostrar mas ofertas', 'load more deals', 'show more deals',
+                            'more deals'
                         ]
-                        // Buscar en todos los elementos visibles e interactivos
                         const candidatos = Array.from(document.querySelectorAll(
                             'button, a, input[type="button"], input[type="submit"], ' +
-                            '[role="button"], [data-action], span[class*="load"], ' +
-                            'div[class*="load"], div[class*="more"], span[class*="more"]'
+                            '[role="button"], [data-action]'
                         ))
                         const btn = candidatos.find(el => {
                             const t = norm(el.textContent)
@@ -243,20 +244,21 @@ def _fetch_playwright(url, scrolls=15):
                 """)
                 if boton_cargado:
                     print(f"  🖱️  Botón '{boton_cargado[:40]}' pulsado — esperando carga…", flush=True)
-                    page.wait_for_timeout(5500)  # esperar que cargue el nuevo batch
+                    page.wait_for_timeout(6000)
 
-                nuevos = set(_extraer_asins_js(page))
-                delta = len(nuevos) - len(asins)
-                print(f"  📦 Scroll {i+1}: {len(nuevos)} ASINs ({'+' if delta >= 0 else ''}{delta})", flush=True)
+                # Acumular — nunca reemplazar (scroll virtual elimina items del DOM)
+                visibles = set(_extraer_asins_js(page))
+                nuevos   = visibles - asins
+                asins   |= visibles
+                print(f"  📦 Scroll {i+1}: {len(asins)} acumulados (+{len(nuevos)} nuevos)", flush=True)
 
-                if delta == 0 and not boton_cargado:
-                    sin_cambios += 1
-                    if sin_cambios >= 3:
-                        print(f"  ⏹  3 scrolls sin nuevos ASINs — página completa", flush=True)
+                if len(nuevos) == 0 and not boton_cargado:
+                    sin_nuevos += 1
+                    if sin_nuevos >= 3:
+                        print(f"  ⏹  3 scrolls sin ASINs nuevos — página completa", flush=True)
                         break
                 else:
-                    sin_cambios = 0
-                asins = nuevos
+                    sin_nuevos = 0
 
             print(f"  ✅ Total ASINs extraídos por JS: {len(asins)}", flush=True)
             return list(asins), "ok"
