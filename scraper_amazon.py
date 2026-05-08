@@ -123,7 +123,7 @@ def _extraer_asins_js(page):
         return []
 
 
-def _fetch_playwright(url, scrolls=6):
+def _fetch_playwright(url, scrolls=15):
     """
     Abre la URL en Chromium headless, espera a que cargue la SPA y scrollea
     para disparar lazy-loading de más productos.
@@ -158,17 +158,24 @@ def _fetch_playwright(url, scrolls=6):
             print(f"  📦 Antes de scroll: {len(asins)} ASINs", flush=True)
 
             # Scroll humano: una pantalla a la vez, espera larga entre scrolls
+            sin_cambios = 0  # scrolls consecutivos sin nuevos ASINs
             for i in range(scrolls):
-                # Scroll suave de una pantalla — simula usuario leyendo la página
                 page.evaluate("window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })")
 
-                # Pausa de 5-6 segundos: Amazon necesita ~5s para cargar el siguiente batch
-                pausa = random.randint(5000, 6200)
-                page.wait_for_timeout(pausa)
+                # Pausa 5-6s: Amazon tarda ~5s en cargar el siguiente batch
+                page.wait_for_timeout(random.randint(5000, 6200))
 
                 nuevos = set(_extraer_asins_js(page))
                 delta = len(nuevos) - len(asins)
                 print(f"  📦 Scroll {i+1}: {len(nuevos)} ASINs ({'+' if delta >= 0 else ''}{delta})", flush=True)
+
+                if delta == 0:
+                    sin_cambios += 1
+                    if sin_cambios >= 3:
+                        print(f"  ⏹  3 scrolls sin nuevos ASINs — página completa", flush=True)
+                        break
+                else:
+                    sin_cambios = 0
                 asins = nuevos
 
             print(f"  ✅ Total ASINs extraídos por JS: {len(asins)}", flush=True)
