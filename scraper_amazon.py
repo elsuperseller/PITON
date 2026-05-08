@@ -158,7 +158,59 @@ _STEALTH_SCRIPT = """
     }
 """
 
-def _fetch_playwright(url, scrolls=15):
+def _click_load_more(page):
+    """
+    Intenta detectar y pulsar el botón "Ver más ofertas" usando tres estrategias
+    en orden de confiabilidad: API nativa Playwright → texto parcial → JS querySelector.
+    Retorna el texto del botón si lo encontró y pulsó, o None.
+    """
+    TEXTOS = ["Ver más ofertas", "Cargar más ofertas", "Load more deals",
+              "Mostrar más ofertas", "Ver más deals"]
+
+    # Estrategia 1: locator por texto exacto (Playwright nativo — más confiable)
+    for texto in TEXTOS:
+        try:
+            loc = page.get_by_role("button", name=texto, exact=False)
+            if loc.count() > 0 and loc.first.is_visible():
+                loc.first.scroll_into_view_if_needed()
+                loc.first.click()
+                return texto
+        except Exception:
+            pass
+
+    # Estrategia 2: cualquier elemento visible con esos textos
+    for texto in TEXTOS:
+        try:
+            loc = page.get_by_text(texto, exact=False)
+            if loc.count() > 0 and loc.first.is_visible():
+                loc.first.scroll_into_view_if_needed()
+                loc.first.click()
+                return texto
+        except Exception:
+            pass
+
+    # Estrategia 3: JavaScript con normalización de acentos (fallback)
+    resultado = page.evaluate("""
+        () => {
+            const norm = s => s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim().toLowerCase()
+            const CLAVES = ['ver mas ofertas','cargar mas ofertas','load more deals',
+                            'mostrar mas ofertas','more deals']
+            const all = Array.from(document.querySelectorAll(
+                'button, a, [role="button"], [data-action], span, div'
+            ))
+            const btn = all.find(el => {
+                if (!el.offsetParent) return false  // ignorar elementos ocultos
+                const t = norm(el.textContent)
+                return CLAVES.some(c => t === c || t.startsWith(c))
+            })
+            if (btn) { btn.scrollIntoView({behavior:'smooth',block:'center'}); btn.click(); return btn.textContent.trim() }
+            return null
+        }
+    """)
+    return resultado
+
+
+def _fetch_playwright(url, scrolls=25):
     """
     Abre la URL con Chrome del sistema (o Chromium con stealth patches),
     scrollea y extrae ASINs del DOM vivo.
@@ -204,49 +256,23 @@ def _fetch_playwright(url, scrolls=15):
             asins = set(_extraer_asins_js(page))
             print(f"  📦 Antes de scroll: {len(asins)} ASINs", flush=True)
 
-            # Scroll humano: una pantalla a la vez, espera larga entre scrolls
-            # NOTA: Amazon usa scroll virtual — los items de arriba desaparecen del DOM.
-            # Por eso acumulamos en `asins` en lugar de reemplazar.
-            sin_nuevos = 0  # scrolls consecutivos sin ASINs verdaderamente nuevos
+            # Scroll humano: 70% de pantalla a la vez para no saltarse el botón.
+            # NOTA: Amazon usa scroll virtual — items de arriba desaparecen del DOM.
+            # Por eso acumulamos con |= en lugar de reemplazar.
+            sin_nuevos = 0
             for i in range(scrolls):
-                page.evaluate("window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })")
+                page.evaluate("window.scrollBy({ top: Math.round(window.innerHeight * 0.7), behavior: 'smooth' })")
 
                 # Pausa 7-9s: Amazon tarda ~5-7s en cargar el siguiente batch
                 page.wait_for_timeout(random.randint(7000, 9000))
 
-                # Detectar y pulsar botón "Ver más ofertas" (solo coincidencia exacta)
-                boton_cargado = page.evaluate("""
-                    () => {
-                        const norm = s => s.normalize('NFD')
-                            .replace(/[\\u0300-\\u036f]/g, '')
-                            .trim().toLowerCase()
-                        // Claves que requieren la palabra "oferta/deal" para evitar falsos positivos
-                        const CLAVES = [
-                            'ver mas ofertas', 'cargar mas ofertas', 'cargar ofertas',
-                            'mostrar mas ofertas', 'load more deals', 'show more deals',
-                            'more deals'
-                        ]
-                        const candidatos = Array.from(document.querySelectorAll(
-                            'button, a, input[type="button"], input[type="submit"], ' +
-                            '[role="button"], [data-action]'
-                        ))
-                        const btn = candidatos.find(el => {
-                            const t = norm(el.textContent)
-                            return CLAVES.some(c => t.includes(c))
-                        })
-                        if (btn) {
-                            btn.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                            btn.click()
-                            return btn.textContent.trim()
-                        }
-                        return null
-                    }
-                """)
+                # Detectar y pulsar "Ver más ofertas" (3 estrategias)
+                boton_cargado = _click_load_more(page)
                 if boton_cargado:
                     print(f"  🖱️  Botón '{boton_cargado[:40]}' pulsado — esperando carga…", flush=True)
                     page.wait_for_timeout(6000)
 
-                # Acumular — nunca reemplazar (scroll virtual elimina items del DOM)
+                # Acumular — nunca reemplazar
                 visibles = set(_extraer_asins_js(page))
                 nuevos   = visibles - asins
                 asins   |= visibles
@@ -254,8 +280,8 @@ def _fetch_playwright(url, scrolls=15):
 
                 if len(nuevos) == 0 and not boton_cargado:
                     sin_nuevos += 1
-                    if sin_nuevos >= 3:
-                        print(f"  ⏹  3 scrolls sin ASINs nuevos — página completa", flush=True)
+                    if sin_nuevos >= 5:
+                        print(f"  ⏹  5 scrolls sin ASINs nuevos — página completa", flush=True)
                         break
                 else:
                     sin_nuevos = 0
