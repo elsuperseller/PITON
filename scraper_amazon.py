@@ -123,23 +123,70 @@ def _extraer_asins_js(page):
         return []
 
 
+_STEALTH_SCRIPT = """
+    // Ocultar flag navigator.webdriver (señal más obvia de headless)
+    Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+
+    // Simular chrome object (ausente en Chromium headless puro)
+    window.chrome = {
+        app: { isInstalled: false, InstallState: {}, RunningState: {} },
+        runtime: { OnInstalledReason: {}, PlatformOs: {}, PlatformArch: {} }
+    };
+
+    // Simular plugins (headless = 0 plugins, real Chrome tiene 3+)
+    Object.defineProperty(navigator, 'plugins', {
+        get: () => {
+            const fakePlugin = (n, d, f) => Object.assign(Object.create(Plugin.prototype), {name:n, description:d, filename:f, length:1});
+            return Object.assign([
+                fakePlugin('Chrome PDF Plugin','Portable Document Format','internal-pdf-viewer'),
+                fakePlugin('Chrome PDF Viewer','','mhjfbmdgcfjbbpaeojofohoefgiehjai'),
+                fakePlugin('Native Client','','internal-nacl-plugin'),
+            ], {item: i => this[i], namedItem: n => null, refresh: ()=>{}});
+        }
+    });
+
+    // Idioma consistente con el contexto
+    Object.defineProperty(navigator, 'languages', {get: () => ['es-MX', 'es', 'en-US', 'en']});
+
+    // Permissions API — headless siempre devuelve 'denied', real Chrome varía
+    const origQuery = window.navigator.permissions?.query;
+    if (origQuery) {
+        window.navigator.permissions.query = params =>
+            params.name === 'notifications'
+                ? Promise.resolve({state: Notification.permission})
+                : origQuery(params);
+    }
+"""
+
 def _fetch_playwright(url, scrolls=15):
     """
-    Abre la URL en Chromium headless, espera a que cargue la SPA y scrollea
-    para disparar lazy-loading de más productos.
-    Usa extracción JS directa sobre el DOM vivo (más confiable que regex en HTML).
+    Abre la URL con Chrome del sistema (o Chromium con stealth patches),
+    scrollea y extrae ASINs del DOM vivo.
     """
     print(f"  🎭 Playwright: {url[:60]}", flush=True)
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        # Intentar con Chrome del sistema primero (menos detectable que Chromium bundled)
+        try:
+            browser = p.chromium.launch(
+                channel="chrome",
+                headless=True,
+                args=["--disable-blink-features=AutomationControlled"],
+            )
+            print(f"  🌐 Usando Chrome del sistema", flush=True)
+        except Exception:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--disable-blink-features=AutomationControlled"],
+            )
+            print(f"  🌐 Usando Chromium bundled", flush=True)
         try:
             ctx = browser.new_context(
                 locale="es-MX",
-                extra_http_headers={
-                    "Accept-Language": "es-MX,es;q=0.9",
-                    "User-Agent": _HEADERS["User-Agent"],
-                }
+                viewport={"width": 1366, "height": 768},
+                extra_http_headers={"Accept-Language": "es-MX,es;q=0.9"},
+                user_agent=_HEADERS["User-Agent"],
             )
+            ctx.add_init_script(_STEALTH_SCRIPT)
             page = ctx.new_page()
             page.goto(url, wait_until="domcontentloaded", timeout=35000)
             # Espera inicial larga — Amazon tarda en montar React y cargar el primer bloque
