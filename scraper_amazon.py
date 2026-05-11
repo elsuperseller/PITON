@@ -14,6 +14,7 @@ import random
 import re
 import time
 import requests
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 # ── PLAYWRIGHT OPCIONAL ─────────────────────────────────────────────
 try:
@@ -368,6 +369,114 @@ def extraer_asins_de_html(html_texto):
     asins = extraer_asins(html_texto)
     print(f"  📄 HTML manual → {len(asins)} ASINs", flush=True)
     return asins
+
+
+def _fetch_playwright_pages(url, pages=3):
+    """
+    Navega por páginas 1-N de una URL de búsqueda/categoría Amazon
+    reutilizando el mismo browser (sin re-lanzar entre páginas).
+    Añade &page=N a la URL para paginar.
+    """
+    with sync_playwright() as p:
+        try:
+            browser = p.chromium.launch(
+                channel="chrome", headless=True,
+                args=["--disable-blink-features=AutomationControlled"]
+            )
+            print(f"  🌐 Usando Chrome del sistema", flush=True)
+        except Exception:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--disable-blink-features=AutomationControlled"]
+            )
+            print(f"  🌐 Usando Chromium bundled", flush=True)
+        try:
+            ctx = browser.new_context(
+                locale="es-MX",
+                viewport={"width": 1366, "height": 768},
+                extra_http_headers={"Accept-Language": "es-MX,es;q=0.9"},
+                user_agent=_HEADERS["User-Agent"],
+            )
+            ctx.add_init_script(_STEALTH_SCRIPT)
+            pg = ctx.new_page()
+
+            all_asins = set()
+            for num in range(1, pages + 1):
+                # Construir URL paginada
+                if num == 1:
+                    page_url = url
+                else:
+                    parsed = urlparse(url)
+                    params  = parse_qs(parsed.query, keep_blank_values=True)
+                    params["page"] = [str(num)]
+                    page_url = urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
+
+                print(f"  📄 Amazon p{num}: {page_url[:70]}", flush=True)
+                pg.goto(page_url, wait_until="domcontentloaded", timeout=30000)
+                pg.wait_for_timeout(random.randint(3500, 4500))
+
+                if _es_bot_challenge(pg.content()):
+                    print(f"  ⚠️  Bot challenge en página {num}", flush=True)
+                    break
+
+                visibles = set(_extraer_asins_js(pg))
+                nuevos   = visibles - all_asins
+                all_asins |= visibles
+                print(f"  📦 p{num}: {len(all_asins)} ASINs acumulados (+{len(nuevos)} nuevos)", flush=True)
+
+                if not nuevos:
+                    print(f"  ⏹  Sin ASINs nuevos — fin de resultados", flush=True)
+                    break
+
+                if num < pages:
+                    time.sleep(random.uniform(2.0, 3.5))
+
+            return list(all_asins), "ok"
+        except PWTimeout:
+            return [], "timeout"
+        except Exception as e:
+            return [], str(e)[:80]
+        finally:
+            browser.close()
+
+
+def scrape_url_custom(url, pages=3):
+    """
+    Scrapea una URL arbitraria de Amazon con paginación.
+    - URLs /deals → usa el scroll approach existente (scrolls profundos)
+    - Otras URLs → navega por &page=1..N en el mismo browser
+    Retorna (asins_list, estado).
+    """
+    if "/deals" in url or "bubble-id" in url:
+        return scrape_url(url)  # scroll approach
+
+    label = url[:60]
+    if _PLAYWRIGHT_OK:
+        asins, estado = _fetch_playwright_pages(url, pages=pages)
+        if estado == "ok":
+            print(f"  📄 {label} → {len(asins)} ASINs ({pages} páginas)", flush=True)
+        return asins, estado
+
+    # Fallback requests
+    all_asins, seen = [], set()
+    for num in range(1, pages + 1):
+        if num == 1:
+            page_url = url
+        else:
+            parsed = urlparse(url)
+            params  = parse_qs(parsed.query, keep_blank_values=True)
+            params["page"] = [str(num)]
+            page_url = urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
+        html, estado = _fetch_requests(page_url)
+        if not html:
+            break
+        nuevos = [a for a in extraer_asins(html) if a not in seen]
+        if not nuevos:
+            break
+        seen.update(nuevos)
+        all_asins.extend(nuevos)
+        time.sleep(1.5)
+    return all_asins, "ok"
 
 
 def playwright_disponible():

@@ -418,6 +418,85 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path == "/buscar-amazon-url":
+            try:
+                if not _AZ_OK:
+                    raise ImportError("scraper_amazon no disponible")
+                length = int(self.headers.get("Content-Length", 0))
+                body   = json.loads(self.rfile.read(length)) if length else {}
+                urls         = body.get("urls", [])
+                pages        = int(body.get("pages", 3))
+                min_discount = int(body.get("min_discount", 1))
+
+                if not urls:
+                    raise ValueError("Se requiere al menos una URL")
+
+                print(f"🛒 /buscar-amazon-url → {len(urls)} URL(s), {pages} páginas c/u", flush=True)
+
+                all_asins, vistos = [], set()
+                for url in urls:
+                    asins, _ = _az.scrape_url_custom(url, pages=pages)
+                    for a in asins:
+                        if a not in vistos:
+                            vistos.add(a)
+                            all_asins.append(a)
+
+                print(f"  → {len(all_asins)} ASINs únicos, enriqueciendo…", flush=True)
+
+                if not all_asins:
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({"ok": True, "items": [], "total": 0,
+                        "hint": "Sin ASINs encontrados. Verifica que las URLs sean de Amazon MX."}).encode())
+                    return
+
+                token = get_token()
+                api_headers = {"Authorization": f"Bearer {token}",
+                               "Content-Type": "application/json",
+                               "x-marketplace": "www.amazon.com.mx"}
+                resultados = []
+                for asin in all_asins:
+                    try:
+                        r = requests.post(
+                            "https://creatorsapi.amazon/catalog/v1/searchItems",
+                            headers=api_headers,
+                            json={"partnerTag": CREDS["partner_tag"], "marketplace": "www.amazon.com.mx",
+                                  "searchIndex": "All", "keywords": asin, "itemCount": 1, "itemPage": 1,
+                                  "languagesOfPreference": ["es_MX"], "currencyOfPreference": "MXN",
+                                  "resources": ["itemInfo.title", "images.primary.medium",
+                                                "offersV2.listings.price", "offersV2.listings.dealDetails",
+                                                "offersV2.listings.isBuyBoxWinner"]},
+                            timeout=15
+                        )
+                        if r.status_code != 200:
+                            continue
+                        items = r.json().get("searchResult", {}).get("items", [])
+                        if not items:
+                            continue
+                        p = parsear_item(items[0])
+                        if p and p["descuento_pct"] >= min_discount:
+                            resultados.append(p)
+                        time.sleep(0.4)
+                    except Exception as e:
+                        print(f"  ❌ {asin}: {e}", flush=True)
+
+                seen, unicos = set(), []
+                for p in resultados:
+                    if p["asin"] not in seen:
+                        seen.add(p["asin"])
+                        unicos.append(p)
+
+                print(f"  → {len(unicos)} productos con descuento", flush=True)
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "items": unicos,
+                    "total": len(unicos), "asins": len(all_asins)}).encode())
+            except Exception as e:
+                print(f"❌ /buscar-amazon-url: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         elif self.path == "/buscar-amazon-deals":
             try:
                 if not _AZ_OK:

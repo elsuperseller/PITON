@@ -622,6 +622,16 @@ input[type=file] {
 
         <div class="divider"></div>
 
+        <div class="divider"></div>
+
+        <!-- URLs personalizadas Amazon -->
+        <p class="hint">Pega URLs de Amazon (búsquedas, categorías, etc.).</p>
+        <textarea id="amz-urls-custom" class="inp" style="height:60px;font-size:11px;" placeholder="https://www.amazon.com.mx/s?k=laptop&#10;https://www.amazon.com.mx/b?node=9482558011"></textarea>
+        <button onclick="buscarAmazonUrls()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs (3 págs.)</button>
+        <div id="amz-urls-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
         <p class="hint" style="font-size:10px;">Para máximos resultados instala Playwright (abre Terminal): <code style="background:#1e293b;padding:1px 4px;border-radius:3px;">pip install playwright &amp;&amp; playwright install chromium</code><br>Sin Playwright usa HTML manual: abre en Chrome, guarda (Cmd+S), sube abajo.</p>
         <div style="display:flex;gap:5px;margin-bottom:5px;">
           <button onclick="abrirUrlDeals('deals_hoy')" class="btn-xs" style="flex:1;font-size:10px;">🔥 Abrir Ofertas del Día</button>
@@ -1936,6 +1946,48 @@ async function buscarAmazonDeals(buckets) {
     statusEl.textContent = "❌ " + e.message
     statusEl.style.color = "#ef4444"
     setStatus("❌ Error Amazon Deals: " + e.message, "error")
+  } finally {
+    mostrarBtnDetener(false)
+  }
+}
+
+async function buscarAmazonUrls() {
+  const statusEl = document.getElementById("amz-urls-status")
+  const raw  = document.getElementById("amz-urls-custom").value.trim()
+  const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
+  if (!urls.length) { alert("Pega al menos una URL de Amazon"); return }
+  statusEl.style.display = "block"
+  statusEl.style.color = "#ff9900"
+  statusEl.textContent = `⏳ Buscando 3 páginas en ${urls.length} URL(s)…`
+  setStatus("⏳ Buscando Amazon URLs…", "running")
+  mostrarBtnDetener(true)
+  _abortController = new AbortController()
+  try {
+    const r = await fetch("http://localhost:8765/buscar-amazon-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls, pages: 3, min_discount: 1 }),
+      signal: _abortController.signal
+    })
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+    if (d.total === 0) {
+      statusEl.textContent = d.hint || "⚠️ Sin resultados"
+      statusEl.style.color = "#f59e0b"
+      setStatus("⚠️ Sin resultados Amazon URL", "error")
+      return
+    }
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+    statusEl.textContent = `✅ ${d.total} productos · ${d.asins} ASINs`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${d.total} productos Amazon desde URLs`, "done")
+  } catch(e) {
+    if (e.name === "AbortError") return
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ " + e.message, "error")
   } finally {
     mostrarBtnDetener(false)
   }
