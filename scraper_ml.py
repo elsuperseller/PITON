@@ -178,31 +178,35 @@ def _normalizar(raw):
 # ── CONVERSOR DE URLs LISTADO → OFERTAS ─────────────────────────────
 def _convertir_listado_url(url):
     """
-    Las páginas listado.mercadolibre.com.mx/_Container_* son SPAs vacías.
-    El container_id real está en el fragment (#). Lo extrae y construye
+    Las páginas listado.mercadolibre.com.mx/* son SPAs vacías.
+    Extrae el container_id desde tres lugares posibles y construye
     la URL de ofertas equivalente que sí tiene JSON embebido.
     """
     if "listado.mercadolibre.com.mx" not in url:
         return url
 
     parsed   = urlparse(url)
-    fragment = parsed.fragment  # todo lo que viene después del #
 
-    # Buscar container_id en el fragment
-    m = re.search(r'container_id=([A-Z0-9_\-]+)', fragment)
+    # 1. container_id= en el fragment (ej. #...container_id=MLM1234)
+    m = re.search(r'container_id=([A-Za-z0-9_\-]+)', parsed.fragment)
     if m:
-        container_id = m.group(1)
-        nueva = f"{ML_BASE}/ofertas?container_id={container_id}"
-        print(f"  🔄 Listado → ofertas: container_id={container_id}", flush=True)
-        return nueva
+        cid = m.group(1)
+        print(f"  🔄 Listado → ofertas (fragment): {cid}", flush=True)
+        return f"{ML_BASE}/ofertas?container_id={cid}"
 
-    # Si no hay fragment, intentar con la URL base sin fragment (algunos tienen query param)
-    m2 = re.search(r'container_id=([A-Z0-9_\-]+)', url)
+    # 2. container_id= en query params (ej. ?container_id=MLM1234)
+    m2 = re.search(r'container_id=([A-Za-z0-9_\-]+)', parsed.query)
     if m2:
-        container_id = m2.group(1)
-        nueva = f"{ML_BASE}/ofertas?container_id={container_id}"
-        print(f"  🔄 Listado → ofertas: container_id={container_id}", flush=True)
-        return nueva
+        cid = m2.group(1)
+        print(f"  🔄 Listado → ofertas (query): {cid}", flush=True)
+        return f"{ML_BASE}/ofertas?container_id={cid}"
+
+    # 3. _Container_ID en el path (ej. /_Envio_Full_Discount_15-100_Container_ao-landing-all)
+    m3 = re.search(r'_Container_([A-Za-z0-9][A-Za-z0-9_\-]*)', parsed.path)
+    if m3:
+        cid = m3.group(1)
+        print(f"  🔄 Listado → ofertas (path): {cid}", flush=True)
+        return f"{ML_BASE}/ofertas?container_id={cid}"
 
     print(f"  ⚠️  Listado sin container_id reconocible, ignorando: {url[:70]}", flush=True)
     return None
