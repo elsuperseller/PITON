@@ -5,6 +5,7 @@ import json
 import requests
 import re
 import os
+import sys as _sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import time
@@ -843,9 +844,19 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # Suprimir logs de HTTP
 
+class _Servidor(HTTPServer):
+    """HTTPServer que suprime BrokenPipeError (cliente cierra conexión antes de recibir respuesta)."""
+    def handle_error(self, request, client_address):
+        exc = _sys.exc_info()[1]
+        if isinstance(exc, BrokenPipeError):
+            print("⚠️  Cliente desconectado — respuesta descartada (BrokenPipe)", flush=True)
+        else:
+            super().handle_error(request, client_address)
+
+
 if __name__ == "__main__":
     port = 8765
     print(f"\n⚡ Superseller Servidor corriendo en http://localhost:{port}")
     print(f"   👉 Abre en Chrome: http://localhost:{port}")
     print("   Ctrl+C para detener\n")
-    HTTPServer(("localhost", port), Handler).serve_forever()
+    _Servidor(("localhost", port), Handler).serve_forever()

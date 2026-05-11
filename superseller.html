@@ -1892,6 +1892,21 @@ function selectAllPromos(v) {
   aplicarFiltroPromos()
 }
 
+// Fetch con timeout largo para operaciones Playwright (scraping puede tardar 3-5 min)
+async function fetchConTimeout(url, opts, timeoutMs = 600000) {
+  const ctrl = new AbortController()
+  _abortController = ctrl  // permite "Detener" del usuario
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const r = await fetch(url, { ...opts, signal: ctrl.signal })
+    clearTimeout(timer)
+    return r
+  } catch(e) {
+    clearTimeout(timer)
+    throw e
+  }
+}
+
 // ── AMAZON DEALS ───────────────────────────────────────────────────
 const AMZ_DEALS_URLS = {
   deals_hoy: "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&bubble-id=discounts-collection-deals-started-today",
@@ -1910,13 +1925,11 @@ async function buscarAmazonDeals(buckets) {
   statusEl.textContent = "⏳ Buscando ofertas..."
   setStatus("⏳ Buscando Amazon Deals...", "running")
   mostrarBtnDetener(true)
-  _abortController = new AbortController()
   try {
-    const r = await fetch("http://localhost:8765/buscar-amazon-deals", {
+    const r = await fetchConTimeout("http://localhost:8765/buscar-amazon-deals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ buckets, min_discount: 1 }),
-      signal: _abortController.signal
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -1961,13 +1974,11 @@ async function buscarAmazonUrls() {
   statusEl.textContent = `⏳ Buscando 3 páginas en ${urls.length} URL(s)…`
   setStatus("⏳ Buscando Amazon URLs…", "running")
   mostrarBtnDetener(true)
-  _abortController = new AbortController()
   try {
-    const r = await fetch("http://localhost:8765/buscar-amazon-url", {
+    const r = await fetchConTimeout("http://localhost:8765/buscar-amazon-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ urls, pages: 3, min_discount: 1 }),
-      signal: _abortController.signal
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
