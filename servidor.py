@@ -372,7 +372,7 @@ class Handler(BaseHTTPRequestHandler):
                 queries      = body.get("queries")      or None
                 urls         = body.get("urls")         or None
                 categorias   = body.get("categorias")   or None
-                min_discount = int(filtros.get("descuento_min", 15))
+                min_discount = int(filtros.get("descuento_min", 0))
                 precio_min   = float(filtros.get("precio_min", 0))
                 precio_max   = float(filtros.get("precio_max", 0))
                 max_por_query= int(body.get("max_por_query", 50))
@@ -427,20 +427,36 @@ class Handler(BaseHTTPRequestHandler):
                 body   = json.loads(self.rfile.read(length)) if length else {}
                 urls         = body.get("urls", [])
                 pages        = int(body.get("pages", 3))
-                min_discount = int(body.get("min_discount", 1))
+                min_discount = int(body.get("min_discount", 0))
 
                 if not urls:
                     raise ValueError("Se requiere al menos una URL")
 
+                for i, u in enumerate(urls):
+                    print(f"  🔎 URL[{i}] len={len(u)}: {repr(u)}", flush=True)
+
                 print(f"🛒 /buscar-amazon-url → {len(urls)} URL(s), {pages} páginas c/u", flush=True)
 
+                _ZG = ("/gp/movers-and-shakers/", "/gp/bestsellers/", "/gp/new-releases/", "/zgbs/")
+                zg_urls   = [u for u in urls if any(p in u for p in _ZG)]
+                rest_urls = [u for u in urls if not any(p in u for p in _ZG)]
+
                 all_asins, vistos = [], set()
-                for url in urls:
+
+                # Ranking ZG: un solo browser para todas las URLs
+                if zg_urls:
+                    print(f"  📊 Batch ranking: {len(zg_urls)} URL(s) en 1 browser", flush=True)
+                    asins, _ = _az.scrape_zg_batch(zg_urls, pages=pages)
+                    for a in asins:
+                        if a not in vistos:
+                            vistos.add(a); all_asins.append(a)
+
+                # Resto de URLs (búsquedas, categorías, stores, etc.)
+                for url in rest_urls:
                     asins, _ = _az.scrape_url_custom(url, pages=pages)
                     for a in asins:
                         if a not in vistos:
-                            vistos.add(a)
-                            all_asins.append(a)
+                            vistos.add(a); all_asins.append(a)
 
                 print(f"  → {len(all_asins)} ASINs únicos, enriqueciendo…", flush=True)
 
@@ -505,7 +521,7 @@ class Handler(BaseHTTPRequestHandler):
                 length  = int(self.headers.get("Content-Length", 0))
                 body    = json.loads(self.rfile.read(length)) if length else {}
                 buckets = body.get("buckets", list(_az.DEALS_URLS.keys()))
-                min_discount = int(body.get("min_discount", 1))
+                min_discount = int(body.get("min_discount", 0))
                 pw_ok = _az.playwright_disponible()
                 print(f"🛒 /buscar-amazon-deals → buckets={buckets} playwright={'✅' if pw_ok else '❌'}", flush=True)
 

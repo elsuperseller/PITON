@@ -69,6 +69,10 @@ def extraer_asins(html):
     asins.update(re.findall(r'data-asin="([A-Z0-9]{10})"', html))
     asins.update(re.findall(r'/dp/([A-Z0-9]{10})', html))
     asins.update(re.findall(r'"asin"\s*:\s*"([A-Z0-9]{10})"', html))
+    asins.update(re.findall(r'"ASIN"\s*:\s*"([A-Z0-9]{10})"', html))
+    # sspa/click links: /sspa/click?...&asin=B0XXXX o itemASIN=B0XXXX
+    asins.update(re.findall(r'[?&]asin=([A-Z0-9]{10})', html))
+    asins.update(re.findall(r'itemASIN=([A-Z0-9]{10})', html))
 
     return [a for a in asins if re.match(r'^[B0-9][A-Z0-9]{9}$', a)]
 
@@ -440,15 +444,287 @@ def _fetch_playwright_pages(url, pages=3):
             browser.close()
 
 
+def _extraer_asins_todos_frames(page):
+    """
+    Extrae ASINs del frame principal Y de todos los iframes.
+    Amazon Stores embebe cada widget en un iframe — los productos no están en el frame principal.
+    También corre regex sobre el HTML serializado como red de seguridad.
+    """
+    all_asins = set()
+
+    # Frame principal via JS
+    all_asins.update(_extraer_asins_js(page))
+
+    # Todos los sub-frames (iframes de widgets)
+    for frame in page.frames:
+        if frame == page.main_frame:
+            continue
+        try:
+            frame_asins = frame.evaluate("""
+                () => {
+                    const asins = new Set()
+                    const pat = /^[B0-9][A-Z0-9]{9}$/
+                    document.querySelectorAll('[data-asin]').forEach(el => {
+                        const a = el.getAttribute('data-asin')
+                        if (a && pat.test(a)) asins.add(a)
+                    })
+                    document.querySelectorAll('a[href*=\"/dp/\"]').forEach(el => {
+                        const m = el.href.match(/\\/dp\\/([A-Z0-9]{10})/)
+                        if (m && pat.test(m[1])) asins.add(m[1])
+                    })
+                    document.querySelectorAll('a[href*=\"/gp/product/\"]').forEach(el => {
+                        const m = el.href.match(/\\/gp\\/product\\/([A-Z0-9]{10})/)
+                        if (m && pat.test(m[1])) asins.add(m[1])
+                    })
+                    document.querySelectorAll('script').forEach(s => {
+                        const ms = s.textContent.matchAll(/"asin"\\s*:\\s*"([A-Z0-9]{10})"/g)
+                        for (const m of ms) if (pat.test(m[1])) asins.add(m[1])
+                    })
+                    return Array.from(asins)
+                }
+            """)
+            all_asins.update(frame_asins)
+        except Exception:
+            try:
+                all_asins.update(extraer_asins(frame.content()))
+            except Exception:
+                pass
+
+    # Regex sobre el HTML completo del frame principal como red de seguridad
+    try:
+        all_asins.update(extraer_asins(page.content()))
+    except Exception:
+        pass
+
+    return list(all_asins)
+
+
+def _fetch_playwright_store(url):
+    """
+    Maneja páginas de Amazon Stores (/stores/) que son SPA completas (React).
+    Los productos viven dentro de iframes de widgets, no en el frame principal.
+    """
+    with sync_playwright() as p:
+        try:
+            browser = p.chromium.launch(
+                channel="chrome", headless=True,
+                args=["--disable-blink-features=AutomationControlled"]
+            )
+            print(f"  🌐 Usando Chrome del sistema (store)", flush=True)
+        except Exception:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--disable-blink-features=AutomationControlled"]
+            )
+            print(f"  🌐 Usando Chromium bundled (store)", flush=True)
+        try:
+            ctx = browser.new_context(
+                locale="es-MX",
+                viewport={"width": 1366, "height": 768},
+                extra_http_headers={"Accept-Language": "es-MX,es;q=0.9"},
+                user_agent=_HEADERS["User-Agent"],
+            )
+            ctx.add_init_script(_STEALTH_SCRIPT)
+            pg = ctx.new_page()
+
+            print(f"  📄 Store: {url[:100]}", flush=True)
+            pg.goto(url, wait_until="networkidle", timeout=45000)
+            pg.wait_for_timeout(4000)
+
+            titulo = pg.title()
+            n_frames = len(pg.frames)
+            html_len = len(pg.content())
+            print(f"  📋 '{titulo[:50]}' | {html_len} chars | {n_frames} frames", flush=True)
+
+            if _es_bot_challenge(pg.content()):
+                return [], "bot_challenge"
+
+            all_asins = set(_extraer_asins_todos_frames(pg))
+            print(f"  📦 Carga inicial: {len(all_asins)} ASINs ({n_frames} frames)", flush=True)
+
+            # Scroll para activar lazy loading de widgets/iframes
+            sin_nuevos = 0
+            for i in range(15):
+                pg.evaluate("window.scrollBy({ top: Math.round(window.innerHeight * 0.8), behavior: 'smooth' })")
+                pg.wait_for_timeout(random.randint(1800, 2800))
+
+                visibles = set(_extraer_asins_todos_frames(pg))
+                nuevos = visibles - all_asins
+                all_asins |= visibles
+
+                if nuevos:
+                    print(f"  📦 Scroll {i+1}: {len(all_asins)} ASINs (+{len(nuevos)} nuevos)", flush=True)
+                    sin_nuevos = 0
+                else:
+                    sin_nuevos += 1
+                    if sin_nuevos >= 3:
+                        print(f"  ⏹  Página completa: {len(all_asins)} ASINs total", flush=True)
+                        break
+
+            return list(all_asins), "ok"
+        except PWTimeout:
+            return [], "timeout"
+        except Exception as e:
+            return [], str(e)[:80]
+        finally:
+            browser.close()
+
+
+_ZG_PATTERNS = ("/gp/movers-and-shakers/", "/gp/bestsellers/", "/gp/new-releases/", "/zgbs/", "/zg/new-releases/")
+
+
+def _zg_scrape_paginas(pg, base_url, pages, all_asins):
+    """Scrapea N páginas de un ranking ZG reutilizando una página Playwright ya abierta."""
+    nuevos_total = 0
+    es_ms = "movers-and-shakers" in base_url
+
+    for num in range(1, pages + 1):
+        page_url = base_url if num == 1 else f"{base_url}{'&' if '?' in base_url else '?'}pg={num}"
+        print(f"  📄 Ranking p{num}: {page_url[:90]}", flush=True)
+
+        # M&S es más dinámica — usa networkidle; Best Sellers/New Releases con domcontentloaded
+        wait = "networkidle" if es_ms else "domcontentloaded"
+        try:
+            pg.goto(page_url, wait_until=wait, timeout=35000)
+        except Exception:
+            pg.wait_for_timeout(3000)  # timeout de networkidle → esperar igual
+
+        pg.wait_for_timeout(random.randint(2000, 3000))
+
+        titulo = pg.title()
+        html_len = len(pg.content())
+        print(f"  📋 '{titulo[:50]}' | {html_len} chars", flush=True)
+
+        if _es_bot_challenge(pg.content()):
+            print(f"  ⚠️  Bot challenge en p{num}", flush=True)
+            break
+
+        # Diagnóstico de frames y patrones en la página
+        n_frames = len(pg.frames)
+        try:
+            diag = pg.evaluate("""
+                () => {
+                    const dpLinks   = document.querySelectorAll('a[href*="/dp/"]').length
+                    const sspaLinks = document.querySelectorAll('a[href*="/sspa/"]').length
+                    const asinEls   = document.querySelectorAll('[data-asin]').length
+                    const firstHref = (document.querySelector('a[href*="/sspa/"], a[href*="/dp/"]') || {}).href || ''
+                    return {dpLinks, sspaLinks, asinEls, firstHref: firstHref.slice(0,120)}
+                }
+            """)
+            print(f"  🔬 data-asin={diag['asinEls']} /dp/={diag['dpLinks']} /sspa/={diag['sspaLinks']}", flush=True)
+            if diag['firstHref']:
+                print(f"  🔗 Primer link: {diag['firstHref']}", flush=True)
+        except Exception:
+            pass
+
+        # Scroll para disparar lazy-load (acumula en cada paso por si hay virtual scroll)
+        acumulado = set(_extraer_asins_todos_frames(pg))
+        for _ in range(8):
+            pg.evaluate("window.scrollBy({ top: Math.round(window.innerHeight * 0.8), behavior: 'smooth' })")
+            pg.wait_for_timeout(1200)
+            acumulado.update(_extraer_asins_todos_frames(pg))
+            if len(acumulado) >= 48:
+                break
+
+        visibles = acumulado
+        nuevos = visibles - all_asins
+        all_asins |= visibles
+        nuevos_total += len(nuevos)
+        print(f"  📦 p{num}: {len(visibles)} en pág ({n_frames} frames), {len(all_asins)} total (+{len(nuevos)} nuevos)", flush=True)
+
+        if not nuevos:
+            print(f"  ⏹  Sin ASINs nuevos — fin", flush=True)
+            break
+        if num < pages:
+            time.sleep(random.uniform(1.0, 1.8))
+
+    return nuevos_total
+
+
+def scrape_zg_batch(urls, pages=2):
+    """
+    Scrapea varias URLs de ranking ZG (Best Sellers, New Releases, M&S)
+    reutilizando UN solo browser para todas — evita el overhead de lanzar
+    un browser nuevo por cada URL (ahorra ~3s × N URLs).
+    """
+    if not _PLAYWRIGHT_OK:
+        return [], "playwright_no_disponible"
+
+    from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
+    all_asins = set()
+    try:
+        with sync_playwright() as p:
+            try:
+                browser = p.chromium.launch(channel="chrome", headless=True,
+                    args=["--disable-blink-features=AutomationControlled"])
+                print(f"  🌐 Chrome del sistema (ranking batch)", flush=True)
+            except Exception:
+                browser = p.chromium.launch(headless=True,
+                    args=["--disable-blink-features=AutomationControlled"])
+                print(f"  🌐 Chromium bundled (ranking batch)", flush=True)
+
+            ctx = browser.new_context(locale="es-MX", viewport={"width": 1366, "height": 768},
+                extra_http_headers={"Accept-Language": "es-MX,es;q=0.9"},
+                user_agent=_HEADERS["User-Agent"])
+            ctx.add_init_script(_STEALTH_SCRIPT)
+            pg = ctx.new_page()
+
+            for i, url in enumerate(urls, 1):
+                parsed = urlparse(url)
+                qs = parse_qs(parsed.query, keep_blank_values=True)
+                qs.pop("pg", None)
+                base_url = urlunparse(parsed._replace(query=urlencode(qs, doseq=True)))
+                print(f"  📂 URL {i}/{len(urls)}: {base_url[:70]}", flush=True)
+                _zg_scrape_paginas(pg, base_url, pages, all_asins)
+                if i < len(urls):
+                    time.sleep(random.uniform(1.0, 2.0))
+
+            browser.close()
+    except Exception as e:
+        print(f"  ❌ Error batch ZG: {e}", flush=True)
+
+    return list(all_asins), "ok"
+
+
+def _fetch_playwright_zg(url, pages=2):
+    """Scrapea una sola URL de ranking ZG (wrapper de scrape_zg_batch para compatibilidad)."""
+    return scrape_zg_batch([url], pages=pages)
+
+
 def scrape_url_custom(url, pages=3):
     """
     Scrapea una URL arbitraria de Amazon con paginación.
     - URLs /deals → usa el scroll approach existente (scrolls profundos)
+    - URLs /stores/ → usa networkidle + scroll (SPA React, no tiene &page=N)
+    - URLs M&S / Best Sellers / New Releases → usa ?pg=N
     - Otras URLs → navega por &page=1..N en el mismo browser
     Retorna (asins_list, estado).
     """
     if "/deals" in url or "bubble-id" in url:
         return scrape_url(url)  # scroll approach
+
+    if any(p in url for p in _ZG_PATTERNS):
+        if _PLAYWRIGHT_OK:
+            asins, estado = _fetch_playwright_zg(url, pages=pages)
+            print(f"  📄 {url[:90]} → {len(asins)} ASINs (ranking)", flush=True)
+            return asins, estado
+        html, estado = _fetch_requests(url)
+        if html:
+            return extraer_asins(html), "ok"
+        return [], estado
+
+    if "/stores/" in url:
+        if _PLAYWRIGHT_OK:
+            asins, estado = _fetch_playwright_store(url)
+            print(f"  📄 {url[:90]} → {len(asins)} ASINs (store)", flush=True)
+            return asins, estado
+        # Fallback requests para stores (probablemente vacío pero intentamos)
+        html, estado = _fetch_requests(url)
+        if html:
+            asins = extraer_asins(html)
+            return asins, "ok"
+        return [], estado
 
     label = url[:60]
     if _PLAYWRIGHT_OK:

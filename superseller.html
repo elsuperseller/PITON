@@ -8,26 +8,29 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:       #060d1a;
-  --surface:  #091526;
-  --panel:    #0d1c30;
-  --panel-h:  #112236;
-  --inp-bg:   #06111f;
-  --border:   #1a304e;
-  --border-l: #132540;
+  --bg:       #f0f3f7;
+  --surface:  #ffffff;
+  --panel:    #f7f9fc;
+  --panel-h:  #eef2f7;
+  --inp-bg:   #ffffff;
+  --border:   #cdd5e0;
+  --border-l: #e2e8f2;
 
   --red:      #e94560;
   --red-d:    #c73652;
-  --red-a:    rgba(233,69,96,.12);
+  --red-a:    rgba(233,69,96,.10);
 
-  --t1: #dce9f5;
-  --t2: #7fa8c8;
-  --t3: #415f7a;
-  --t4: #243649;
+  --t1: #1a2738;
+  --t2: #3d5268;
+  --t3: #6b7e92;
+  --t4: #9fb2c3;
 
-  --green:  #10b981;
-  --amber:  #f59e0b;
-  --ruby:   #ef4444;
+  --green:  #059669;
+  --amber:  #d97706;
+  --ruby:   #dc2626;
+
+  --amz-c:  #e47911;
+  --ml-c:   #2968d4;
 
   --r:  7px;
   --rl: 11px;
@@ -49,12 +52,12 @@ body {
 .topbar {
   position: fixed; top: 0; left: 0; right: 0;
   height: var(--hh); z-index: 200;
-  background: linear-gradient(180deg, #0d1c32 0%, #091526 100%);
-  border-bottom: 1px solid var(--border);
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-l);
   display: flex; align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  box-shadow: 0 2px 24px rgba(0,0,0,.6);
+  box-shadow: 0 1px 12px rgba(0,0,0,.08);
 }
 
 .brand { display: flex; align-items: center; gap: 11px; }
@@ -99,10 +102,10 @@ body {
 }
 .btn-ghost:hover { background: var(--panel); color: var(--t1); }
 .btn-danger {
-  background: #4a0f18; color: #fca5a5;
-  border: 1px solid #7f1d1d;
+  background: #fff1f2; color: #be123c;
+  border: 1px solid #fecdd3;
 }
-.btn-danger:hover { background: #7f1d1d; }
+.btn-danger:hover { background: #ffe4e6; }
 .btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
 
 .btn-xs {
@@ -142,7 +145,7 @@ body {
   letter-spacing: 1px; text-transform: uppercase;
   user-select: none; transition: color .12s;
 }
-.sec-hd:hover { color: var(--t2); background: rgba(255,255,255,.02); }
+.sec-hd:hover { color: var(--t2); background: rgba(0,0,0,.025); }
 .sec-hd .ico { margin-right: 5px; font-size: 11px; }
 .sec-hd .chev { font-size: 8px; transition: transform .2s; color: var(--t4); }
 .sec.open .chev { transform: rotate(180deg); }
@@ -169,7 +172,7 @@ body {
 .inp-sm { width: 68px; padding: 5px 8px; text-align: right; }
 .inp-n  { width: 54px; padding: 5px 8px; text-align: right; }
 
-select.inp option { background: #0d1c30; }
+select.inp option { background: #ffffff; color: var(--t1); }
 
 textarea.inp {
   height: 76px; resize: vertical;
@@ -259,11 +262,11 @@ input[type=file] {
 #status {
   position: fixed; bottom: 0; left: var(--sw); right: 0;
   height: var(--sb); z-index: 100;
-  background: rgba(6,13,26,.96);
+  background: rgba(255,255,255,.97);
   border-top: 1px solid var(--border-l);
   display: flex; align-items: center;
   padding: 0 18px; font-size: 11px; color: var(--t3);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
 #status.running { color: var(--red); }
 #status.done    { color: var(--green); }
@@ -284,9 +287,9 @@ input[type=file] {
   display: none;
   align-items: center; gap: 8px;
   padding: 0 18px;
-  background: rgba(9,21,38,.97);
+  background: rgba(247,249,252,.98);
   border-top: 1px solid var(--border);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
 
 /* ── RESULTS ───────────────────────────────────────── */
@@ -302,10 +305,10 @@ input[type=file] {
 #resumen-busqueda {
   display: none; margin-bottom: 14px;
   padding: 12px 16px;
-  background: rgba(14,165,233,.05);
-  border: 1px solid rgba(14,165,233,.18);
+  background: rgba(41,104,212,.05);
+  border: 1px solid rgba(41,104,212,.16);
   border-radius: var(--r);
-  font-size: 11px; color: #7aaccc; line-height: 2;
+  font-size: 11px; color: #1a5ca8; line-height: 2;
 }
 
 #fecha-guardada-bar {
@@ -394,9 +397,9 @@ input[type=file] {
 #badges-detectados { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 
 #lista-texto {
-  width: 100%; height: 260px; background: var(--inp-bg);
-  border: 1px solid var(--border); border-radius: 7px;
-  color: var(--t2); font-size: 11px; padding: 11px;
+  width: 100%; height: 260px; background: var(--panel);
+  border: 1px solid var(--border-l); border-radius: 7px;
+  color: var(--t1); font-size: 11px; padding: 11px;
   font-family: 'SF Mono', 'Menlo', monospace; resize: vertical; line-height: 1.6;
 }
 
@@ -404,6 +407,54 @@ input[type=file] {
 
 .fecha-fld { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .fecha-fld .lbl { font-size: 10px; color: var(--t3); width: 52px; flex-shrink: 0; }
+
+/* ── PLATFORM GROUPS ───────────────────────────────── */
+.plat-hd {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px 6px;
+  font-size: 9px; font-weight: 800;
+  letter-spacing: 1.2px; text-transform: uppercase;
+  border-top: 2px solid var(--border-l);
+  margin-top: 4px;
+  cursor: default;
+}
+.plat-hd:first-child { border-top: none; margin-top: 0; }
+.plat-hd.amz { color: var(--amz-c); }
+.plat-hd.ml  { color: var(--ml-c); }
+.plat-hd .plat-ico {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0;
+}
+.plat-hd.amz .plat-ico { background: rgba(228,121,17,.12); }
+.plat-hd.ml  .plat-ico { background: rgba(41,104,212,.12); }
+
+.plat-pill {
+  font-size: 8px; font-weight: 700; padding: 1px 5px;
+  border-radius: 3px; letter-spacing: .2px; flex-shrink: 0;
+  margin-left: auto;
+}
+.pill-amz  { background: rgba(228,121,17,.10); color: #b05b00; border: 1px solid rgba(228,121,17,.22); }
+.pill-ml   { background: rgba(41,104,212,.10);  color: #1a55b0; border: 1px solid rgba(41,104,212,.22); }
+.pill-both { background: rgba(5,150,105,.10);   color: #065f46; border: 1px solid rgba(5,150,105,.22); }
+
+.sec-hd .plat-pill { margin-left: 5px; }
+
+/* Amazon buttons orange */
+.btn-amz {
+  background: linear-gradient(135deg, #ff9900, #e47911);
+  color: #fff; border: none;
+  box-shadow: 0 2px 8px rgba(228,121,17,.25);
+}
+.btn-amz:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(228,121,17,.35); }
+
+/* ML buttons blue */
+.btn-ml {
+  background: linear-gradient(135deg, #3483fa, #2968d4);
+  color: #fff; border: none;
+  box-shadow: 0 2px 8px rgba(41,104,212,.22);
+}
+.btn-ml:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(41,104,212,.35); }
 </style>
 </head>
 <body>
@@ -414,7 +465,7 @@ input[type=file] {
     <div class="brand-badge">SS</div>
     <div class="brand-text">
       <h1>SUPERSELLER CREATORS</h1>
-      <p>Amazon México &nbsp;·&nbsp; Creators API &nbsp;·&nbsp; v1.0</p>
+      <p>Amazon México &nbsp;·&nbsp; Mercado Libre &nbsp;·&nbsp; Creators API</p>
     </div>
   </div>
   <div class="topbar-actions">
@@ -430,10 +481,16 @@ input[type=file] {
   <!-- SIDEBAR -->
   <aside class="sidebar">
 
+    <!-- ── AMAZON MÉXICO ──────────────────────────── -->
+    <div class="plat-hd amz">
+      <div class="plat-ico">📦</div>
+      Amazon México
+    </div>
+
     <!-- Categorías -->
     <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">📦</span>Categorías</span>
+        <span><span class="ico">📦</span>Categorías <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
@@ -451,19 +508,29 @@ input[type=file] {
           <button class="btn-xs" onclick="toggleAll(false)">Ninguna</button>
           <button class="btn-xs red" onclick="toggleSubcats()">⚡ Subcategorías</button>
         </div>
+
+        <div class="divider"></div>
+        <p class="hint" style="margin-bottom:6px;">Rankings de Amazon — selecciona <b>una</b> categoría arriba y presiona el botón.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;">
+          <button onclick="buscarRanking('bestsellers')" class="btn btn-amz" style="font-size:10px;justify-content:center;padding:7px 4px;flex-direction:column;gap:2px;">⭐<span>Best Sellers</span></button>
+          <button onclick="buscarRanking('new-releases')" class="btn btn-amz" style="font-size:10px;justify-content:center;padding:7px 4px;flex-direction:column;gap:2px;">🆕<span>New Releases</span></button>
+          <button onclick="buscarRanking('movers-and-shakers')" class="btn btn-amz" style="font-size:10px;justify-content:center;padding:7px 4px;flex-direction:column;gap:2px;">🚀<span>Movers &amp; Shakers</span></button>
+        </div>
+        <div id="amz-ranking-status" class="inline-st"></div>
       </div>
     </div>
 
     <!-- Búsqueda directa -->
     <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">🔎</span>Búsqueda Directa</span>
+        <span><span class="ico">🔎</span>Búsqueda por Keyword / ASIN <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
+        <p class="hint">Busca por palabras clave o pega uno o varios ASINs (uno por línea).</p>
         <div class="fld">
           <label class="fl">Keyword o ASIN</label>
-          <textarea id="searchInput" class="inp" placeholder="Keyword, ASIN, o varios ASINs&#10;(uno por línea)&#10;B0BFWQTZ7V"></textarea>
+          <textarea id="searchInput" class="inp" placeholder="laptop gaming&#10;B0BFWQTZ7V&#10;B09XYZ1234"></textarea>
         </div>
         <div class="row">
           <span class="lbl">Desde $</span>
@@ -484,7 +551,7 @@ input[type=file] {
     <!-- Precio y búsqueda -->
     <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">💰</span>Precio y Búsqueda</span>
+        <span><span class="ico">💰</span>Filtros de Precio <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
@@ -497,7 +564,7 @@ input[type=file] {
         </div>
         <div class="row">
           <span class="lbl">Desc. mín.</span>
-          <input type="number" id="descMin" value="15" min="1" max="99" class="inp inp-n">
+          <input type="number" id="descMin" value="0" min="0" max="99" class="inp inp-n">
           <span class="lbl">%</span>
           <span class="lbl" style="margin-left:8px;">Páginas</span>
           <input type="number" id="paginas" value="3" min="1" max="10" class="inp inp-n">
@@ -519,7 +586,7 @@ input[type=file] {
     <!-- Vigencia -->
     <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">⏱</span>Vigencia</span>
+        <span><span class="ico">⏱</span>Vigencia de Ofertas <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
@@ -561,7 +628,7 @@ input[type=file] {
     <!-- Tendencia -->
     <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">🔥</span>Tendencia</span>
+        <span><span class="ico">🔥</span>Tendencia y Prime <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
@@ -577,23 +644,56 @@ input[type=file] {
       </div>
     </div>
 
-    <!-- Herramientas -->
-    <div class="sec">
+    <!-- Amazon Deals — páginas scrapeadas con Playwright -->
+    <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">📁</span>Herramientas</span>
+        <span><span class="ico">🔥</span>Deals Automáticos <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
-        <p class="hint">Carga un HTML de Amazon para extraer ASINs y ver productos con imágenes.</p>
+        <p class="hint">Scraping automático de las páginas de deals de Amazon MX. Requiere Playwright instalado.</p>
+        <button onclick="buscarAmazonDeals(['deals_hoy'])" class="btn btn-amz" style="width:100%;justify-content:center;font-size:11px;margin-bottom:5px;">🔥 Ofertas del Día</button>
+        <button onclick="buscarAmazonDeals(['trending'])" class="btn btn-amz" style="width:100%;justify-content:center;font-size:11px;margin-bottom:5px;">📈 Trending Ahora</button>
+        <button onclick="buscarAmazonDeals(['deals_hoy','trending'])" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">🔥+📈 Ambas fuentes</button>
+        <div id="amz-deals-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
+        <p class="hint">Pega URLs de Amazon (búsquedas, categorías o páginas de deals).</p>
+        <textarea id="amz-urls-custom" class="inp" style="height:60px;font-size:11px;" placeholder="https://www.amazon.com.mx/s?k=laptop&#10;https://www.amazon.com.mx/b?node=9482558011"></textarea>
+        <button onclick="buscarAmazonUrls()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs (3 págs.)</button>
+        <div id="amz-urls-status" class="inline-st"></div>
+
+        <div class="divider"></div>
+
+        <p class="hint" style="font-size:10px;color:var(--t4);">Sin Playwright: abre la página en Chrome, guarda (Cmd+S) y súbela aquí.</p>
+        <div style="display:flex;gap:5px;margin-bottom:5px;">
+          <button onclick="abrirUrlDeals('deals_hoy')" class="btn-xs" style="flex:1;font-size:10px;">🔥 Abrir Ofertas</button>
+          <button onclick="abrirUrlDeals('trending')" class="btn-xs" style="flex:1;font-size:10px;">📈 Abrir Trending</button>
+        </div>
+        <input type="file" id="amz-deals-html-input" accept=".html,.htm">
+        <button onclick="procesarHTMLAmazonDeals()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">📄 Procesar HTML descargado</button>
+        <div id="amz-deals-html-status" class="inline-st"></div>
+      </div>
+    </div>
+
+    <!-- Herramientas Amazon -->
+    <div class="sec">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">📁</span>Herramientas <span class="plat-pill pill-both">AMZ + CSV</span></span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint">Carga un HTML guardado de Amazon para extraer ASINs y ver productos con imágenes.</p>
         <input type="file" id="html-file-input" accept=".html">
-        <button onclick="procesarHTML()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;">🚀 Extraer y Ver en App</button>
+        <button onclick="procesarHTML()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;">🚀 Extraer ASINs del HTML</button>
         <div id="html-status" class="inline-st"></div>
 
         <div class="divider"></div>
 
-        <p class="hint">Sube el CSV exportado para generar texto listo para Telegram.</p>
+        <p class="hint">Sube el CSV exportado para generar texto listo para Telegram/WhatsApp.</p>
         <input type="file" id="lista-file-input" accept=".csv">
-        <button onclick="generarListaDesdeCSV()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-bottom:6px;">📋 Generar Lista</button>
+        <button onclick="generarListaDesdeCSV()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-bottom:6px;">📋 Generar Lista desde CSV</button>
         <div id="lista-status" class="inline-st"></div>
         <div id="lista-output" style="display:none;margin-top:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -605,73 +705,50 @@ input[type=file] {
       </div>
     </div>
 
-    <!-- Amazon Deals -->
+    <!-- ── MERCADO LIBRE ───────────────────────────── -->
+    <div class="plat-hd ml" style="margin-top:8px;">
+      <div class="plat-ico">🛒</div>
+      Mercado Libre México
+    </div>
+
+    <!-- ML Ofertas -->
     <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">🔥</span>Amazon Deals</span>
+        <span><span class="ico">🛒</span>Ofertas del Día <span class="plat-pill pill-ml">ML</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
-        <p class="hint" style="margin-bottom:8px;">Ofertas activas en Amazon MX (acceso automático).</p>
-        <button onclick="buscarAmazonDeals(['deals_hoy'])" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;background:linear-gradient(135deg,#ff9900,#e47911);">🔥 Ofertas del Día</button>
-        <div style="height:5px;"></div>
-        <button onclick="buscarAmazonDeals(['trending'])" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;background:linear-gradient(135deg,#ff9900,#e47911);">📈 Trending Ahora</button>
-        <div style="height:5px;"></div>
-        <button onclick="buscarAmazonDeals(['deals_hoy','trending'])" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">🔥+📈 Ambas</button>
-        <div id="amz-deals-status" class="inline-st"></div>
-
-        <div class="divider"></div>
-
-        <div class="divider"></div>
-
-        <!-- URLs personalizadas Amazon -->
-        <p class="hint">Pega URLs de Amazon (búsquedas, categorías, etc.).</p>
-        <textarea id="amz-urls-custom" class="inp" style="height:60px;font-size:11px;" placeholder="https://www.amazon.com.mx/s?k=laptop&#10;https://www.amazon.com.mx/b?node=9482558011"></textarea>
-        <button onclick="buscarAmazonUrls()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs (3 págs.)</button>
-        <div id="amz-urls-status" class="inline-st"></div>
-
-        <div class="divider"></div>
-
-        <p class="hint" style="font-size:10px;">Para máximos resultados instala Playwright (abre Terminal): <code style="background:#1e293b;padding:1px 4px;border-radius:3px;">pip install playwright &amp;&amp; playwright install chromium</code><br>Sin Playwright usa HTML manual: abre en Chrome, guarda (Cmd+S), sube abajo.</p>
-        <div style="display:flex;gap:5px;margin-bottom:5px;">
-          <button onclick="abrirUrlDeals('deals_hoy')" class="btn-xs" style="flex:1;font-size:10px;">🔥 Abrir Ofertas del Día</button>
-          <button onclick="abrirUrlDeals('trending')" class="btn-xs" style="flex:1;font-size:10px;">📈 Abrir Trending</button>
-        </div>
-        <input type="file" id="amz-deals-html-input" accept=".html,.htm">
-        <button onclick="procesarHTMLAmazonDeals()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">📄 Procesar HTML de Deals</button>
-        <div id="amz-deals-html-status" class="inline-st"></div>
+        <p class="hint">Scrapea las ofertas diarias de Mercado Libre MX (descubre containers automáticamente).</p>
+        <button onclick="buscarMLDiario()" class="btn btn-ml" style="width:100%;justify-content:center;font-size:11px;">🛒 Buscar Ofertas del Día</button>
+        <div id="ml-status" class="inline-st"></div>
       </div>
     </div>
 
-    <!-- Mercado Libre -->
+    <!-- ML URLs custom -->
     <div class="sec open">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">🛒</span>Mercado Libre</span>
+        <span><span class="ico">🔗</span>Buscar por URL <span class="plat-pill pill-ml">ML</span></span>
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
-
-        <!-- Fuentes diarias -->
-        <p class="hint" style="margin-bottom:8px;">Scrapea las ofertas diarias de ML (3 fuentes).</p>
-        <button onclick="buscarMLDiario()" class="btn btn-primary" style="width:100%;justify-content:center;font-size:11px;background:linear-gradient(135deg,#3483fa,#1259c3);">🛒 Ofertas del día</button>
-        <div id="ml-status" class="inline-st"></div>
-
-        <div class="divider"></div>
-
-        <!-- URLs custom -->
-        <p class="hint">Pega URLs específicas de ML (una por línea).</p>
-        <textarea id="ml-urls-custom" class="inp" style="height:70px;font-size:11px;" placeholder="https://www.mercadolibre.com.mx/ofertas?container_id=...&#10;https://www.mercadolibre.com.mx/ofertas?..."></textarea>
-        <button onclick="buscarMLUrls()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs</button>
+        <p class="hint">Pega URLs de ML (ofertas, categorías o links de campañas de listado). Trae 3 páginas automáticamente.</p>
+        <textarea id="ml-urls-custom" class="inp" style="height:80px;font-size:11px;" placeholder="https://www.mercadolibre.com.mx/ofertas?container_id=MLM779363-1&#10;https://listado.mercadolibre.com.mx/_Envio_Full_Discount_15-100_Container_..."></textarea>
+        <button onclick="buscarMLUrls()" class="btn btn-ml" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs (3 págs.)</button>
         <div id="ml-urls-status" class="inline-st"></div>
+      </div>
+    </div>
 
-        <div class="divider"></div>
-
-        <!-- HTML descargado -->
-        <p class="hint">O carga un HTML descargado de ML desde Chrome (Cmd+S).</p>
+    <!-- ML HTML descargado -->
+    <div class="sec">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">📄</span>HTML Descargado <span class="plat-pill pill-ml">ML</span></span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint">Abre una página de ML en Chrome, guárdala (Cmd+S) y súbela aquí para extraer productos.</p>
         <input type="file" id="ml-html-input" accept=".html,.htm">
         <button onclick="procesarHTMLML()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;">📄 Procesar HTML de ML</button>
         <div id="ml-html-status" class="inline-st"></div>
-
       </div>
     </div>
 
@@ -749,8 +826,8 @@ input[type=file] {
   <button class="btn btn-ghost" onclick="selectAll(true)" style="font-size:11px;padding:5px 11px;">✅ Sel. todos</button>
   <button class="btn btn-ghost" onclick="selectAll(false)" style="font-size:11px;padding:5px 11px;">⬜ Ninguno</button>
   <button class="btn btn-primary" onclick="exportCSV()" style="font-size:11px;padding:5px 13px;">⬇️ Exportar</button>
-  <button id="btnFiltroSuper" onclick="aplicarFiltroSuperseller()" style="background:#f59e0b;color:#000;border:none;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🧹 Filtro Superseller</button>
-  <button onclick="quitarRelampagos()" style="background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">⚡ Quitar Relámpagos</button>
+  <button id="btnFiltroSuper" onclick="aplicarFiltroSuperseller()" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🧹 Filtro Superseller</button>
+  <button onclick="quitarRelampagos()" style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">⚡ Quitar Relámpagos</button>
   <button id="btnVerTodas" onclick="verTodasLasOfertas()" style="display:none;" class="btn btn-ghost" >↩ Ver todas</button>
   <span style="font-size:11px;color:var(--t3);" id="exportInfo"></span>
   <span id="filtroSuperInfo" style="font-size:10px;color:var(--amber);display:none;"></span>
@@ -797,10 +874,10 @@ function construirFiltroFechas(items) {
 
   panel.style.display = "block"
   chips.innerHTML = Object.entries(fechasDisponibles).map(([fecha, items]) =>
-    `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#1a1a2e;padding:4px 10px;border-radius:6px;border:1px solid ${fechaFiltroGuardada===fecha?'#e94560':'#333'};">
+    `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#f7f9fc;padding:4px 10px;border-radius:6px;border:1px solid ${fechaFiltroGuardada===fecha?'#e94560':'#d0d9e6'};">
       <input type="checkbox" class="fecha-chk" value="${fecha}" ${fechaFiltroGuardada===fecha?'checked':''} style="accent-color:#e94560;">
-      <span style="font-size:12px;color:#fff;">${fecha}</span>
-      <span style="font-size:10px;color:#888;">(${items.length})</span>
+      <span style="font-size:12px;color:#1a2738;">${fecha}</span>
+      <span style="font-size:10px;color:#6b7e92;">(${items.length})</span>
       <span onclick="event.preventDefault();guardarFecha('${fecha}')" style="cursor:pointer;background:#e94560;color:white;font-size:9px;padding:1px 6px;border-radius:4px;margin-left:4px;">📌 Guardar</span>
     </label>`
   ).join("")
@@ -842,7 +919,7 @@ function usarFechaEspecifica() {
     setTimeout(() => {
       document.querySelectorAll(".fecha-chk").forEach(c => {
         c.checked = c.value === fecha
-        if (c.closest("label")) c.closest("label").style.border = c.value === fecha ? "1px solid #e94560" : "1px solid #333"
+        if (c.closest("label")) c.closest("label").style.border = c.value === fecha ? "1px solid #e94560" : "1px solid #d0d9e6"
       })
       aplicarFiltroFecha()
     }, 100)
@@ -855,7 +932,7 @@ function guardarFecha(fecha) {
   actualizarIndicadorFecha()
   document.querySelectorAll(".fecha-chk").forEach(c => {
     c.checked = c.value === fecha
-    c.closest("label").style.border = c.value === fecha ? "1px solid #e94560" : "1px solid #333"
+    c.closest("label").style.border = c.value === fecha ? "1px solid #e94560" : "1px solid #d0d9e6"
   })
   aplicarFiltroFecha()
 }
@@ -1144,7 +1221,7 @@ async function buscar() {
     prime_e:          document.getElementById("f_prime_e").checked,
     prime_x:          document.getElementById("f_prime_x").checked,
     scarce:           document.getElementById("f_scarce").checked,
-    descuento_min:    parseInt(document.getElementById("descMin").value) || 15,
+    descuento_min:    parseInt(document.getElementById("descMin").value) || 0,
     precio_min:       parseFloat(document.getElementById("precioMin").value) || 0,
     precio_max:       parseFloat(document.getElementById("precioMax").value) || 0,
   }
@@ -1201,7 +1278,7 @@ function renderResults(items) {
   const badgesSet = new Set(items.map(p => p.badge).filter(Boolean))
   const badgesEl = document.getElementById("badges-detectados")
   badgesEl.innerHTML = [...badgesSet].map(b =>
-    `<span onclick="filtrarPorBadge('${b}')" style="cursor:pointer;background:#1a1a3a;color:#e94560;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid #e9456044;">${b}</span>`
+    `<span onclick="filtrarPorBadge('${b}')" style="cursor:pointer;background:rgba(233,69,96,.08);color:#c73652;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid rgba(233,69,96,.22);">${b}</span>`
   ).join("")
 
   const grid = document.getElementById("product-grid")
@@ -1325,7 +1402,7 @@ async function buscarDirecto() {
   const rawInput = document.getElementById("searchInput").value.trim()
   const precioMin = parseFloat(document.getElementById("searchPrecioMin").value) || 0
   const precioMax = parseFloat(document.getElementById("searchPrecioMax").value) || 0
-  const descMin = parseInt(document.getElementById("searchDescMin").value) || 1
+  const descMin = parseInt(document.getElementById("searchDescMin").value) || 0
 
   if (!rawInput) { alert("Ingresa keyword o ASIN"); return }
 
@@ -1929,7 +2006,7 @@ async function buscarAmazonDeals(buckets) {
     const r = await fetchConTimeout("http://localhost:8765/buscar-amazon-deals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ buckets, min_discount: 1 }),
+      body: JSON.stringify({ buckets, min_discount: 0 }),
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -1978,7 +2055,7 @@ async function buscarAmazonUrls() {
     const r = await fetchConTimeout("http://localhost:8765/buscar-amazon-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls, pages: 3, min_discount: 1 }),
+      body: JSON.stringify({ urls, pages: 3, min_discount: 0 }),
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -1994,6 +2071,68 @@ async function buscarAmazonUrls() {
     statusEl.textContent = `✅ ${d.total} productos · ${d.asins} ASINs`
     statusEl.style.color = "#10b981"
     setStatus(`✅ ${d.total} productos Amazon desde URLs`, "done")
+  } catch(e) {
+    if (e.name === "AbortError") return
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ " + e.message, "error")
+  } finally {
+    mostrarBtnDetener(false)
+  }
+}
+
+const _RANKING_SLUGS = {
+  "Electrónica": "electronics", "Hogar y Cocina": "home", "Deportes": "sports",
+  "Juguetes": "toys", "Herramientas": "tools", "Belleza": "health",
+  "Ropa Hombres": "apparel", "Ropa Mujeres": "apparel", "Libros": "books",
+  "Videojuegos": "videogames", "Automotriz": "automotive", "Mascotas": "pet-supplies",
+  "Oficina": "office-products", "Alimentos": "grocery", "Bebé": "baby",
+  "Relojes": "watches", "Música": "musical-instruments"
+}
+
+async function buscarRanking(tipo) {
+  const nombres = { "bestsellers": "Best Sellers", "new-releases": "New Releases", "movers-and-shakers": "Movers & Shakers" }
+  const nombre  = nombres[tipo]
+  const base    = `https://www.amazon.com.mx/gp/${tipo}/`
+
+  // Recoger TODAS las categorías marcadas y mapearlas a slugs
+  const checkedItems = Array.from(document.querySelectorAll("#cats .cat-item input:checked"))
+  const urls = []
+  checkedItems.forEach(inp => {
+    const label = inp.closest(".cat-item").querySelector("label").textContent.trim()
+    const slug  = _RANKING_SLUGS[label]
+    if (slug && !urls.includes(base + slug + "/")) urls.push(base + slug + "/")
+  })
+  // Si no hay ninguna marcada (o ninguna tiene slug), usar el ranking general
+  if (urls.length === 0) urls.push(base)
+
+  const statusEl = document.getElementById("amz-ranking-status")
+  statusEl.style.display = "block"
+  statusEl.style.color = "#ff9900"
+  statusEl.textContent = `⏳ Buscando ${nombre} · ${urls.length} categoría${urls.length !== 1 ? "s" : ""}…`
+  setStatus(`⏳ ${nombre} · ${urls.length} categorías…`, "running")
+  mostrarBtnDetener(true)
+
+  try {
+    const r = await fetchConTimeout("http://localhost:8765/buscar-amazon-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls, pages: 2, min_discount: 0 }),
+    }, 1800000)  // 30 min — rankings con muchas categorías pueden tardar
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+    if (d.total === 0) {
+      statusEl.textContent = d.hint || "⚠️ Sin resultados"
+      statusEl.style.color = "#f59e0b"
+      setStatus("⚠️ Sin resultados ranking", "error")
+      return
+    }
+    allItems = d.items
+    renderResults(d.items)
+    updateCount()
+    statusEl.textContent = `✅ ${d.total} productos · ${nombre} · ${urls.length} categorías`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${d.total} productos · ${nombre}`, "done")
   } catch(e) {
     if (e.name === "AbortError") return
     statusEl.textContent = "❌ " + e.message
@@ -2080,7 +2219,7 @@ async function buscarMLUrls() {
   const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
   if (!urls.length) { alert("Pega al menos una URL de ML"); return }
   statusEl.textContent = `⏳ Buscando 3 páginas en ${urls.length} URL(s)...`
-  await _llamarML({ urls, filtros: {}, paginas: 3 }, statusEl)
+  await _llamarML({ urls, filtros: { descuento_min: 0 }, paginas: 3 }, statusEl)
 }
 
 async function procesarHTMLML() {
@@ -2093,7 +2232,7 @@ async function procesarHTMLML() {
   const texto = await fileInput.files[0].text()
   statusEl.textContent = "⏳ Procesando..."
   statusEl.style.color = "#3483fa"; statusEl.style.display = "block"
-  const descMin = parseInt(document.getElementById("ml-desc-min").value) || 1
+  const descMin = 0
   setStatus("⏳ Procesando HTML de ML...", "running")
 
   try {
