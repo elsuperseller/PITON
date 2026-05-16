@@ -1,13 +1,54 @@
 #!/usr/bin/env python3
 """
-scraper_amazon.py — Amazon México Deals Scraper
-Extrae ASINs de las páginas de ofertas de Amazon MX.
+scraper_amazon.py — Amazon México Deals + Rankings Scraper
+Extrae ASINs de páginas de ofertas y rankings de Amazon MX.
 
-Estrategia (en orden de preferencia):
-  1. Playwright (headless Chromium) — ejecuta JS y scrollea para cargar
-     todos los productos. Requiere: pip install playwright && playwright install chromium
-  2. requests — fallback sin JS; puede devolver pocos o cero ASINs en
-     páginas SPA como /deals ya que Amazon las renderiza 100% client-side.
+═══════════════════════════════════════════════════════════════
+PIPELINE DE FILTROS — orden de ejecución
+═══════════════════════════════════════════════════════════════
+
+1. EXTRACCIÓN DE ASINs  (extraer_asins / _extraer_asins_js)
+   ├─ Obligatorio
+   ├─ Patrones buscados en el HTML/DOM:
+   │    data-asin="..."        → atributo estándar de Amazon
+   │    /dp/ASIN               → links de producto
+   │    /gp/product/ASIN       → links alternativos
+   │    ?asin= / &asin=        → parámetros en links sspa/click (M&S, ads)
+   │    itemASIN=              → variante en links patrocinados
+   │    "asin":"..." / "ASIN"  → JSON embebido en <script>
+   └─ Valida formato: /^[B0-9][A-Z0-9]{9}$/
+
+2. BLOQUEO DE SECCIONES  (extraer_asins)
+   ├─ Obligatorio — previene contaminación con ASINs de recomendaciones
+   └─ Corta el HTML antes de las siguientes secciones si aparecen:
+        purchase-sims, sims-consolidated, similarities-widget,
+        p13n-desktop-sims, rhf-container
+
+3. DEDUP POR ASIN  (servidor.py, scrape_zg_batch)
+   ├─ Obligatorio
+   └─ Set de ASINs vistos; descarta duplicados entre páginas y fuentes
+
+4. FILTRO DE DESCUENTO  (servidor.py → parsear_item)
+   ├─ Opcional (default: 0% = sin filtro)
+   └─ descuento_pct >= min_discount
+      Applies after enrichment via Creators API
+
+5. EXCLUSIÓN DE "TERMINA EN"  (servidor.py → parsear_item)
+   ├─ Opcional — activo sólo cuando el campo deal_ends_at está presente
+   └─ Descarta productos cuya oferta expira en < hrs_minimas horas
+      (controlado por el filtro "Mín. hrs restantes" en la UI)
+
+═══════════════════════════════════════════════════════════════
+FUENTES DISPONIBLES
+═══════════════════════════════════════════════════════════════
+  DEALS_URLS   — Ofertas del Día y Trending (scroll approach)
+  RANKING_URLS — Best Sellers, New Releases, Movers & Shakers
+                 por categoría (paginación ?pg=N, 50 productos/pág)
+
+Estrategia de renderizado (en orden de preferencia):
+  1. Playwright headless Chrome — ejecuta JS, scrollea, multi-frame
+     pip install playwright && playwright install chrome
+  2. requests — fallback sin JS; útil sólo para páginas SSR simples
 """
 
 import random
@@ -27,6 +68,47 @@ DEALS_URLS = {
     "deals_hoy": "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&bubble-id=discounts-collection-deals-started-today",
     "trending":  "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&bubble-id=trending-bubble",
 }
+
+# ── RANKINGS: Best Sellers · New Releases · Movers & Shakers ────────
+# Cada tipo tiene 2 páginas de 50 productos = 100 productos por categoría.
+# Tipos válidos: "bestsellers" | "new-releases" | "movers-and-shakers"
+
+RANKING_BASE = "https://www.amazon.com.mx/gp/{tipo}/{categoria}/"
+
+RANKING_CATEGORIAS = {
+    # slug_url          : nombre legible
+    "electronics"       : "Electrónica",
+    "computers"         : "Cómputo",
+    "cell-phones"       : "Celulares",
+    "videogames"        : "Videojuegos",
+    "home"              : "Hogar y Cocina",
+    "kitchen"           : "Cocina",
+    "tools"             : "Herramientas",
+    "garden"            : "Jardín",
+    "apparel"           : "Ropa",
+    "shoes"             : "Zapatos",
+    "jewelry"           : "Joyería",
+    "watches"           : "Relojes",
+    "sports"            : "Deportes",
+    "toys"              : "Juguetes",
+    "baby"              : "Bebé",
+    "books"             : "Libros",
+    "health"            : "Salud y Belleza",
+    "beauty"            : "Belleza",
+    "grocery"           : "Alimentos",
+    "pet-supplies"      : "Mascotas",
+    "automotive"        : "Automotriz",
+    "office-products"   : "Oficina",
+    "musical-instruments": "Instrumentos",
+    "arts-crafts"       : "Manualidades",
+    "industrial"        : "Industrial",
+}
+
+# Categorías que se scrapeean por defecto cuando no se especifica ninguna
+RANKING_CATEGORIAS_DEFAULT = [
+    "electronics", "sports", "home", "toys", "apparel",
+    "health", "videogames", "books",
+]
 
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -116,7 +198,7 @@ def _extraer_asins_js(page):
 
                 // 4. JSON embebido en scripts
                 document.querySelectorAll('script').forEach(s => {
-                    const matches = s.textContent.matchAll(/"asin"\s*:\s*"([A-Z0-9]{10})"/g)
+                    const matches = s.textContent.matchAll(/"asin"\\s*:\\s*"([A-Z0-9]{10})"/g)
                     for (const m of matches) if (pat.test(m[1])) asins.add(m[1])
                 })
 
@@ -753,6 +835,73 @@ def scrape_url_custom(url, pages=3):
         all_asins.extend(nuevos)
         time.sleep(1.5)
     return all_asins, "ok"
+
+
+def scrape_ranking(tipo="bestsellers", categorias=None, pages=2):
+    """
+    Extrae ASINs de páginas de ranking de Amazon MX.
+
+    Parámetros
+    ----------
+    tipo : str
+        Tipo de ranking. Valores válidos:
+          "bestsellers"       — productos más vendidos (actualizado cada hora)
+          "new-releases"      — lanzamientos recientes con mayor demanda
+          "movers-and-shakers"— mayor mejora de BSR en las últimas 24 h
+        [OBLIGATORIO si se quiere un tipo específico; default: "bestsellers"]
+
+    categorias : list[str] | None
+        Lista de slugs de categoría de RANKING_CATEGORIAS.
+        Si es None, usa RANKING_CATEGORIAS_DEFAULT.
+        Ejemplos: ["electronics", "sports", "toys"]
+        [OPCIONAL — default: RANKING_CATEGORIAS_DEFAULT]
+
+    pages : int
+        Páginas a scrapear por categoría (cada página = 50 productos).
+        Máximo recomendado: 2 (ambas páginas del ranking = 100 productos).
+        [OPCIONAL — default: 2]
+
+    Retorna
+    -------
+    list[str]
+        Lista de ASINs únicos encontrados (sin enriquecer).
+        La dedup se aplica internamente en scrape_zg_batch.
+
+    Filtros aplicados (ver docstring del módulo para el pipeline completo)
+    ─────────────────────────────────────────────────────────────────────
+    1. Bloqueo de secciones de recomendaciones (bloques)   [obligatorio]
+    2. Extracción multi-patrón de ASINs                    [obligatorio]
+    3. Dedup por ASIN entre páginas y categorías           [obligatorio]
+    — descuento_pct y exclusión "Termina en" se aplican    [en servidor.py]
+      después al enriquecer con la Creators API
+
+    Ejemplo de uso
+    --------------
+    # Best Sellers en Electrónica y Deportes (100 productos c/u)
+    asins = scrape_ranking("bestsellers", ["electronics", "sports"], pages=2)
+
+    # New Releases en todas las categorías por defecto
+    asins = scrape_ranking("new-releases")
+
+    # Movers & Shakers — todas las categorías, 1 página cada una
+    asins = scrape_ranking("movers-and-shakers", pages=1)
+    """
+    tipos_validos = ("bestsellers", "new-releases", "movers-and-shakers")
+    if tipo not in tipos_validos:
+        raise ValueError(f"tipo debe ser uno de {tipos_validos}, recibido: {tipo!r}")
+
+    cats = categorias if categorias is not None else RANKING_CATEGORIAS_DEFAULT
+    urls = [RANKING_BASE.format(tipo=tipo, categoria=c) for c in cats
+            if c in RANKING_CATEGORIAS]
+
+    if not urls:
+        print(f"  ⚠️  scrape_ranking: ninguna categoría válida en {cats}", flush=True)
+        return []
+
+    print(f"📊 scrape_ranking tipo={tipo} | {len(urls)} categorías | {pages} págs c/u", flush=True)
+    asins, _ = scrape_zg_batch(urls, pages=pages)
+    print(f"   → {len(asins)} ASINs únicos extraídos", flush=True)
+    return asins
 
 
 def playwright_disponible():
