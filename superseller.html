@@ -661,7 +661,11 @@ input[type=file] {
 
         <p class="hint">Pega URLs de Amazon (búsquedas, categorías o páginas de deals).</p>
         <textarea id="amz-urls-custom" class="inp" style="height:60px;font-size:11px;" placeholder="https://www.amazon.com.mx/s?k=laptop&#10;https://www.amazon.com.mx/b?node=9482558011"></textarea>
-        <button onclick="buscarAmazonUrls()" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs (3 págs.)</button>
+        <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+          <button onclick="buscarAmazonUrls()" class="btn btn-ghost" style="flex:1;justify-content:center;font-size:11px;">🔗 Buscar en estas URLs</button>
+          <label style="font-size:10px;color:var(--t3);white-space:nowrap;">Págs.</label>
+          <input type="number" id="amz-urls-pages" min="1" max="20" value="3" class="inp" style="width:48px;padding:4px 6px;font-size:11px;text-align:center;">
+        </div>
         <div id="amz-urls-status" class="inline-st"></div>
 
         <div class="divider"></div>
@@ -731,9 +735,13 @@ input[type=file] {
         <span class="chev">▼</span>
       </div>
       <div class="sec-bd">
-        <p class="hint">Pega URLs de ML (ofertas, categorías o links de campañas de listado). Trae 3 páginas automáticamente.</p>
+        <p class="hint">Pega URLs de ML (ofertas, categorías o links de campañas de listado).</p>
         <textarea id="ml-urls-custom" class="inp" style="height:80px;font-size:11px;" placeholder="https://www.mercadolibre.com.mx/ofertas?container_id=MLM779363-1&#10;https://listado.mercadolibre.com.mx/_Envio_Full_Discount_15-100_Container_..."></textarea>
-        <button onclick="buscarMLUrls()" class="btn btn-ml" style="width:100%;justify-content:center;font-size:11px;margin-top:4px;">🔗 Buscar en estas URLs (3 págs.)</button>
+        <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+          <button onclick="buscarMLUrls()" class="btn btn-ml" style="flex:1;justify-content:center;font-size:11px;">🔗 Buscar en estas URLs</button>
+          <label style="font-size:10px;color:var(--t3);white-space:nowrap;">Págs.</label>
+          <input type="number" id="ml-urls-pages" min="1" max="20" value="3" class="inp" style="width:48px;padding:4px 6px;font-size:11px;text-align:center;">
+        </div>
         <div id="ml-urls-status" class="inline-st"></div>
       </div>
     </div>
@@ -826,6 +834,7 @@ input[type=file] {
   <button class="btn btn-ghost" onclick="selectAll(true)" style="font-size:11px;padding:5px 11px;">✅ Sel. todos</button>
   <button class="btn btn-ghost" onclick="selectAll(false)" style="font-size:11px;padding:5px 11px;">⬜ Ninguno</button>
   <button class="btn btn-primary" onclick="exportCSV()" style="font-size:11px;padding:5px 13px;">⬇️ Exportar</button>
+  <button id="btnSheets" onclick="exportarSheets()" style="background:#1a7f4b;color:#fff;border:none;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">📊 → Sheets</button>
   <button id="btnFiltroSuper" onclick="aplicarFiltroSuperseller()" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🧹 Filtro Superseller</button>
   <button onclick="quitarRelampagos()" style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">⚡ Quitar Relámpagos</button>
   <button id="btnVerTodas" onclick="verTodasLasOfertas()" style="display:none;" class="btn btn-ghost" >↩ Ver todas</button>
@@ -1368,6 +1377,31 @@ function exportCSV() {
   const a    = document.createElement("a"); a.href=url
   a.download = `superseller_${new Date().toISOString().slice(0,16).replace(/[T:]/g,"-")}.csv`
   a.click(); URL.revokeObjectURL(url)
+}
+
+async function exportarSheets() {
+  const selected = allItems.filter((_, i) => document.getElementById("chk_"+i)?.checked)
+  if (!selected.length) { alert("Selecciona al menos un producto"); return }
+  const btn = document.getElementById("btnSheets")
+  btn.textContent = "⏳ Enviando…"
+  btn.disabled = true
+  try {
+    const r = await fetchConTimeout("http://localhost:8765/exportar-sheets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: selected })
+    }, 90000)
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+    btn.textContent = `✅ ${d.rows} filas`
+    btn.style.background = "#10b981"
+    setTimeout(() => { btn.textContent = "📊 → Sheets"; btn.style.background = "#1a7f4b"; btn.disabled = false }, 3000)
+  } catch(e) {
+    btn.textContent = "❌ Error"
+    btn.style.background = "#ef4444"
+    setTimeout(() => { btn.textContent = "📊 → Sheets"; btn.style.background = "#1a7f4b"; btn.disabled = false }, 3000)
+    alert("Error al exportar: " + e.message)
+  }
 }
 
 async function verFeeds() {
@@ -2046,16 +2080,17 @@ async function buscarAmazonUrls() {
   const raw  = document.getElementById("amz-urls-custom").value.trim()
   const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
   if (!urls.length) { alert("Pega al menos una URL de Amazon"); return }
+  const pages = parseInt(document.getElementById("amz-urls-pages").value) || 3
   statusEl.style.display = "block"
   statusEl.style.color = "#ff9900"
-  statusEl.textContent = `⏳ Buscando 3 páginas en ${urls.length} URL(s)…`
+  statusEl.textContent = `⏳ Buscando ${pages} página(s) en ${urls.length} URL(s)…`
   setStatus("⏳ Buscando Amazon URLs…", "running")
   mostrarBtnDetener(true)
   try {
     const r = await fetchConTimeout("http://localhost:8765/buscar-amazon-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls, pages: 3, min_discount: 0 }),
+      body: JSON.stringify({ urls, pages, min_discount: 0 }),
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -2218,8 +2253,9 @@ async function buscarMLUrls() {
   const raw = document.getElementById("ml-urls-custom").value.trim()
   const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
   if (!urls.length) { alert("Pega al menos una URL de ML"); return }
-  statusEl.textContent = `⏳ Buscando 3 páginas en ${urls.length} URL(s)...`
-  await _llamarML({ urls, filtros: { descuento_min: 0 }, paginas: 3 }, statusEl)
+  const pages = parseInt(document.getElementById("ml-urls-pages").value) || 3
+  statusEl.textContent = `⏳ Buscando ${pages} página(s) en ${urls.length} URL(s)...`
+  await _llamarML({ urls, filtros: { descuento_min: 0 }, paginas: pages }, statusEl)
 }
 
 async function procesarHTMLML() {

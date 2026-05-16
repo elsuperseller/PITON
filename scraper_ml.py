@@ -244,36 +244,37 @@ def _normalizar_api_item(item):
 
 def _extraer_polycards(body, min_discount=0):
     """
-    Extrae productos del initialState embebido en la respuesta de una listado URL.
-    El browser hace un segundo fetch a la misma URL y recibe el estado completo.
+    Extrae productos buscando directamente cada objeto {"id":"POLYCARD",...}
+    en cualquier punto del body, sin depender de la estructura del array padre.
+    Funciona en páginas de búsqueda, categoría, Container y carruseles anidados.
     """
-    idx = body.find('"results":[{"id":"POLYCARD"')
-    if idx < 0:
-        return []
-    start = body.find('[', idx)
-    depth, end = 0, start
-    for i, c in enumerate(body[start:]):
-        if   c == '[': depth += 1
-        elif c == ']':
-            depth -= 1
-            if depth == 0:
-                end = start + i + 1
-                break
-    try:
-        results = json.loads(body[start:end])
-    except Exception:
-        return []
-
     productos = []
-    for item in results:
+    seen_ids  = set()
+
+    for m in re.finditer(r'\{"id"\s*:\s*"POLYCARD"', body):
+        obj_start = m.start()
+        depth, end = 0, obj_start
+        for i, c in enumerate(body[obj_start:]):
+            if   c == '{': depth += 1
+            elif c == '}':
+                depth -= 1
+                if depth == 0:
+                    end = obj_start + i + 1
+                    break
+        try:
+            item = json.loads(body[obj_start:end])
+        except Exception:
+            continue
+
         poly = item.get("polycard", {})
         if not poly:
             continue
-        # Reutilizar _normalizar mapeando polycard → pseudo-card
         pseudo = {"card": poly}
         p = _normalizar(pseudo)
-        if p and p["descuento_pct"] >= min_discount:
+        if p and p["descuento_pct"] >= min_discount and p["id"] not in seen_ids:
+            seen_ids.add(p["id"])
             productos.append(p)
+
     return productos
 
 
@@ -341,12 +342,15 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0):
                         body = resp.text()
                     except Exception:
                         return
-                    has_state = 'initialState' in body
+                    # Usar comillas para distinguir JSON de variables JS en bundles
+                    has_state = '"initialState"' in body
                     has_poly  = '"POLYCARD"' in body or '"results"' in body
                     if len(body) > 5000:  # loguear cualquier respuesta grande
                         _log.append((resp.url[:90], len(body), has_state, has_poly))
-                    if len(body) > 50000 and has_state:
-                        _holder[0] = body
+                    # Preferir la respuesta más grande con JSON real (no JS bundles)
+                    if len(body) > 50000 and has_state and '"results"' in body:
+                        if _holder[0] is None or len(body) > len(_holder[0]):
+                            _holder[0] = body
 
                 page.on('response', _on_response)
                 print(f"  🎭 Playwright ML p{page_num}: {current_url[:80]}", flush=True)

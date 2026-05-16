@@ -658,6 +658,27 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path == "/exportar-sheets":
+            SHEETS_URL = "https://script.google.com/macros/s/AKfycbydiVcrVOXuZWDGfUvtl38QxmHv0nPpPKtR1lUCHr0wvQB9ky0EU756uRtf2JeAcYZoww/exec"
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body   = json.loads(self.rfile.read(length))
+                items  = body.get("items", [])
+                if not items:
+                    raise ValueError("Sin items para exportar")
+                print(f"📊 /exportar-sheets → {len(items)} items", flush=True)
+                r = requests.post(SHEETS_URL, json=items, timeout=120)
+                r.raise_for_status()
+                resp_data = r.json()
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "rows": resp_data.get("rows", len(items))}).encode())
+            except Exception as e:
+                print(f"❌ /exportar-sheets: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         else:
             self.send_response(404)
             self.end_headers()
