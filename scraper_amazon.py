@@ -724,18 +724,21 @@ def _zg_scrape_paginas(pg, base_url, pages, all_asins):
     return nuevos_total
 
 
-def scrape_zg_batch(urls, pages=2):
+def scrape_zg_batch(urls, pages=2, per_url_limit=50):
     """
     Scrapea varias URLs de ranking ZG (Best Sellers, New Releases, M&S)
     reutilizando UN solo browser para todas — evita el overhead de lanzar
     un browser nuevo por cada URL (ahorra ~3s × N URLs).
+
+    per_url_limit: máx ASINs que se conservan por URL (default 50 = top 50 por categoría).
     """
     if not _PLAYWRIGHT_OK:
         return [], "playwright_no_disponible"
 
     from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-    all_asins = set()
+    all_asins_set = set()
+    all_asins_ordered = []
     try:
         with sync_playwright() as p:
             try:
@@ -759,7 +762,22 @@ def scrape_zg_batch(urls, pages=2):
                 qs.pop("pg", None)
                 base_url = urlunparse(parsed._replace(query=urlencode(qs, doseq=True)))
                 print(f"  📂 URL {i}/{len(urls)}: {base_url[:70]}", flush=True)
-                _zg_scrape_paginas(pg, base_url, pages, all_asins)
+
+                # Set temporal para esta URL — así limitamos por categoría
+                url_asins = set()
+                _zg_scrape_paginas(pg, base_url, pages, url_asins)
+
+                # Tomar los primeros per_url_limit (top N de la categoría)
+                url_list = list(url_asins)
+                if per_url_limit and len(url_list) > per_url_limit:
+                    url_list = url_list[:per_url_limit]
+                    print(f"  ✂️  Limitado a {per_url_limit} ASINs de esta categoría", flush=True)
+
+                for a in url_list:
+                    if a not in all_asins_set:
+                        all_asins_set.add(a)
+                        all_asins_ordered.append(a)
+
                 if i < len(urls):
                     time.sleep(random.uniform(1.0, 2.0))
 
@@ -767,7 +785,7 @@ def scrape_zg_batch(urls, pages=2):
     except Exception as e:
         print(f"  ❌ Error batch ZG: {e}", flush=True)
 
-    return list(all_asins), "ok"
+    return all_asins_ordered, "ok"
 
 
 def _fetch_playwright_zg(url, pages=2):

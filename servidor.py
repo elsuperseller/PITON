@@ -461,10 +461,10 @@ class Handler(BaseHTTPRequestHandler):
 
                 all_asins, vistos = [], set()
 
-                # Ranking ZG: un solo browser para todas las URLs
+                # Ranking ZG: un solo browser, top 50 por categoría (page 1 = top 50)
                 if zg_urls:
                     print(f"  📊 Batch ranking: {len(zg_urls)} URL(s) en 1 browser", flush=True)
-                    asins, _ = _az.scrape_zg_batch(zg_urls, pages=pages)
+                    asins, _ = _az.scrape_zg_batch(zg_urls, pages=1, per_url_limit=50)
                     for a in asins:
                         if a not in vistos:
                             vistos.add(a); all_asins.append(a)
@@ -475,12 +475,6 @@ class Handler(BaseHTTPRequestHandler):
                     for a in asins:
                         if a not in vistos:
                             vistos.add(a); all_asins.append(a)
-
-                # Limitar a 600 ASINs máximo para evitar timeouts de horas
-                MAX_ASINS = 600
-                if len(all_asins) > MAX_ASINS:
-                    print(f"  ⚠️  {len(all_asins)} ASINs → limitando a {MAX_ASINS}", flush=True)
-                    all_asins = all_asins[:MAX_ASINS]
 
                 print(f"  → {len(all_asins)} ASINs únicos, enriqueciendo…", flush=True)
 
