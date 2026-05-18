@@ -493,10 +493,10 @@ def scrape_url(url, min_discount=0, pages=1):
         return []
 
     resultados = []
-    label = url.split("/")[-1] or "ofertas"
 
     for pagina in range(1, pages + 1):
         url_pag = _paginar_url(url, pagina)
+        print(f"  🔗 ML HTML p{pagina}: {url_pag[:100]}", flush=True)
         try:
             r = requests.get(url_pag, headers=_HEADERS, timeout=20)
             r.raise_for_status()
@@ -506,11 +506,11 @@ def scrape_url(url, min_discount=0, pages=1):
 
         raw_items = _extraer_items_de_html(r.text)
         if not raw_items:
-            print(f"  📄 {label} p{pagina} → 0 raw, deteniendo", flush=True)
+            print(f"  📄 p{pagina} → 0 raw, deteniendo", flush=True)
             break
 
         page_prods = [p for raw in raw_items if (p := _normalizar(raw)) is not None]
-        print(f"  📄 {label} p{pagina} → {len(raw_items)} raw → {len(page_prods)} productos", flush=True)
+        print(f"  📄 p{pagina} → {len(raw_items)} raw → {len(page_prods)} productos", flush=True)
         resultados.extend(page_prods)
 
         if len(raw_items) < 20:  # Página parcial = última disponible
