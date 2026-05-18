@@ -490,69 +490,77 @@ class Handler(BaseHTTPRequestHandler):
                                "Content-Type": "application/json",
                                "x-marketplace": "www.amazon.com.mx"}
 
+                _RECURSOS = ["itemInfo.title", "images.primary.medium",
+                             "offersV2.listings.price", "offersV2.listings.dealDetails",
+                             "offersV2.listings.isBuyBoxWinner"]
                 _stats = {"ok": 0, "no200": 0, "empty": 0, "no_listing": 0, "err": 0}
 
-                def _enriquecer_asin(asin):
+                def _enriquecer_batch(batch):
+                    """Llama getItems con hasta 10 ASINs — lookup directo, más datos que searchItems."""
                     try:
                         r = requests.post(
-                            "https://creatorsapi.amazon/catalog/v1/searchItems",
+                            "https://creatorsapi.amazon/catalog/v1/getItems",
                             headers=api_headers,
-                            json={"partnerTag": CREDS["partner_tag"], "marketplace": "www.amazon.com.mx",
-                                  "searchIndex": "All", "keywords": asin, "itemCount": 1, "itemPage": 1,
-                                  "languagesOfPreference": ["es_MX"], "currencyOfPreference": "MXN",
-                                  "resources": ["itemInfo.title", "images.primary.medium",
-                                                "offersV2.listings.price", "offersV2.listings.dealDetails",
-                                                "offersV2.listings.isBuyBoxWinner"]},
-                            timeout=15
+                            json={"partnerTag": CREDS["partner_tag"],
+                                  "marketplace": "www.amazon.com.mx",
+                                  "itemIds": batch,
+                                  "languagesOfPreference": ["es_MX"],
+                                  "currencyOfPreference": "MXN",
+                                  "resources": _RECURSOS},
+                            timeout=20
                         )
                         if r.status_code != 200:
-                            _stats["no200"] += 1
-                            # Retry una vez si hay rate limit (429) o error de servidor (5xx)
+                            _stats["no200"] += len(batch)
                             if r.status_code in (429, 500, 502, 503):
-                                time.sleep(2.0)
+                                time.sleep(3.0)
                                 r2 = requests.post(
-                                    "https://creatorsapi.amazon/catalog/v1/searchItems",
+                                    "https://creatorsapi.amazon/catalog/v1/getItems",
                                     headers=api_headers,
-                                    json={"partnerTag": CREDS["partner_tag"], "marketplace": "www.amazon.com.mx",
-                                          "searchIndex": "All", "keywords": asin, "itemCount": 1, "itemPage": 1,
-                                          "languagesOfPreference": ["es_MX"], "currencyOfPreference": "MXN",
-                                          "resources": ["itemInfo.title", "images.primary.medium",
-                                                        "offersV2.listings.price", "offersV2.listings.dealDetails",
-                                                        "offersV2.listings.isBuyBoxWinner"]},
-                                    timeout=15
+                                    json={"partnerTag": CREDS["partner_tag"],
+                                          "marketplace": "www.amazon.com.mx",
+                                          "itemIds": batch,
+                                          "languagesOfPreference": ["es_MX"],
+                                          "currencyOfPreference": "MXN",
+                                          "resources": _RECURSOS},
+                                    timeout=20
                                 )
                                 if r2.status_code != 200:
-                                    return None
+                                    return []
                                 r = r2
                             else:
-                                return None
-                        items = r.json().get("searchResult", {}).get("items", [])
+                                return []
+                        items = r.json().get("itemsResult", {}).get("items", [])
                         if not items:
-                            _stats["empty"] += 1
-                            return None
-                        p = parsear_item(items[0])
-                        if p is None:
-                            _stats["no_listing"] += 1
-                            return None
-                        _stats["ok"] += 1
-                        return p if p["descuento_pct"] >= min_discount else None
+                            _stats["empty"] += len(batch)
+                            return []
+                        resultados_batch = []
+                        for item in items:
+                            p = parsear_item(item)
+                            if p is None:
+                                _stats["no_listing"] += 1
+                            else:
+                                _stats["ok"] += 1
+                                if p["descuento_pct"] >= min_discount:
+                                    resultados_batch.append(p)
+                        return resultados_batch
                     except Exception as e:
-                        _stats["err"] += 1
-                        print(f"  ❌ {asin}: {e}", flush=True)
-                        return None
+                        _stats["err"] += len(batch)
+                        print(f"  ❌ batch {batch[:2]}…: {e}", flush=True)
+                        return []
+
+                # Dividir en batches de 10 ASINs
+                batches = [all_asins[i:i+10] for i in range(0, len(all_asins), 10)]
+                print(f"  📦 {len(all_asins)} ASINs → {len(batches)} batches de 10 vía getItems", flush=True)
 
                 resultados = []
                 completados = 0
-                # 5 workers: balance entre velocidad y rate limit de la API
                 with ThreadPoolExecutor(max_workers=5) as pool:
-                    futuros = {pool.submit(_enriquecer_asin, a): a for a in all_asins}
+                    futuros = {pool.submit(_enriquecer_batch, b): b for b in batches}
                     for fut in as_completed(futuros):
                         completados += 1
-                        p = fut.result()
-                        if p:
-                            resultados.append(p)
-                        if completados % 100 == 0:
-                            print(f"  ⏳ {completados}/{len(all_asins)} | ok={_stats['ok']} no200={_stats['no200']} empty={_stats['empty']} sin_listing={_stats['no_listing']} err={_stats['err']}", flush=True)
+                        resultados.extend(fut.result())
+                        if completados % 20 == 0:
+                            print(f"  ⏳ {completados}/{len(batches)} batches | ok={_stats['ok']} no200={_stats['no200']} empty={_stats['empty']} sin_listing={_stats['no_listing']}", flush=True)
 
                 print(f"  📊 Final: ok={_stats['ok']} no200={_stats['no200']} empty={_stats['empty']} sin_listing={_stats['no_listing']} err={_stats['err']}", flush=True)
 
