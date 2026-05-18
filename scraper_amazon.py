@@ -76,38 +76,39 @@ DEALS_URLS = {
 RANKING_BASE = "https://www.amazon.com.mx/gp/{tipo}/{categoria}/"
 
 RANKING_CATEGORIAS = {
-    # slug_url          : nombre legible
-    "electronics"       : "Electrónica",
-    "computers"         : "Cómputo",
-    "cell-phones"       : "Celulares",
-    "videogames"        : "Videojuegos",
-    "home"              : "Hogar y Cocina",
-    "kitchen"           : "Cocina",
-    "tools"             : "Herramientas",
-    "garden"            : "Jardín",
-    "apparel"           : "Ropa",
-    "shoes"             : "Zapatos",
-    "jewelry"           : "Joyería",
-    "watches"           : "Relojes",
-    "sports"            : "Deportes",
-    "toys"              : "Juguetes",
-    "baby"              : "Bebé",
-    "books"             : "Libros",
-    "health"            : "Salud y Belleza",
-    "beauty"            : "Belleza",
-    "grocery"           : "Alimentos",
-    "pet-supplies"      : "Mascotas",
-    "automotive"        : "Automotriz",
-    "office-products"   : "Oficina",
-    "musical-instruments": "Instrumentos",
-    "arts-crafts"       : "Manualidades",
-    "industrial"        : "Industrial",
+    # slug_url (Amazon.com.mx)  : nombre legible
+    "electronics"           : "Electrónicos",
+    "kitchen"               : "Hogar y Cocina",
+    "sports"                : "Deportes y Aire Libre",
+    "toys"                  : "Juguetes y Juegos",
+    "tools"                 : "Herramientas y Mejoras del Hogar",
+    "beauty"                : "Belleza",
+    "hpc"                   : "Salud y Cuidado Personal",
+    "shoes"                 : "Ropa, Zapatos y Accesorios",
+    "books"                 : "Libros",
+    "digital-text"          : "Tienda Kindle",
+    "videogames"            : "Videojuegos",
+    "automotive"            : "Automotriz y Motocicletas",
+    "pet-supplies"          : "Productos para Animales",
+    "officeproduct"         : "Oficina y Papelería",
+    "grocery"               : "Alimentos y Bebidas",
+    "baby"                  : "Bebé",
+    "watches"               : "Relojes",
+    "musical-instruments"   : "Instrumentos Musicales",
+    "music"                 : "Música",
+    "dvd"                   : "Películas y Series de TV",
+    "software"              : "Software",
+    "handmade"              : "Productos Handmade",
+    "industrial"            : "Industria, Empresas y Ciencia",
+    "amazon-renewed"        : "Amazon Renewed",
+    "amazon-devices"        : "Dispositivos Amazon",
+    "gift-cards"            : "Tarjetas de Regalo",
 }
 
 # Categorías que se scrapeean por defecto cuando no se especifica ninguna
 RANKING_CATEGORIAS_DEFAULT = [
-    "electronics", "sports", "home", "toys", "apparel",
-    "health", "videogames", "books",
+    "electronics", "sports", "kitchen", "toys", "shoes",
+    "hpc", "videogames", "books",
 ]
 
 _HEADERS = {

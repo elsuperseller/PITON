@@ -812,6 +812,16 @@ input[type=file] {
         </div>
       </div>
 
+      <div id="fecha-fin-filtros" style="display:none;margin-top:10px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);">
+        <div style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">⏹ Filtrar por fecha de fin</div>
+        <div id="fecha-fin-chips"></div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn-xs" onclick="selectAllFechasFin(true)">Todas</button>
+          <button class="btn-xs" onclick="selectAllFechasFin(false)">Ninguna</button>
+          <button class="btn-xs" style="background:#f59e0b;color:#fff;border:none;" onclick="aplicarFiltroFecha()">Aplicar filtro</button>
+        </div>
+      </div>
+
       <div id="results-count"></div>
       <div class="product-grid" id="product-grid"></div>
     </div>
@@ -844,12 +854,29 @@ input[type=file] {
 
 <script>
 const CATS = {
-  "Electrónica":"Electronics","Hogar y Cocina":"HomeAndKitchen","Deportes":"SportsAndOutdoors",
-  "Juguetes":"ToysAndGames","Herramientas":"ToolsAndHomeImprovement","Belleza":"HealthPersonalCare",
-  "Ropa Hombres":"FashionMen","Ropa Mujeres":"FashionWomen","Libros":"Books",
-  "Videojuegos":"VideoGames","Automotriz":"Automotive","Mascotas":"PetSupplies",
-  "Oficina":"OfficeProducts","Alimentos":"GroceryAndGourmetFood","Bebé":"Baby",
-  "Relojes":"Watches","Música":"MusicalInstruments"
+  "Electrónicos":                     "Electronics",
+  "Hogar y Cocina":                   "HomeAndKitchen",
+  "Deportes y Aire Libre":            "SportsAndOutdoors",
+  "Juguetes y Juegos":                "ToysAndGames",
+  "Herramientas y Mejoras del Hogar": "ToolsAndHomeImprovement",
+  "Belleza":                          "HealthPersonalCare",
+  "Salud y Cuidado Personal":         "HealthPersonalCare",
+  "Ropa, Zapatos y Accesorios":       "Fashion",
+  "Libros":                           "Books",
+  "Tienda Kindle":                    "KindleStore",
+  "Videojuegos":                      "VideoGames",
+  "Automotriz y Motocicletas":        "Automotive",
+  "Productos para Animales":          "PetSupplies",
+  "Oficina y Papelería":              "OfficeProducts",
+  "Alimentos y Bebidas":              "GroceryAndGourmetFood",
+  "Bebé":                             "Baby",
+  "Relojes":                          "Watches",
+  "Instrumentos Musicales":           "MusicalInstruments",
+  "Música":                           "Music",
+  "Películas y Series de TV":         "MoviesAndTV",
+  "Software":                         "Software",
+  "Productos Handmade":               "Handmade",
+  "Industria, Empresas y Ciencia":    "IndustrialAndScientific",
 }
 
 const catsEl = document.getElementById("cats")
@@ -861,7 +888,41 @@ Object.keys(CATS).forEach(nombre => {
   </div>`
 })
 
-let fechasDisponibles = {}
+let fechasDisponibles    = {}
+let fechasFinDisponibles = {}
+
+function construirFiltroFechasFin(items) {
+  fechasFinDisponibles = {}
+  items.forEach(p => {
+    if (p.end_time) {
+      const fecha = new Date(p.end_time).toLocaleDateString('es-MX', {day:'2-digit',month:'2-digit',year:'2-digit'})
+      if (!fechasFinDisponibles[fecha]) fechasFinDisponibles[fecha] = []
+      fechasFinDisponibles[fecha].push(p)
+    }
+  })
+
+  const chips = document.getElementById("fecha-fin-chips")
+  const panel = document.getElementById("fecha-fin-filtros")
+
+  if (Object.keys(fechasFinDisponibles).length === 0) {
+    panel.style.display = "none"
+    return
+  }
+
+  panel.style.display = "block"
+  chips.innerHTML = Object.entries(fechasFinDisponibles).map(([fecha, items]) =>
+    `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#f7f9fc;padding:4px 10px;border-radius:6px;border:1px solid #d0d9e6;">
+      <input type="checkbox" class="fecha-fin-chk" value="${fecha}" checked style="accent-color:#f59e0b;">
+      <span style="font-size:12px;color:#1a2738;">${fecha}</span>
+      <span style="font-size:10px;color:#6b7e92;">(${items.length})</span>
+    </label>`
+  ).join("")
+}
+
+function selectAllFechasFin(v) {
+  document.querySelectorAll(".fecha-fin-chk").forEach(c => c.checked = v)
+  aplicarFiltroFecha()
+}
 
 function construirFiltroFechas(items) {
   fechasDisponibles = {}
@@ -975,7 +1036,9 @@ function actualizarIndicadorFecha() {
 }
 
 function aplicarFiltroFecha() {
-  const seleccionadas = [...document.querySelectorAll(".fecha-chk:checked")].map(c => c.value)
+  const seleccionadas    = [...document.querySelectorAll(".fecha-chk:checked")].map(c => c.value)
+  const seleccionadasFin = [...document.querySelectorAll(".fecha-fin-chk:checked")].map(c => c.value)
+  const hayChipsFin      = document.querySelectorAll(".fecha-fin-chk").length > 0
 
   allItems.forEach((p, i) => {
     const card = document.getElementById("card_"+i)
@@ -1005,18 +1068,30 @@ function aplicarFiltroFecha() {
       return
     }
 
-    if (!seleccionadas.length) {
-      card.style.display = ""
-      return
+    // Filtro por chips de fecha inicio
+    let pasaInicio = true
+    if (seleccionadas.length) {
+      const tieneFecha = !!p.start_time
+      const fecha = tieneFecha
+        ? new Date(p.start_time).toLocaleDateString('es-MX', {day:'2-digit',month:'2-digit',year:'2-digit'})
+        : null
+      pasaInicio = tieneFecha && seleccionadas.includes(fecha)
     }
-    const tieneFecha = !!p.start_time
-    const fecha = tieneFecha
-      ? new Date(p.start_time).toLocaleDateString('es-MX', {day:'2-digit',month:'2-digit',year:'2-digit'})
-      : null
-    const coincide = tieneFecha && seleccionadas.includes(fecha)
-    card.style.display = coincide ? "" : "none"
-    chk.checked = coincide
-    card.classList.toggle("selected", coincide)
+
+    // Filtro por chips de fecha fin
+    let pasaFin = true
+    if (hayChipsFin && seleccionadasFin.length < document.querySelectorAll(".fecha-fin-chk").length) {
+      const tieneEndTime = !!p.end_time
+      const fechaFin = tieneEndTime
+        ? new Date(p.end_time).toLocaleDateString('es-MX', {day:'2-digit',month:'2-digit',year:'2-digit'})
+        : null
+      pasaFin = tieneEndTime && seleccionadasFin.includes(fechaFin)
+    }
+
+    const visible = pasaInicio && pasaFin
+    card.style.display = visible ? "" : "none"
+    chk.checked = visible
+    card.classList.toggle("selected", visible)
   })
   updateCount()
 }
@@ -1261,6 +1336,7 @@ async function buscar() {
 function renderResults(items) {
   renderPromoFiltros(items)
   construirFiltroFechas(items)
+  construirFiltroFechasFin(items)
   if (fechaFiltroGuardada) {
     setTimeout(() => {
       const existe = [...document.querySelectorAll(".fecha-chk")].some(c => c.value === fechaFiltroGuardada)
@@ -2117,12 +2193,29 @@ async function buscarAmazonUrls() {
 }
 
 const _RANKING_SLUGS = {
-  "Electrónica": "electronics", "Hogar y Cocina": "home", "Deportes": "sports",
-  "Juguetes": "toys", "Herramientas": "tools", "Belleza": "health",
-  "Ropa Hombres": "apparel", "Ropa Mujeres": "apparel", "Libros": "books",
-  "Videojuegos": "videogames", "Automotriz": "automotive", "Mascotas": "pet-supplies",
-  "Oficina": "office-products", "Alimentos": "grocery", "Bebé": "baby",
-  "Relojes": "watches", "Música": "musical-instruments"
+  "Electrónicos":                     "electronics",
+  "Hogar y Cocina":                   "kitchen",
+  "Deportes y Aire Libre":            "sports",
+  "Juguetes y Juegos":                "toys",
+  "Herramientas y Mejoras del Hogar": "tools",
+  "Belleza":                          "beauty",
+  "Salud y Cuidado Personal":         "hpc",
+  "Ropa, Zapatos y Accesorios":       "shoes",
+  "Libros":                           "books",
+  "Tienda Kindle":                    "digital-text",
+  "Videojuegos":                      "videogames",
+  "Automotriz y Motocicletas":        "automotive",
+  "Productos para Animales":          "pet-supplies",
+  "Oficina y Papelería":              "officeproduct",
+  "Alimentos y Bebidas":              "grocery",
+  "Bebé":                             "baby",
+  "Relojes":                          "watches",
+  "Instrumentos Musicales":           "musical-instruments",
+  "Música":                           "music",
+  "Películas y Series de TV":         "dvd",
+  "Software":                         "software",
+  "Productos Handmade":               "handmade",
+  "Industria, Empresas y Ciencia":    "industrial",
 }
 
 async function buscarRanking(tipo) {
