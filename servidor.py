@@ -490,6 +490,8 @@ class Handler(BaseHTTPRequestHandler):
                                "Content-Type": "application/json",
                                "x-marketplace": "www.amazon.com.mx"}
 
+                _stats = {"ok": 0, "no200": 0, "empty": 0, "no_listing": 0, "err": 0}
+
                 def _enriquecer_asin(asin):
                     try:
                         r = requests.post(
@@ -504,27 +506,55 @@ class Handler(BaseHTTPRequestHandler):
                             timeout=15
                         )
                         if r.status_code != 200:
-                            return None
+                            _stats["no200"] += 1
+                            # Retry una vez si hay rate limit (429) o error de servidor (5xx)
+                            if r.status_code in (429, 500, 502, 503):
+                                time.sleep(2.0)
+                                r2 = requests.post(
+                                    "https://creatorsapi.amazon/catalog/v1/searchItems",
+                                    headers=api_headers,
+                                    json={"partnerTag": CREDS["partner_tag"], "marketplace": "www.amazon.com.mx",
+                                          "searchIndex": "All", "keywords": asin, "itemCount": 1, "itemPage": 1,
+                                          "languagesOfPreference": ["es_MX"], "currencyOfPreference": "MXN",
+                                          "resources": ["itemInfo.title", "images.primary.medium",
+                                                        "offersV2.listings.price", "offersV2.listings.dealDetails",
+                                                        "offersV2.listings.isBuyBoxWinner"]},
+                                    timeout=15
+                                )
+                                if r2.status_code != 200:
+                                    return None
+                                r = r2
+                            else:
+                                return None
                         items = r.json().get("searchResult", {}).get("items", [])
                         if not items:
+                            _stats["empty"] += 1
                             return None
                         p = parsear_item(items[0])
-                        return p if p and p["descuento_pct"] >= min_discount else None
+                        if p is None:
+                            _stats["no_listing"] += 1
+                            return None
+                        _stats["ok"] += 1
+                        return p if p["descuento_pct"] >= min_discount else None
                     except Exception as e:
+                        _stats["err"] += 1
                         print(f"  ❌ {asin}: {e}", flush=True)
                         return None
 
                 resultados = []
                 completados = 0
-                with ThreadPoolExecutor(max_workers=12) as pool:
+                # 5 workers: balance entre velocidad y rate limit de la API
+                with ThreadPoolExecutor(max_workers=5) as pool:
                     futuros = {pool.submit(_enriquecer_asin, a): a for a in all_asins}
                     for fut in as_completed(futuros):
                         completados += 1
                         p = fut.result()
                         if p:
                             resultados.append(p)
-                        if completados % 50 == 0:
-                            print(f"  ⏳ {completados}/{len(all_asins)} ASINs procesados, {len(resultados)} con descuento", flush=True)
+                        if completados % 100 == 0:
+                            print(f"  ⏳ {completados}/{len(all_asins)} | ok={_stats['ok']} no200={_stats['no200']} empty={_stats['empty']} sin_listing={_stats['no_listing']} err={_stats['err']}", flush=True)
+
+                print(f"  📊 Final: ok={_stats['ok']} no200={_stats['no200']} empty={_stats['empty']} sin_listing={_stats['no_listing']} err={_stats['err']}", flush=True)
 
                 seen, unicos = set(), []
                 for p in resultados:
