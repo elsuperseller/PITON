@@ -65,12 +65,20 @@ def _descubrir_containers(base_url):
 
 # ── EXTRACTOR DE JSON EMBEBIDO ───────────────────────────────────────
 def _paginar_url(url, pagina):
-    """Agrega ?_from=N para paginación ML (48 ítems por página)."""
+    """
+    Construye la URL para la página N respetando el esquema de paginación de la URL base.
+    - URLs con ?page=N  → incrementa desde ese número base (ofertas, deals)
+    - Resto            → usa ?_from=N (48 ítems por página, listados estándar)
+    """
     if pagina <= 1:
         return url
-    parsed  = urlparse(url)
-    params  = parse_qs(parsed.query, keep_blank_values=True)
-    params["_from"] = [str((pagina - 1) * 48)]
+    parsed = urlparse(url)
+    params = parse_qs(parsed.query, keep_blank_values=True)
+    if "page" in params:
+        page_base = int(params["page"][0])
+        params["page"] = [str(page_base + pagina - 1)]
+    else:
+        params["_from"] = [str((pagina - 1) * 48)]
     return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
 
 
