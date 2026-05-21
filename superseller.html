@@ -847,6 +847,7 @@ input[type=file] {
   <button id="btnSheets" onclick="exportarSheets()" style="background:#1a7f4b;color:#fff;border:none;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">📊 → Sheets</button>
   <button id="btnFiltroSuper" onclick="aplicarFiltroSuperseller()" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🧹 Filtro Superseller</button>
   <button onclick="quitarRelampagos()" style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">⚡ Quitar Relámpagos</button>
+  <button onclick="quitarRepetidos()" style="background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🔁 Quitar Repetidos</button>
   <button id="btnVerTodas" onclick="verTodasLasOfertas()" style="display:none;" class="btn btn-ghost" >↩ Ver todas</button>
   <span style="font-size:11px;color:var(--t3);" id="exportInfo"></span>
   <span id="filtroSuperInfo" style="font-size:10px;color:var(--amber);display:none;"></span>
@@ -1349,8 +1350,8 @@ function renderResults(items) {
       }
     }, 500)
   }
-  const filtroBadge = document.getElementById("f_badge_activo").checked
-  const badgeTexto = document.getElementById("f_badge_texto").value.trim().toLowerCase()
+  const filtroBadge  = document.getElementById("f_badge_activo").checked
+  const badgeTexto   = document.getElementById("f_badge_texto").value.trim().toLowerCase()
   const filtroInicio = document.getElementById("f_con_inicio").checked
 
   if (filtroBadge && badgeTexto) {
@@ -1378,6 +1379,7 @@ function renderResults(items) {
           ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
         </div>
         ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
+        ${(p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0) ? `<span title="Score: ${p.novedad_score}" style="background:rgba(107,114,128,.12);color:#9ca3af;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(107,114,128,.2);">🔁 ${p.novedad_score === 0 ? 'Publicado <3d' : p.novedad_score <= 0.2 ? 'Publicado <7d' : p.novedad_score <= 0.5 ? 'Publicado <14d' : 'Publicado +14d'}</span>` : ""}
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
           <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${getPromoLabel(p)}</span>
           ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
@@ -1988,6 +1990,22 @@ function quitarRelampagos() {
   })
   updateCount()
   setStatus(`⚡ ${count} Lightning Deals deseleccionados`, "done")
+}
+
+function quitarRepetidos() {
+  let count = 0
+  allItems.forEach((p, i) => {
+    const chk = document.getElementById("chk_"+i)
+    const card = document.getElementById("card_"+i)
+    if (!chk || !card || card.style.display === "none") return
+    if (p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0) {
+      chk.checked = false
+      card.classList.remove("selected")
+      count++
+    }
+  })
+  updateCount()
+  setStatus(`🔁 ${count} productos ya publicados deseleccionados`, "done")
 }
 
 function verTodasLasOfertas() {

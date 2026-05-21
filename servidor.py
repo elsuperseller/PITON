@@ -405,6 +405,10 @@ class Handler(BaseHTTPRequestHandler):
                     pages=paginas,
                 )
 
+                if _HV_OK:
+                    items = _hv.aplicar_scores(items)
+                    print(f"  📚 Historial aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": True, "items": items, "total": len(items)}).encode())
@@ -570,7 +574,11 @@ class Handler(BaseHTTPRequestHandler):
                         seen.add(p["asin"])
                         unicos.append(p)
 
-                print(f"  → {len(unicos)} productos con descuento", flush=True)
+                if _HV_OK:
+                    unicos = _hv.aplicar_scores(unicos)
+                    print(f"  📚 Historial aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos de {len(unicos)}", flush=True)
+
+                print(f"  → {len(unicos)} productos", flush=True)
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": True, "items": unicos,
@@ -737,6 +745,10 @@ class Handler(BaseHTTPRequestHandler):
                 r = requests.post(SHEETS_URL, json=items, timeout=120)
                 r.raise_for_status()
                 resp_data = r.json()
+                # Marcar como publicados en historial
+                if _HV_OK:
+                    n = _hv.marcar_varios(items)
+                    print(f"  📚 {n} items marcados en historial", flush=True)
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": True, "rows": resp_data.get("rows", len(items))}).encode())
