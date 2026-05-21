@@ -3,7 +3,7 @@
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 BASE_DIR       = os.path.dirname(os.path.abspath(__file__))
 HISTORIAL_FILE = os.path.join(BASE_DIR, "historial.json")
@@ -34,7 +34,10 @@ def score_novedad(item_id, historial=None):
     entry = historial.get(str(item_id))
     if not entry:
         return 1.0
-    dias  = (datetime.utcnow() - datetime.fromisoformat(entry["last_published"])).days
+    ultimo = datetime.fromisoformat(entry["last_published"])
+    if ultimo.tzinfo is None:
+        ultimo = ultimo.replace(tzinfo=timezone.utc)
+    dias  = (datetime.now(timezone.utc) - ultimo).days
     veces = entry.get("times_published", 1)
     if   dias >= 14: base = 0.8
     elif dias >= 7:  base = 0.5
@@ -47,7 +50,7 @@ def score_novedad(item_id, historial=None):
 def marcar_publicado(item_id, source="", title=""):
     historial = _cargar()
     key       = str(item_id)
-    ahora     = datetime.utcnow().isoformat()
+    ahora     = datetime.now(timezone.utc).isoformat()
     if key in historial:
         historial[key]["last_published"]   = ahora
         historial[key]["times_published"] += 1
@@ -63,7 +66,7 @@ def marcar_publicado(item_id, source="", title=""):
 def marcar_varios(items):
     """Marca una lista de objetos oferta como publicados en un solo write."""
     historial = _cargar()
-    ahora     = datetime.utcnow().isoformat()
+    ahora     = datetime.now(timezone.utc).isoformat()
     for p in items:
         key = str(p.get("id") or p.get("asin") or "")
         if not key:
@@ -96,8 +99,11 @@ def filtrar(items, min_score=0.1):
 # ── ESTADÍSTICAS ─────────────────────────────────────────────────────
 def stats():
     historial = _cargar()
-    ahora     = datetime.utcnow()
-    def dias_diff(e): return (ahora - datetime.fromisoformat(e["last_published"])).days
+    ahora     = datetime.now(timezone.utc)
+    def dias_diff(e):
+        dt = datetime.fromisoformat(e["last_published"])
+        if dt.tzinfo is None: dt = dt.replace(tzinfo=timezone.utc)
+        return (ahora - dt).days
     recientes = sorted(historial.values(), key=lambda e: e["last_published"], reverse=True)[:10]
     return {
         "total":          len(historial),
@@ -110,9 +116,12 @@ def stats():
 def limpiar(dias=60):
     """Elimina entradas sin publicación en los últimos `dias` días."""
     historial = _cargar()
-    corte     = datetime.utcnow() - timedelta(days=dias)
+    corte     = datetime.now(timezone.utc) - timedelta(days=dias)
     antes     = len(historial)
+    def _dt(s):
+        dt = datetime.fromisoformat(s)
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
     historial = {k: v for k, v in historial.items()
-                 if datetime.fromisoformat(v["last_published"]) >= corte}
+                 if _dt(v["last_published"]) >= corte}
     _guardar(historial)
     return {"eliminados": antes - len(historial), "restantes": len(historial)}
