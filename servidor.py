@@ -631,47 +631,66 @@ class Handler(BaseHTTPRequestHandler):
                     }).encode())
                     return
 
-                # 2. Enriquecer vía Creators API
+                # 2. Enriquecer vía Creators API — getItems en batches de 10
                 token = get_token()
                 api_headers = {
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                     "x-marketplace": "www.amazon.com.mx"
                 }
-                resultados = []
-                for asin in all_asins:
+                _RECURSOS = ["itemInfo.title", "images.primary.medium",
+                             "offersV2.listings.price", "offersV2.listings.dealDetails",
+                             "offersV2.listings.isBuyBoxWinner"]
+
+                def _enriquecer_batch_deals(batch):
                     try:
-                        payload = {
-                            "partnerTag": CREDS["partner_tag"],
-                            "marketplace": "www.amazon.com.mx",
-                            "searchIndex": "All",
-                            "keywords": asin,
-                            "itemCount": 1,
-                            "itemPage": 1,
-                            "languagesOfPreference": ["es_MX"],
-                            "currencyOfPreference": "MXN",
-                            "resources": [
-                                "itemInfo.title", "images.primary.medium",
-                                "offersV2.listings.price", "offersV2.listings.dealDetails",
-                                "offersV2.listings.isBuyBoxWinner"
-                            ]
-                        }
                         r = requests.post(
-                            "https://creatorsapi.amazon/catalog/v1/searchItems",
-                            headers=api_headers, json=payload, timeout=15
+                            "https://creatorsapi.amazon/catalog/v1/getItems",
+                            headers=api_headers,
+                            json={"partnerTag": CREDS["partner_tag"],
+                                  "marketplace": "www.amazon.com.mx",
+                                  "itemIds": batch,
+                                  "languagesOfPreference": ["es_MX"],
+                                  "currencyOfPreference": "MXN",
+                                  "resources": _RECURSOS},
+                            timeout=20
                         )
                         if r.status_code != 200:
-                            continue
-                        items = r.json().get("searchResult", {}).get("items", [])
-                        if not items:
-                            continue
-                        p = parsear_item(items[0])
-                        if p and p["descuento_pct"] >= min_discount:
-                            resultados.append(p)
-                            print(f"  ✅ {asin} → ${p['price_discounted']} ({p['descuento_pct']}% off)", flush=True)
-                        time.sleep(0.4)
+                            if r.status_code in (429, 500, 502, 503):
+                                time.sleep(3.0)
+                                r2 = requests.post(
+                                    "https://creatorsapi.amazon/catalog/v1/getItems",
+                                    headers=api_headers,
+                                    json={"partnerTag": CREDS["partner_tag"],
+                                          "marketplace": "www.amazon.com.mx",
+                                          "itemIds": batch,
+                                          "languagesOfPreference": ["es_MX"],
+                                          "currencyOfPreference": "MXN",
+                                          "resources": _RECURSOS},
+                                    timeout=20
+                                )
+                                if r2.status_code != 200:
+                                    return []
+                                r = r2
+                            else:
+                                return []
+                        items_api = r.json().get("itemsResult", {}).get("items", [])
+                        out = []
+                        for item in items_api:
+                            p = parsear_item(item)
+                            if p and p["descuento_pct"] >= min_discount:
+                                out.append(p)
+                        return out
                     except Exception as e:
-                        print(f"  ❌ {asin}: {e}", flush=True)
+                        print(f"  ❌ batch: {e}", flush=True)
+                        return []
+
+                batches   = [all_asins[i:i+10] for i in range(0, len(all_asins), 10)]
+                resultados = []
+                print(f"  📦 {len(all_asins)} ASINs → {len(batches)} batches vía getItems", flush=True)
+                with ThreadPoolExecutor(max_workers=5) as pool:
+                    for res in pool.map(_enriquecer_batch_deals, batches):
+                        resultados.extend(res)
 
                 # dedup por ASIN
                 seen, unicos = set(), []
@@ -679,6 +698,10 @@ class Handler(BaseHTTPRequestHandler):
                     if p["asin"] not in seen:
                         seen.add(p["asin"])
                         unicos.append(p)
+
+                if _HV_OK:
+                    unicos = _hv.aplicar_scores(unicos)
+                    print(f"  📚 Historial: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
 
                 print(f"  → {len(unicos)} productos con descuento", flush=True)
                 self.send_response(200); self._cors()
