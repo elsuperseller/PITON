@@ -1369,7 +1369,7 @@ function renderResults(items) {
 
   const grid = document.getElementById("product-grid")
   grid.innerHTML = items.map((p, i) => `
-    <div class="product-card card-wrap" id="card_${i}">
+    <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}">
       <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
       <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'">
       <div class="product-info">
@@ -1994,14 +1994,12 @@ function quitarRelampagos() {
 
 function quitarRepetidos() {
   let count = 0
-  allItems.forEach((p, i) => {
-    const chk = document.getElementById("chk_"+i)
-    const card = document.getElementById("card_"+i)
-    if (!chk || !card || card.style.display === "none") return
-    if (p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0) {
-      chk.checked = false
-      card.classList.remove("selected")
-      count++
+  document.querySelectorAll(".product-card").forEach(card => {
+    if (card.style.display === "none") return
+    const score = parseFloat(card.dataset.novedad ?? "1")
+    if (score < 1.0) {
+      const chk = card.querySelector(".card-checkbox")
+      if (chk) { chk.checked = false; card.classList.remove("selected"); count++ }
     }
   })
   updateCount()
