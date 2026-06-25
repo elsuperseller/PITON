@@ -1076,6 +1076,131 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path == "/feeds/buscar":
+            # Endpoint para validar ASINs de fuentes externas (Telegram, etc)
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                feed_id = body.get("audiencia_id", "")
+                asins_externos = body.get("asins_telegram", [])
+
+                if not feed_id:
+                    raise ValueError("audiencia_id requerido")
+                if not asins_externos:
+                    raise ValueError("Sin ASINs para validar")
+
+                # Cargar perfil del feed
+                perfiles = cargar_perfiles()
+                perfil = perfiles.get(feed_id)
+
+                if not perfil:
+                    raise ValueError(f"Feed '{feed_id}' no encontrado")
+
+                print(f"🔍 /feeds/buscar → Feed: {feed_id}, ASINs: {len(asins_externos)}", flush=True)
+
+                # Enriquecer ASINs con Amazon Creators API
+                items = enriquecer_asins(asins_externos, perfil['filtros'].get('minSavingPercent', 1))
+                print(f"  📦 {len(items)} items enriquecidos vía API", flush=True)
+
+                # Aplicar filtros del perfil
+                productos_validados = []
+                for item in items:
+                    precio = extraer_precio(item)
+
+                    # Filtro de precio
+                    if precio:
+                        if precio < perfil['filtros'].get('minPrice', 0):
+                            continue
+                        if precio > perfil['filtros'].get('maxPrice', 999999):
+                            continue
+
+                    # Excluir keywords
+                    titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "").lower()
+                    if any(ex.lower() in titulo for ex in perfil['filtros'].get('excludeKeywords', [])):
+                        continue
+
+                    # Parsear item
+                    parsed = parsear_item(item)
+                    if parsed:
+                        # Verificar descuento mínimo
+                        descuento_real = parsed.get("descuento_pct", 0)
+                        min_descuento = perfil['filtros'].get('minSavingPercent', 1)
+
+                        if descuento_real < min_descuento:
+                            continue
+
+                        productos_validados.append({
+                            "asin": parsed.get("asin", ""),
+                            "title": parsed.get("title", ""),
+                            "price": parsed.get("price_discounted", precio),
+                            "price_original": parsed.get("price_original", 0),
+                            "price_discounted": parsed.get("price_discounted", precio),
+                            "descuento_pct": descuento_real,
+                            "discount": descuento_real,
+                            "image": parsed.get("img", ""),
+                            "img": parsed.get("img", ""),
+                            "link": parsed.get("link", ""),
+                            "source": "telegram"
+                        })
+
+                print(f"  ✅ {len(productos_validados)} productos pasaron filtros", flush=True)
+
+                # Aplicar scoring de novedad usando historial del feed
+                if _HV_OK and productos_validados:
+                    historial_feed = cargar_historial_feed(feed_id)
+                    from datetime import datetime, timezone
+                    now = datetime.now(timezone.utc)
+
+                    for producto in productos_validados:
+                        asin = producto.get('asin')
+                        title = producto.get('title', '')
+
+                        # Extraer modelo usando la función del CORE
+                        modelo = _hv._extraer_modelo(title) if hasattr(_hv, '_extraer_modelo') else ""
+
+                        # Buscar en historial del feed
+                        item_id = asin or modelo
+                        if item_id and item_id in historial_feed:
+                            registro = historial_feed[item_id]
+                            ultima_vez = registro.get('ultima_vez', '')
+
+                            try:
+                                ultima_fecha = datetime.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                                dias = (now - ultima_fecha).days
+
+                                # Scoring de novedad
+                                if dias > 14:
+                                    score = 0.8
+                                elif dias > 7:
+                                    score = 0.5
+                                elif dias > 3:
+                                    score = 0.2
+                                else:
+                                    score = 0.0
+                            except:
+                                score = 0.5
+
+                            producto['novedad_score'] = score
+                        else:
+                            producto['novedad_score'] = 1.0
+
+                    ya_vistos = sum(1 for p in productos_validados if p.get('novedad_score', 1.0) < 1.0)
+                    print(f"  📚 Historial: {ya_vistos} productos ya vistos", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "items": productos_validados,
+                    "total": len(productos_validados)
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/buscar: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -1342,6 +1467,62 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"🔄 Generando feed para '{audiencia_id}'...", flush=True)
                 productos = []
 
+                # 0. SCRAPE TELEGRAM (si está configurado)
+                telegram_sources = perfil.get('telegram_sources', [])
+                if telegram_sources:
+                    print(f"  📱 Scrapeando {len(telegram_sources)} canal(es) de Telegram...", flush=True)
+                    try:
+                        import telegram_utils
+                        asins_telegram = telegram_utils.obtener_asins_de_telegram(perfil)
+
+                        if asins_telegram:
+                            print(f"    📦 {len(asins_telegram)} ASINs de Telegram a validar", flush=True)
+                            # Enriquecer con Creators API
+                            items_telegram = enriquecer_asins(asins_telegram, perfil['filtros'].get('minSavingPercent', 1))
+                            print(f"    ✅ {len(items_telegram)} items enriquecidos desde Telegram", flush=True)
+
+                            # Filtrar y agregar
+                            items_validos_telegram = 0
+                            items_sin_parse = 0
+
+                            # 🎓 PRODUCTOS DE TELEGRAM: SIN FILTROS (fuente de aprendizaje)
+                            # Los canales ya hacen curaduría manual, así que confiamos en ellos
+                            # El historial se encargará de aprender nuevas categorías/productos
+                            print(f"    🎓 Productos de Telegram: SIN FILTROS (modo aprendizaje)", flush=True)
+
+                            for item in items_telegram:
+                                parsed = parsear_item(item)
+                                if not parsed:
+                                    items_sin_parse += 1
+                                    continue
+
+                                # Obtener precio (para mostrar, pero no filtrar)
+                                precio = extraer_precio(item) or parsed.get("price_discounted", 0)
+
+                                # Obtener nombre del canal
+                                canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
+
+                                # Agregar SIN FILTROS - todo pasa
+                                productos.append({
+                                    "asin": parsed.get("asin", ""),
+                                    "title": parsed.get("title", ""),
+                                    "price": parsed.get("price_discounted", precio),
+                                    "discount": parsed.get("descuento_pct", 0),
+                                    "image": parsed.get("img", ""),
+                                    "link": parsed.get("link", ""),
+                                    "source_channel": canal_nombre,
+                                    "source_type": "telegram",
+                                    "keyword_match": f"📱 {canal_nombre}"
+                                })
+                                items_validos_telegram += 1
+
+                            print(f"    ✅ {items_validos_telegram} productos de Telegram agregados al feed", flush=True)
+                            if items_sin_parse > 0:
+                                print(f"    ⚠️  {items_sin_parse} items no pudieron parsearse", flush=True)
+
+                    except Exception as e:
+                        print(f"  ⚠️  Error scrapeando Telegram: {e}", flush=True)
+
                 # 1. PROCESAR URLS FIJAS (si existen)
                 urls_fijas = perfil.get('urls_fijas', [])
                 if urls_fijas and _AZ_OK:
@@ -1375,10 +1556,6 @@ class Handler(BaseHTTPRequestHandler):
                                     if any(ex.lower() in titulo for ex in perfil['filtros'].get('excludeKeywords', [])):
                                         continue
 
-                                    # VALIDAR CATEGORÍA: Filtrar productos patrocinados/sugeridos que NO son coleccionables
-                                    if not es_categoria_coleccionable(item):
-                                        continue  # Descartar productos de otras categorías (ads, sugerencias)
-
                                     # Parsear item
                                     parsed = parsear_item(item)
                                     if parsed:
@@ -1396,6 +1573,8 @@ class Handler(BaseHTTPRequestHandler):
                                             "discount": descuento_real,
                                             "image": parsed.get("img", ""),
                                             "link": parsed.get("link", ""),
+                                            "source_channel": desc,
+                                            "source_type": "url_fija",
                                             "keyword_match": f"🔗 {desc}"
                                         })
                                         items_validos += 1
@@ -1456,6 +1635,8 @@ class Handler(BaseHTTPRequestHandler):
                                     "discount": descuento_real,
                                     "image": parsed.get("img", ""),
                                     "link": parsed.get("link", ""),
+                                    "source_channel": f"Keyword: {keyword}",
+                                    "source_type": "keyword",
                                     "keyword_match": keyword
                                 })
                                 items_validos += 1
