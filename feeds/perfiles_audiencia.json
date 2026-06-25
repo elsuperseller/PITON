@@ -1,0 +1,312 @@
+{
+  "coleccionistas": {
+    "nombre": "Collector Secret Society",
+    "descripcion": "Figuras de acción, estatuas y coleccionables premium de marcas top",
+    "icono": "🎭",
+    "sheets_export_url": "https://script.google.com/macros/s/AKfycbxnWNZ7FDaLhqBvQyNtTZcjmo33v4EQXS-R37JCJDJ7G3K1XTbBLvWLZcepGljMZiDZPA/exec",
+    "urls_fijas": [
+      {
+        "url": "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&discounts-widget=%2522%257B%255C%2522state%255C%2522%253A%257B%255C%2522refinementFilters%255C%2522%253A%257B%255C%2522departments%255C%2522%253A%255B%255C%252211260443011%252F20940159011%255C%2522%255D%257D%257D%252C%255C%2522version%255C%2522%253A1%257D%2522",
+        "plataforma": "amazon",
+        "descripcion": "Ofertas del día - Juguetes y Coleccionables"
+      }
+    ],
+    "keywords": [
+      "Funko Pop",
+      "Funko",
+      "Marvel Legends",
+      "Star Wars Black Series",
+      "Hasbro Transformers",
+      "G.I. Joe",
+      "Mattel Masters of the Universe",
+      "Mattel WWE",
+      "S.H. Figuarts",
+      "Bandai Gundam",
+      "Banpresto",
+      "Nendoroid",
+      "Figma",
+      "Good Smile",
+      "Kotobukiya",
+      "ARTFX",
+      "Bishoujo",
+      "MegaHouse",
+      "Hot Toys",
+      "Sideshow Collectibles",
+      "NECA",
+      "McFarlane Toys",
+      "DC Multiverse",
+      "LEGO Star Wars",
+      "LEGO Marvel",
+      "Diamond Select",
+      "MAFEX",
+      "Medicom",
+      "Bearbrick",
+      "Jazwares Pokemon",
+      "Jazwares Halo",
+      "Spin Master DC",
+      "Jada Toys",
+      "Nano Metalfigs",
+      "Super7",
+      "ReAction",
+      "Mezco Toyz",
+      "One:12",
+      "Super Mario",
+      "Nintendo",
+      "Zelda",
+      "Fortnite figure",
+      "Fortnite",
+      "Minecraft",
+      "Hello Kitty",
+      "Sanrio",
+      "Disney",
+      "Mickey Mouse",
+      "Pixar collectible",
+      "WWE figure",
+      "WWE Elite",
+      "Dragon Ball Z figure",
+      "Dragon Ball Super",
+      "Pokemon figure",
+      "Pokemon collectible",
+      "One Piece figure",
+      "Naruto figure",
+      "Naruto Shippuden",
+      "Jujutsu Kaisen figure",
+      "Demon Slayer figure",
+      "Kimetsu no Yaiba",
+      "Gundam model kit",
+      "Sailor Moon collectible",
+      "Marvel collectible",
+      "Avengers figure",
+      "Spider-Man figure",
+      "X-Men figure",
+      "DC Comics figure",
+      "Batman figure",
+      "Superman collectible",
+      "Justice League",
+      "Star Wars collectible",
+      "Harry Potter collectible",
+      "Transformers figure",
+      "TMNT figure",
+      "Ninja Turtles"
+    ],
+    "filtros": {
+      "minSavingPercent": 5,
+      "minPrice": 200,
+      "maxPrice": 30000,
+      "minReviews": 0,
+      "minRating": 0,
+      "excludeKeywords": [
+        "réplica", "clon"
+      ]
+    },
+    "categorias_amazon": [
+      "Toys",
+      "Collectibles",
+      "VideoGames",
+      "Sports Collectibles"
+    ],
+    "frecuencia_actualizacion": "diaria"
+  },
+  "gamers": {
+    "nombre": "Gamers",
+    "descripcion": "Periféricos gaming, accesorios, componentes PC, consolas",
+    "icono": "🎮",
+    "keywords": [
+      "gaming",
+      "RGB",
+      "mechanical keyboard",
+      "mouse gamer",
+      "headset",
+      "SSD",
+      "GPU",
+      "PlayStation",
+      "Xbox",
+      "Nintendo Switch",
+      "monitor gaming",
+      "silla gamer",
+      "streaming",
+      "webcam",
+      "micrófono"
+    ],
+    "filtros": {
+      "minSavingPercent": 5,
+      "minPrice": 100,
+      "maxPrice": 30000,
+      "minReviews": 10,
+      "minRating": 4.2,
+      "excludeKeywords": ["genérico", "no original"]
+    },
+    "categorias_amazon": [
+      "Video Games",
+      "Computers",
+      "Electronics"
+    ],
+    "frecuencia_actualizacion": "diaria"
+  },
+  "tech_early_adopters": {
+    "nombre": "Early Adopters Tech",
+    "descripcion": "Últimas tecnologías, gadgets innovadores, smart home",
+    "icono": "🚀",
+    "keywords": [
+      "nuevo lanzamiento",
+      "pre-order",
+      "última generación",
+      "flagship",
+      "innovador",
+      "wireless",
+      "smart home",
+      "Alexa",
+      "Google Home",
+      "smart watch",
+      "earbuds",
+      "noise cancelling",
+      "power bank",
+      "wireless charger",
+      "4K",
+      "USB-C"
+    ],
+    "filtros": {
+      "minSavingPercent": 10,
+      "minPrice": 500,
+      "maxPrice": 25000,
+      "minReviews": 8,
+      "minRating": 4.0,
+      "excludeKeywords": ["usado", "reacondicionado"]
+    },
+    "categorias_amazon": [
+      "Electronics",
+      "Smart Home",
+      "Cell Phones & Accessories"
+    ],
+    "frecuencia_actualizacion": "diaria"
+  },
+  "fitness": {
+    "nombre": "Fitness & Wellness",
+    "descripcion": "Equipo de ejercicio, suplementos, wearables, accesorios deportivos",
+    "icono": "💪",
+    "keywords": [
+      "mancuernas",
+      "yoga mat",
+      "resistance bands",
+      "proteína",
+      "smartwatch fitness",
+      "running shoes",
+      "water bottle",
+      "foam roller",
+      "kettlebell",
+      "gym bag",
+      "fitness tracker",
+      "home gym",
+      "sports nutrition",
+      "workout equipment"
+    ],
+    "filtros": {
+      "minSavingPercent": 5,
+      "minPrice": 100,
+      "maxPrice": 15000,
+      "minReviews": 10,
+      "minRating": 4,
+      "excludeKeywords": ["imitación"]
+    },
+    "categorias_amazon": [
+      "Sports & Outdoors",
+      "Health & Household",
+      "Exercise & Fitness"
+    ],
+    "frecuencia_actualizacion": "diaria"
+  },
+  "cocina": {
+    "nombre": "Cocina & Hogar",
+    "descripcion": "Electrodomésticos, utensilios de cocina, gadgets culinarios",
+    "icono": "👨‍🍳",
+    "keywords": [
+      "air fryer",
+      "instant pot",
+      "blender",
+      "coffee maker",
+      "kitchen gadgets",
+      "knife set",
+      "cookware",
+      "kitchen aid",
+      "food processor",
+      "espresso machine",
+      "baking",
+      "non-stick",
+      "stainless steel",
+      "slow cooker"
+    ],
+    "filtros": {
+      "minSavingPercent": 5,
+      "minPrice": 100,
+      "maxPrice": 18000,
+      "minReviews": 20,
+      "minRating": 4.5,
+      "excludeKeywords": []
+    },
+    "categorias_amazon": [
+      "Kitchen & Dining",
+      "Home & Kitchen",
+      "Appliances"
+    ],
+    "frecuencia_actualizacion": "diaria"
+  },
+  "mascotas": {
+    "nombre": "Mascotas",
+    "descripcion": "Productos premium para perros, gatos y otras mascotas",
+    "icono": "🐾",
+    "keywords": [
+      "dog food premium",
+      "cat food",
+      "pet bed",
+      "dog toys",
+      "cat toys",
+      "pet carrier",
+      "automatic feeder",
+      "pet camera",
+      "grooming",
+      "litter box",
+      "dog collar",
+      "pet water fountain",
+      "training treats",
+      "pet vitamins"
+    ],
+    "filtros": {
+      "minSavingPercent": 15,
+      "minPrice": 200,
+      "maxPrice": 12000,
+      "minReviews": 25,
+      "minRating": 4.4,
+      "excludeKeywords": []
+    },
+    "categorias_amazon": [
+      "Pet Supplies",
+      "Dogs",
+      "Cats"
+    ],
+    "frecuencia_actualizacion": "diaria"
+  },
+  "test_general": {
+    "nombre": "🔥 TEST - Ofertas Generales",
+    "descripcion": "Perfil de prueba con filtros relajados para verificar funcionamiento",
+    "icono": "🔥",
+    "keywords": [
+      "LEGO",
+      "PlayStation",
+      "laptop",
+      "headphones",
+      "smartwatch"
+    ],
+    "filtros": {
+      "minSavingPercent": 1,
+      "minPrice": 100,
+      "maxPrice": 50000,
+      "minReviews": 0,
+      "minRating": 0,
+      "excludeKeywords": []
+    },
+    "categorias_amazon": [
+      "All"
+    ],
+    "frecuencia_actualizacion": "manual"
+  }
+}

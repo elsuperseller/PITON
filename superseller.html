@@ -469,7 +469,6 @@ input[type=file] {
     </div>
   </div>
   <div class="topbar-actions">
-    <button class="btn btn-ghost" onclick="verFeeds()">📋 Ver Feeds</button>
     <button id="btnDetener" onclick="detenerProceso()" style="display:none;" class="btn btn-danger">⏹ Detener</button>
     <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar Ofertas</button>
   </div>
@@ -545,6 +544,28 @@ input[type=file] {
         </div>
         <button class="btn btn-primary" onclick="buscarDirecto()" style="width:100%;justify-content:center;margin-top:4px;font-size:11px;">🚀 Buscar por API</button>
         <div id="busqueda-status" class="inline-st"></div>
+      </div>
+    </div>
+
+    <!-- Feeds por Audiencia -->
+    <div class="sec open">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">📊</span>Feeds por Audiencia <span class="plat-pill pill-amz">AMZ</span></span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint">Selecciona un público objetivo para cargar productos curados automáticamente.</p>
+        <div class="fld">
+          <label class="fl">Audiencia</label>
+          <select id="feedAudienciaSelect" class="inp" onchange="cargarFeedDesdeSidebar()">
+            <option value="">-- Seleccionar --</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button class="btn btn-primary" onclick="cargarFeedDesdeSidebar()" style="flex:1;justify-content:center;font-size:11px;">🔍 Cargar Feed</button>
+          <button class="btn btn-ghost" onclick="cargarFeedDesdeSidebar(true)" style="padding:7px 11px;font-size:11px;" title="Refrescar (sin cache)">🔄</button>
+        </div>
+        <div id="feed-sidebar-status" class="inline-st"></div>
       </div>
     </div>
 
@@ -851,6 +872,71 @@ input[type=file] {
   <button id="btnVerTodas" onclick="verTodasLasOfertas()" style="display:none;" class="btn btn-ghost" >↩ Ver todas</button>
   <span style="font-size:11px;color:var(--t3);" id="exportInfo"></span>
   <span id="filtroSuperInfo" style="font-size:10px;color:var(--amber);display:none;"></span>
+</div>
+
+<!-- MODAL DE FEEDS POR AUDIENCIA -->
+<div id="feedsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:var(--rl);width:90%;max-width:1000px;max-height:85vh;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3);display:flex;flex-direction:column;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border-l);background:var(--panel-h);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">📊</span>
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--t1);margin:0;">Feeds por Audiencia</h3>
+          <p style="font-size:11px;color:var(--t3);margin:2px 0 0 0;">Productos curados por público objetivo</p>
+        </div>
+      </div>
+      <button onclick="cerrarFeeds()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--t3);line-height:1;">×</button>
+    </div>
+
+    <!-- Controls -->
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border-l);background:var(--panel);">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <label style="font-size:12px;font-weight:600;color:var(--t2);">Audiencia:</label>
+        <select id="audienciaSelect" onchange="cargarFeed()" style="flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--t1);background:var(--inp-bg);">
+          <option value="">-- Seleccionar audiencia --</option>
+        </select>
+        <button onclick="cargarFeed(true)" class="btn btn-primary" style="font-size:11px;padding:7px 13px;">🔄 Refrescar</button>
+        <button onclick="cerrarFeeds()" class="btn btn-ghost" style="font-size:11px;padding:7px 13px;">✕ Cerrar</button>
+      </div>
+
+      <!-- Stats -->
+      <div id="feedStats" style="display:none;margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border-l);border-radius:var(--r);">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;font-size:11px;">
+          <div>
+            <span style="color:var(--t3);">Audiencia:</span>
+            <strong id="feedNombre" style="color:var(--t1);margin-left:4px;">-</strong>
+          </div>
+          <div>
+            <span style="color:var(--t3);">Productos:</span>
+            <strong id="feedTotal" style="color:var(--red);margin-left:4px;">0</strong>
+          </div>
+          <div>
+            <span style="color:var(--t3);">Actualizado:</span>
+            <strong id="feedFecha" style="color:var(--t1);margin-left:4px;">-</strong>
+          </div>
+          <div id="feedCache" style="display:none;">
+            <span style="background:var(--green);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">💾 CACHE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="feedContent" style="flex:1;overflow-y:auto;padding:20px;">
+      <div id="feedWelcome" style="text-align:center;padding:60px 20px;color:var(--t3);">
+        <div style="font-size:48px;margin-bottom:12px;">📊</div>
+        <p style="font-size:14px;font-weight:600;color:var(--t2);margin-bottom:6px;">Selecciona una audiencia</p>
+        <p style="font-size:12px;">Los productos se cargarán automáticamente</p>
+      </div>
+      <div id="feedLoading" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="font-size:36px;margin-bottom:12px;">⏳</div>
+        <p style="font-size:14px;font-weight:600;color:var(--t2);">Generando feed...</p>
+        <p style="font-size:11px;color:var(--t3);margin-top:4px;">Esto puede tomar algunos segundos</p>
+      </div>
+      <div class="product-grid" id="feedProductGrid" style="display:none;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1282,6 +1368,7 @@ function setStatus(msg, cls="") {
 }
 
 let allItems = []
+let currentFeedId = null // Para tracking de qué feed está cargado actualmente
 
 async function buscar() {
   const subcats = getSelectedSubcats()
@@ -1369,7 +1456,7 @@ function renderResults(items) {
 
   const grid = document.getElementById("product-grid")
   grid.innerHTML = items.map((p, i) => `
-    <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}">
+    <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
       <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'">
       <div class="product-info">
@@ -1379,14 +1466,18 @@ function renderResults(items) {
           ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
         </div>
         ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
-        ${(p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0) ? `<span title="Score: ${p.novedad_score}" style="background:rgba(107,114,128,.12);color:#9ca3af;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(107,114,128,.2);">🔁 ${p.novedad_score === 0 ? 'Publicado <3d' : p.novedad_score <= 0.2 ? 'Publicado <7d' : p.novedad_score <= 0.5 ? 'Publicado <14d' : 'Publicado +14d'}</span>` : ""}
+        ${p.cross_platform_dup
+          ? `<span title="Mismo producto publicado en ${p.cross_platform_dup === 'amazon' ? 'Amazon' : 'Mercado Libre'}" style="background:rgba(239,68,68,.1);color:#ef4444;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(239,68,68,.25);">🔀 Ya en ${p.cross_platform_dup === 'amazon' ? 'Amazon' : 'ML'}</span>`
+          : (p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0)
+            ? `<span title="Score: ${p.novedad_score}" style="background:rgba(107,114,128,.12);color:#9ca3af;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(107,114,128,.2);">🔁 ${p.novedad_score === 0 ? 'Publicado <3d' : p.novedad_score <= 0.2 ? 'Publicado <7d' : p.novedad_score <= 0.5 ? 'Publicado <14d' : 'Publicado +14d'}</span>`
+            : ""}
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
           <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${getPromoLabel(p)}</span>
           ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
-          ${p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
+          ${p.badge && p.badge.includes('🎯') ? `<span style="background:rgba(168,85,247,.12);color:#9333ea;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;border:1.5px solid rgba(168,85,247,.3);">${p.badge}</span>` : p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
         </div>
         <div style="margin-top:4px;font-size:10px;color:#415f7a;line-height:1.7;">
-          ${p.badge ? `<div>🏷️ <span style="color:#f59e0b;">${p.badge}</span></div>` : ''}
+          ${p.badge && p.badge.includes('🎯') ? `<div><strong style="color:#9333ea;">Keyword match:</strong> <span style="color:#6b21a8;font-weight:500;">${p.badge.replace('🎯 ', '')}</span></div>` : p.badge && !p.badge.includes('🎯') ? `<div>🏷️ <span style="color:#f59e0b;">${p.badge}</span></div>` : ''}
           ${p.access_type && p.access_type !== 'ALL' ? `<div>🔒 <span style="color:#7090ff;">${p.access_type === 'PRIME_EXCLUSIVE' ? 'Prime Exclusive' : 'Prime Early Access'}</span></div>` : ''}
           ${p.start_time ? `<div>▶ Inicio: ${new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
           ${p.end_time ? `<div>⏹ Fin: ${new Date(p.end_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
@@ -1464,10 +1555,20 @@ async function exportarSheets() {
   btn.textContent = "⏳ Enviando…"
   btn.disabled = true
   try {
-    const r = await fetchConTimeout("http://localhost:8765/exportar-sheets", {
+    // Determinar qué endpoint usar según el contexto
+    let endpoint = "http://localhost:8765/exportar-sheets"
+    let payload = { items: selected }
+
+    // Si estamos viendo un feed con sheets_export_url configurado, usar endpoint específico
+    if (currentFeedId === "coleccionistas") {
+      endpoint = "http://localhost:8765/feeds/export-sheets"
+      payload = { feed_id: currentFeedId, items: selected }
+    }
+
+    const r = await fetchConTimeout(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: selected })
+      body: JSON.stringify(payload)
     }, 90000)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -1511,6 +1612,8 @@ async function verFeeds() {
 }
 
 async function buscarDirecto() {
+  currentFeedId = null // Limpiar contexto de feed al hacer búsqueda regular
+
   const rawInput = document.getElementById("searchInput").value.trim()
   const precioMin = parseFloat(document.getElementById("searchPrecioMin").value) || 0
   const precioMax = parseFloat(document.getElementById("searchPrecioMax").value) || 0
@@ -2407,6 +2510,168 @@ new MutationObserver(() => {
   document.getElementById("welcome").style.display = shown ? "none" : "block"
   document.getElementById("metrics-strip").classList.toggle("on", shown)
 }).observe(document.getElementById("results"), { attributes: true, attributeFilter: ["style"] })
+
+// ==================== FEEDS POR AUDIENCIA ====================
+
+async function verFeeds() {
+  const modal = document.getElementById("feedsModal")
+  modal.style.display = "flex"
+  await actualizarAudiencias()
+}
+
+function cerrarFeeds() {
+  document.getElementById("feedsModal").style.display = "none"
+}
+
+async function actualizarAudiencias() {
+  try {
+    const res = await fetch("http://localhost:8765/feeds/listar")
+    const data = await res.json()
+
+    // Actualizar select del modal (si existe)
+    const selectModal = document.getElementById("audienciaSelect")
+    if (selectModal) {
+      selectModal.innerHTML = '<option value="">-- Seleccionar audiencia --</option>'
+      if (data.ok && data.audiencias) {
+        data.audiencias.forEach(a => {
+          const opt = document.createElement("option")
+          opt.value = a.id
+          opt.textContent = `${a.icono || "📊"} ${a.nombre} (${a.keywords.length} keywords)`
+          selectModal.appendChild(opt)
+        })
+      }
+    }
+
+    // Actualizar select del sidebar
+    const selectSidebar = document.getElementById("feedAudienciaSelect")
+    if (selectSidebar) {
+      selectSidebar.innerHTML = '<option value="">-- Seleccionar --</option>'
+      if (data.ok && data.audiencias) {
+        data.audiencias.forEach(a => {
+          const opt = document.createElement("option")
+          opt.value = a.id
+          opt.textContent = `${a.icono || "📊"} ${a.nombre}`
+          selectSidebar.appendChild(opt)
+        })
+      }
+    }
+  } catch(e) {
+    console.error("Error cargando audiencias:", e)
+  }
+}
+
+async function cargarFeedDesdeSidebar(refresh = false) {
+  const audienciaId = document.getElementById("feedAudienciaSelect").value
+  if (!audienciaId) {
+    alert("Selecciona una audiencia primero")
+    return
+  }
+
+  const statusEl = document.getElementById("feed-sidebar-status")
+  statusEl.textContent = refresh ? "🔄 Refrescando..." : "⏳ Cargando..."
+  statusEl.style.color = "#e94560"
+
+  setStatus(`Cargando feed "${audienciaId}"...`, "running")
+  document.getElementById("results").style.display = "none"
+
+  try {
+    const url = `http://localhost:8765/feeds/${audienciaId}${refresh ? '?refresh=true' : ''}`
+    const res = await fetch(url)
+    const data = await res.json()
+
+    if (!data.ok) throw new Error(data.error)
+
+    // Guardar el feed actual para exportación
+    currentFeedId = audienciaId
+
+    // Convertir productos del feed al formato de la app
+    allItems = data.productos.map(p => ({
+      asin: p.asin,
+      title: p.title,
+      img: p.image,
+      link: p.link,
+      price_discounted: p.price || 0,
+      price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
+      descuento_pct: p.discount || 0,
+      vigencia: "permanente",
+      tipo: "",
+      badge: p.keyword_match ? `🎯 ${p.keyword_match}` : "",
+      access_type: "ALL",
+      start_time: "",
+      end_time: "",
+      pct_claimed: null,
+      novedad_score: p.novedad_score || 1.0  // Para detectar repetidos
+    }))
+
+    // Renderizar en grid principal
+    renderResults(allItems)
+    setStatus(`✅ Feed "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
+    statusEl.textContent = `✅ ${allItems.length} productos`
+    statusEl.style.color = "#10b981"
+
+  } catch(e) {
+    console.error("Error cargando feed:", e)
+    setStatus(`❌ Error cargando feed: ${e.message}`, "error")
+    statusEl.textContent = `❌ ${e.message}`
+    statusEl.style.color = "#ef4444"
+  }
+}
+
+async function cargarFeed(refresh = false) {
+  const audienciaId = document.getElementById("audienciaSelect").value
+  if (!audienciaId) return
+
+  // Cerrar modal y mostrar loading en área principal
+  cerrarFeeds()
+  setStatus(`Cargando feed "${audienciaId}"...`, "running")
+  document.getElementById("results").style.display = "none"
+
+  try {
+    const url = `http://localhost:8765/feeds/${audienciaId}${refresh ? '?refresh=true' : ''}`
+    const res = await fetch(url)
+    const data = await res.json()
+
+    if (!data.ok) throw new Error(data.error)
+
+    // Convertir productos del feed al formato de la app
+    allItems = data.productos.map(p => ({
+      asin: p.asin,
+      title: p.title,
+      img: p.image,
+      link: p.link,
+      price_discounted: p.price || 0,
+      price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
+      descuento_pct: p.discount || 0,
+      vigencia: "permanente",
+      tipo: "",
+      badge: p.keyword_match ? `🎯 ${p.keyword_match}` : "",
+      access_type: "ALL",
+      start_time: "",
+      end_time: "",
+      pct_claimed: null
+    }))
+
+    // Renderizar en grid principal (igual que búsquedas normales)
+    renderResults(allItems)
+    setStatus(`✅ Feed "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
+
+  } catch(e) {
+    console.error("Error cargando feed:", e)
+    setStatus(`❌ Error cargando feed: ${e.message}`, "error")
+  }
+}
+
+// Cerrar modal con ESC
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") cerrarFeeds()
+})
+
+// Cargar audiencias automáticamente al iniciar
+document.addEventListener("DOMContentLoaded", () => {
+  actualizarAudiencias()
+})
+
+// ==================== FIN FEEDS ====================
 </script>
 </body>
 </html>

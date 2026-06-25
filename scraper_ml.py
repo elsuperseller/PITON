@@ -67,16 +67,21 @@ def _descubrir_containers(base_url):
 def _paginar_url(url, pagina):
     """
     Construye la URL para la página N respetando el esquema de paginación de la URL base.
-    - URLs con ?page=N  → incrementa desde ese número base (ofertas, deals)
-    - Resto            → usa ?_from=N (48 ítems por página, listados estándar)
+    - URLs con ?page=N existente → incrementa desde ese número base
+    - /ofertas o ?container_id= → page=N  (containers usan page=, no _from=)
+    - Resto                      → _from=N (48 ítems por página, listados estándar)
+    El fragment (#...) se descarta: es solo para el browser, el server lo ignora.
     """
     if pagina <= 1:
         return url
     parsed = urlparse(url)
+    parsed = parsed._replace(fragment="")   # strip #fragment
     params = parse_qs(parsed.query, keep_blank_values=True)
     if "page" in params:
         page_base = int(params["page"][0])
         params["page"] = [str(page_base + pagina - 1)]
+    elif "/ofertas" in parsed.path or "container_id" in parsed.query:
+        params["page"] = [str(pagina)]
     else:
         params["_from"] = [str((pagina - 1) * 48)]
     return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))

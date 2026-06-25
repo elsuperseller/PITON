@@ -49,7 +49,7 @@ def get_token():
     r.raise_for_status()
     return r.json()["access_token"]
 
-def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None, min_saving=1, precio_min=0, precio_max=0):
+def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None, min_saving=1, precio_min=0, precio_max=0, keywords="a"):
     token = get_token()
     headers = {
         "Authorization": f"Bearer {token}",
@@ -63,17 +63,18 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         "itemCount": 10,
         "itemPage": pagina,
         "sortBy": sort_by,
-        "keywords": "a",
+        "keywords": keywords,
         "minSavingPercent": min_saving,
         "condition": "New",
         "availability": "Available",
         "languagesOfPreference": ["es_MX"],
         "currencyOfPreference": "MXN",
         "resources": [
-            "itemInfo.title", "images.primary.medium",
+            "itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
             "offersV2.listings.price", "offersV2.listings.dealDetails",
             "offersV2.listings.isBuyBoxWinner", "offersV2.listings.type",
-            "offersV2.listings.availability"
+            "offersV2.listings.availability",
+            "browseNodeInfo.browseNodes"
         ]
     }
     if browse_node_id:
@@ -118,11 +119,16 @@ def parsear_item(item):
         badge = deal.get("badge","")
         acc = deal.get("accessType","ALL")
         vigencia = "relámpago" if tipo == "LIGHTNING_DEAL" else "permanente" if not end else "oferta"
+        # EAN para detección cross-platform
+        ext  = item.get("itemInfo", {}).get("externalIds", {})
+        eans = ext.get("eans", {}).get("displayValues", [])
+        ean  = eans[0] if eans else ""
         return {
             "asin": asin, "link": link, "title": title, "img": img,
             "price_original": po, "price_discounted": pd_, "descuento_pct": desc,
             "vigencia": vigencia, "tipo": tipo, "badge": badge, "access_type": acc,
-            "start_time": start, "end_time": end, "pct_claimed": deal.get("percentageClaimed")
+            "start_time": start, "end_time": end, "pct_claimed": deal.get("percentageClaimed"),
+            "ean": ean,
         }
     except: return None
 
@@ -151,6 +157,224 @@ CATS = {
     "Productos Handmade":               "Handmade",
     "Industria, Empresas y Ciencia":    "IndustrialAndScientific",
 }
+
+# ==================== FEEDS POR AUDIENCIA ====================
+
+def cargar_perfiles():
+    """Carga perfiles de audiencia desde JSON"""
+    ruta = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+    try:
+        with open(ruta, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"⚠️  Error cargando perfiles: {e}", flush=True)
+        return {}
+
+def cargar_feed_cache():
+    """Carga cache de feeds"""
+    ruta = os.path.join(BASE_DIR, 'feeds', 'feeds_cache.json')
+    try:
+        with open(ruta, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def guardar_feed_cache(cache):
+    """Guarda cache de feeds"""
+    ruta = os.path.join(BASE_DIR, 'feeds', 'feeds_cache.json')
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    with open(ruta, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, indent=2, ensure_ascii=False)
+
+def cargar_historial_feed(feed_id):
+    """Carga historial específico de un feed"""
+    ruta = os.path.join(BASE_DIR, 'feeds', feed_id, 'historial.json')
+    try:
+        with open(ruta, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def guardar_historial_feed(feed_id, historial):
+    """Guarda historial específico de un feed"""
+    ruta = os.path.join(BASE_DIR, 'feeds', feed_id, 'historial.json')
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    with open(ruta, 'w', encoding='utf-8') as f:
+        json.dump(historial, f, indent=2, ensure_ascii=False)
+
+def marcar_asins_vistos(feed_id, asins):
+    """Marca ASINs como ya vistos en el historial del feed"""
+    from datetime import datetime
+    historial = cargar_historial_feed(feed_id)
+    timestamp = datetime.now().isoformat()
+
+    for asin in asins:
+        if asin not in historial:
+            historial[asin] = {
+                "primera_vez": timestamp,
+                "ultima_vez": timestamp,
+                "veces_visto": 1
+            }
+        else:
+            historial[asin]["ultima_vez"] = timestamp
+            historial[asin]["veces_visto"] = historial[asin].get("veces_visto", 0) + 1
+
+    guardar_historial_feed(feed_id, historial)
+    return len(asins)
+
+def extraer_precio(item):
+    """Extrae precio con descuento de un item de Amazon"""
+    try:
+        listings = item.get("offersV2", {}).get("listings", [])
+        if not listings:
+            return None
+        lst = next((l for l in listings if l.get("isBuyBoxWinner")), listings[0])
+        price_info = lst.get("price", {})
+        amount = price_info.get("money", {}).get("amount")
+        if amount:
+            return float(amount)
+        return None
+    except:
+        return None
+
+def extraer_descuento(item):
+    """Extrae porcentaje de descuento de un item (calculado desde precio original)"""
+    try:
+        listings = item.get("offersV2", {}).get("listings", [])
+        if not listings:
+            return 0
+        lst = next((l for l in listings if l.get("isBuyBoxWinner")), listings[0])
+
+        # Obtener precio actual
+        pi = lst.get("price", {})
+        pd = pi.get("money", {}).get("amount")
+        if not pd:
+            return 0
+        pd = float(pd)
+
+        # Obtener precio original
+        sb = pi.get("savingBasis", {})
+        sv = pi.get("savings", {})
+        if sb and sb.get("money", {}).get("amount"):
+            po = float(sb["money"]["amount"])
+        elif sv and sv.get("money", {}).get("amount"):
+            po = pd + float(sv["money"]["amount"])
+        else:
+            return 0
+
+        # Calcular porcentaje
+        desc = round((po - pd) / po * 100) if po > pd else 0
+        return int(desc)
+    except:
+        return 0
+
+def buscar_productos_amazon(keyword, minSavingPercent=10, maxPages=5):
+    """Busca productos en Amazon usando la función buscar existente"""
+    productos = []
+    for pagina in range(1, maxPages + 1):
+        try:
+            # Usar la función buscar existente con keyword específico
+            items = buscar(
+                search_index="All",
+                pagina=pagina,
+                sort_by="NewestArrivals",
+                min_saving=minSavingPercent,
+                keywords=keyword
+            )
+            # Agregar todos los items encontrados (la API ya filtró por keyword)
+            productos.extend(items)
+            time.sleep(0.3)  # Rate limiting
+        except Exception as e:
+            print(f"⚠️  Error buscando '{keyword}' página {pagina}: {e}", flush=True)
+            break
+    return productos
+
+def es_categoria_coleccionable(item):
+    """
+    Verifica si un producto pertenece a categorías de coleccionables/juguetes
+    basándose en sus browseNodes de Amazon
+    """
+    try:
+        browse_nodes = item.get("browseNodeInfo", {}).get("browseNodes", [])
+        if not browse_nodes:
+            return True  # Si no hay info, dejarlo pasar (benefit of doubt)
+
+        # IDs de nodos de categorías de coleccionables/juguetes en Amazon MX
+        # Estos son los nodos de Toys, Collectibles, VideoGames, etc.
+        NODOS_COLECCIONABLES = [
+            "11260443011",  # Action Figures & Statues
+            "20940159011",  # Collectibles
+            "9482591011",   # Toys & Games
+            "9482600011",   # Video Games
+            "9482593011",   # Building Toys (LEGO)
+            "9482595011",   # Dolls & Accessories
+            "9482597011",   # Games
+            "9482599011",   # Stuffed Animals & Plush
+        ]
+
+        # Verificar si algún nodo del producto coincide con categorías coleccionables
+        for node in browse_nodes:
+            node_id = node.get("id", "")
+            # Verificar coincidencia exacta o si el producto está en subcategorías
+            if any(nodo_col in node_id for nodo_col in NODOS_COLECCIONABLES):
+                return True
+
+        # Si llegamos aquí, el producto NO está en categorías de coleccionables
+        return False
+    except:
+        return True  # En caso de error, dejarlo pasar
+
+def enriquecer_asins(asins, minSavingPercent=1):
+    """Enriquece ASINs usando Creators API getItems en batches de 10"""
+    if not asins:
+        return []
+
+    token = get_token()
+    api_headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "x-marketplace": "www.amazon.com.mx"
+    }
+    _RECURSOS = ["itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
+                 "offersV2.listings.price", "offersV2.listings.dealDetails",
+                 "offersV2.listings.isBuyBoxWinner", "offersV2.listings.type",
+                 "offersV2.listings.availability",
+                 "browseNodeInfo.browseNodes"]
+
+    def _enriquecer_batch(batch):
+        try:
+            r = requests.post(
+                "https://creatorsapi.amazon/catalog/v1/getItems",
+                headers=api_headers,
+                json={"partnerTag": CREDS["partner_tag"],
+                      "marketplace": "www.amazon.com.mx",
+                      "itemIds": batch,
+                      "languagesOfPreference": ["es_MX"],
+                      "currencyOfPreference": "MXN",
+                      "resources": _RECURSOS},
+                timeout=20
+            )
+            if r.status_code != 200:
+                return []
+
+            items_api = r.json().get("itemsResult", {}).get("items", [])
+            return items_api
+        except Exception as e:
+            print(f"  ❌ Error enriqueciendo batch: {e}", flush=True)
+            return []
+
+    # Dividir en batches de 10
+    batches = [asins[i:i+10] for i in range(0, len(asins), 10)]
+    all_items = []
+
+    for batch in batches:
+        items = _enriquecer_batch(batch)
+        all_items.extend(items)
+        time.sleep(0.3)  # Rate limiting
+
+    return all_items
+
+# ==================== FIN FEEDS ====================
 
 class Handler(BaseHTTPRequestHandler):
     def _cors(self):
@@ -291,7 +515,11 @@ class Handler(BaseHTTPRequestHandler):
                     time.sleep(0.5)  # Delay entre requests
                 
                 print(f"  → {len(resultados)} producto(s) encontrado(s)", flush=True)
-                
+
+                if _HV_OK:
+                    resultados = _hv.aplicar_scores(resultados)
+                    print(f"  📚 Historial aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+
                 self.send_response(200)
                 self._cors()
                 self.send_header("Content-Type", "application/json")
@@ -370,6 +598,11 @@ class Handler(BaseHTTPRequestHandler):
                         continue
 
                 print(f"  → {len(resultados)} productos con datos de API", flush=True)
+
+                if _HV_OK:
+                    resultados = _hv.aplicar_scores(resultados)
+                    print(f"  📚 Historial aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": True, "items": resultados, "total_asins": len(asins)}).encode())
@@ -432,6 +665,11 @@ class Handler(BaseHTTPRequestHandler):
                     pass
                 items, total_raw = _ml.scrape_html_texto(html_txt, min_discount=min_disc)
                 print(f"📦 /procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
+
+                if _HV_OK:
+                    items = _hv.aplicar_scores(items)
+                    print(f"  📚 Historial aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": True, "items": items, "total_raw": total_raw}).encode())
@@ -494,7 +732,7 @@ class Handler(BaseHTTPRequestHandler):
                                "Content-Type": "application/json",
                                "x-marketplace": "www.amazon.com.mx"}
 
-                _RECURSOS = ["itemInfo.title", "images.primary.medium",
+                _RECURSOS = ["itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
                              "offersV2.listings.price", "offersV2.listings.dealDetails",
                              "offersV2.listings.isBuyBoxWinner"]
                 _stats = {"ok": 0, "no200": 0, "empty": 0, "no_listing": 0, "err": 0}
@@ -638,7 +876,7 @@ class Handler(BaseHTTPRequestHandler):
                     "Content-Type": "application/json",
                     "x-marketplace": "www.amazon.com.mx"
                 }
-                _RECURSOS = ["itemInfo.title", "images.primary.medium",
+                _RECURSOS = ["itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
                              "offersV2.listings.price", "offersV2.listings.dealDetails",
                              "offersV2.listings.isBuyBoxWinner"]
 
@@ -765,7 +1003,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not items:
                     raise ValueError("Sin items para exportar")
                 print(f"📊 /exportar-sheets → {len(items)} items", flush=True)
-                r = requests.post(SHEETS_URL, json=items, timeout=120)
+                r = requests.post(SHEETS_URL, data=json.dumps(items),
+                                  headers={"Content-Type": "application/json"},
+                                  allow_redirects=True, timeout=120)
                 r.raise_for_status()
                 resp_data = r.json()
                 # Marcar como publicados en historial
@@ -777,6 +1017,61 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"ok": True, "rows": resp_data.get("rows", len(items))}).encode())
             except Exception as e:
                 print(f"❌ /exportar-sheets: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/export-sheets":
+            # Endpoint específico para exportar feeds a Google Sheets
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                feed_id = body.get("feed_id", "")
+                items = body.get("items", [])
+
+                if not feed_id:
+                    raise ValueError("feed_id requerido")
+                if not items:
+                    raise ValueError("Sin items para exportar")
+
+                # Cargar configuración del feed
+                perfiles = cargar_perfiles()
+                perfil = perfiles.get(feed_id)
+
+                if not perfil:
+                    raise ValueError(f"Feed '{feed_id}' no encontrado")
+
+                sheets_url = perfil.get("sheets_export_url")
+                if not sheets_url:
+                    raise ValueError(f"Feed '{feed_id}' no tiene sheets_export_url configurado")
+
+                print(f"📊 /feeds/export-sheets → Feed: {feed_id}, Items: {len(items)}", flush=True)
+
+                # Enviar a Google Apps Script
+                r = requests.post(sheets_url, data=json.dumps(items),
+                                headers={"Content-Type": "application/json"},
+                                allow_redirects=True, timeout=120)
+                r.raise_for_status()
+                resp_data = r.json()
+
+                print(f"  ✅ Exportado a Google Sheets: {resp_data.get('rows', len(items))} productos", flush=True)
+
+                # Marcar SOLO en historial del feed (NO en el core de Superseller)
+                asins_exportados = [item.get('asin') for item in items if item.get('asin')]
+                if asins_exportados:
+                    n = marcar_asins_vistos(feed_id, asins_exportados)
+                    print(f"  📚 {n} ASINs marcados en historial del feed '{feed_id}'", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "rows": resp_data.get("rows", len(items)),
+                    "sheetUrl": resp_data.get("sheetUrl", "")
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/export-sheets: {e}", flush=True)
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
@@ -991,6 +1286,278 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        # ==================== ENDPOINTS DE FEEDS ====================
+        elif path == "/feeds/listar":
+            try:
+                perfiles = cargar_perfiles()
+                audiencias = [{"id": k, **v} for k, v in perfiles.items()]
+                print(f"📊 /feeds/listar → {len(audiencias)} audiencias", flush=True)
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "audiencias": audiencias}).encode())
+            except Exception as e:
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif path.startswith("/feeds/"):
+            try:
+                # Extraer audiencia_id del path (ej: /feeds/coleccionistas?refresh=true)
+                audiencia_id = path.split('/')[2].split('?')[0] if len(path.split('/')) > 2 else None
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+
+                refresh = 'refresh=true' in path
+                perfiles = cargar_perfiles()
+
+                if audiencia_id not in perfiles:
+                    self.send_response(404); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({"ok": False, "error": "Audiencia no encontrada"}).encode())
+                    return
+
+                perfil = perfiles[audiencia_id]
+                cache = cargar_feed_cache()
+
+                # Si tiene cache y no es refresh, retornar cache
+                if not refresh and audiencia_id in cache:
+                    cache_data = cache[audiencia_id]
+                    # Verificar si cache es del mismo día
+                    from datetime import datetime
+                    if cache_data.get('fecha') == datetime.now().strftime('%Y-%m-%d'):
+                        print(f"📊 /feeds/{audiencia_id} → {len(cache_data.get('productos', []))} productos (cache)", flush=True)
+                        self.send_response(200); self._cors()
+                        self.send_header("Content-Type", "application/json"); self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "ok": True,
+                            "audiencia": audiencia_id,
+                            "productos": cache_data['productos'],
+                            "total": len(cache_data['productos']),
+                            "from_cache": True,
+                            "fecha": cache_data['fecha']
+                        }).encode())
+                        return
+
+                # Buscar productos frescos
+                print(f"🔄 Generando feed para '{audiencia_id}'...", flush=True)
+                productos = []
+
+                # 1. PROCESAR URLS FIJAS (si existen)
+                urls_fijas = perfil.get('urls_fijas', [])
+                if urls_fijas and _AZ_OK:
+                    print(f"  🔗 Procesando {len(urls_fijas)} URLs fijas primero...", flush=True)
+                    for url_config in urls_fijas:
+                        try:
+                            url = url_config.get('url', '')
+                            desc = url_config.get('descripcion', 'URL Fija')
+
+                            # Scrape ASINs
+                            asins, estado = _az.scrape_url_custom(url, pages=3)
+                            print(f"    🌐 {desc}: {len(asins)} ASINs extraídos", flush=True)
+
+                            if asins:
+                                # Enriquecer con Creators API
+                                items = enriquecer_asins(asins, perfil['filtros'].get('minSavingPercent', 1))
+                                print(f"    📦 {len(items)} items enriquecidos vía API", flush=True)
+
+                                # Filtrar y parsear
+                                items_validos = 0
+                                for item in items:
+                                    precio = extraer_precio(item)
+                                    if precio:
+                                        if precio < perfil['filtros'].get('minPrice', 0):
+                                            continue
+                                        if precio > perfil['filtros'].get('maxPrice', 999999):
+                                            continue
+
+                                    # Excluir keywords (solo palabras claramente malas)
+                                    titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "").lower()
+                                    if any(ex.lower() in titulo for ex in perfil['filtros'].get('excludeKeywords', [])):
+                                        continue
+
+                                    # VALIDAR CATEGORÍA: Filtrar productos patrocinados/sugeridos que NO son coleccionables
+                                    if not es_categoria_coleccionable(item):
+                                        continue  # Descartar productos de otras categorías (ads, sugerencias)
+
+                                    # Parsear item
+                                    parsed = parsear_item(item)
+                                    if parsed:
+                                        # Verificar descuento real
+                                        descuento_real = parsed.get("descuento_pct", 0)
+                                        min_descuento = perfil['filtros'].get('minSavingPercent', 1)
+
+                                        if descuento_real < min_descuento:
+                                            continue
+
+                                        productos.append({
+                                            "asin": parsed.get("asin", ""),
+                                            "title": parsed.get("title", ""),
+                                            "price": parsed.get("price_discounted", precio),
+                                            "discount": descuento_real,
+                                            "image": parsed.get("img", ""),
+                                            "link": parsed.get("link", ""),
+                                            "keyword_match": f"🔗 {desc}"
+                                        })
+                                        items_validos += 1
+
+                                if items_validos > 0:
+                                    print(f"    ✅ {desc}: {items_validos} productos agregados", flush=True)
+                                else:
+                                    print(f"    ⚠️  {desc}: 0 productos (descartados por filtros)", flush=True)
+
+                        except Exception as e:
+                            print(f"  ⚠️  Error con URL fija '{desc}': {e}", flush=True)
+                            continue
+
+                # 2. PROCESAR KEYWORDS
+                keywords_procesados = 0
+                print(f"  🔎 Procesando {len(perfil['keywords'])} keywords...", flush=True)
+
+                for keyword in perfil['keywords']:
+                    try:
+                        items = buscar_productos_amazon(
+                            keyword=keyword,
+                            minSavingPercent=perfil['filtros'].get('minSavingPercent', 10),
+                            maxPages=2
+                        )
+
+                        print(f"    🔎 '{keyword}': {len(items)} items de Amazon", flush=True)
+
+                        # Filtrar según perfil
+                        items_validos = 0
+                        for item in items:
+                            precio = extraer_precio(item)
+                            if precio:
+                                if precio < perfil['filtros'].get('minPrice', 0):
+                                    continue
+                                if precio > perfil['filtros'].get('maxPrice', 999999):
+                                    continue
+
+                            # Excluir keywords
+                            titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "").lower()
+                            if any(ex.lower() in titulo for ex in perfil['filtros'].get('excludeKeywords', [])):
+                                continue
+
+                            # Parsear item
+                            parsed = parsear_item(item)
+                            if parsed:
+                                # Verificar descuento real (no confiar solo en la API)
+                                descuento_real = parsed.get("descuento_pct", 0)
+                                min_descuento = perfil['filtros'].get('minSavingPercent', 1)
+
+                                if descuento_real < min_descuento:
+                                    continue  # Descartar productos sin descuento suficiente
+
+                                # parsear_item() ya devuelve todo lo que necesitamos
+                                productos.append({
+                                    "asin": parsed.get("asin", ""),
+                                    "title": parsed.get("title", ""),
+                                    "price": parsed.get("price_discounted", precio),
+                                    "discount": descuento_real,
+                                    "image": parsed.get("img", ""),
+                                    "link": parsed.get("link", ""),
+                                    "keyword_match": keyword
+                                })
+                                items_validos += 1
+
+                        keywords_procesados += 1
+                        if items_validos > 0:
+                            print(f"  ✅ {keywords_procesados}/{len(perfil['keywords'])} '{keyword}': {items_validos} productos agregados", flush=True)
+                        else:
+                            print(f"  ⚠️  {keywords_procesados}/{len(perfil['keywords'])} '{keyword}': 0 productos (descartados por filtros)", flush=True)
+
+                    except Exception as e:
+                        print(f"  ⚠️  Error con keyword '{keyword}': {e}", flush=True)
+                        continue
+
+                # Deduplicar por ASIN
+                productos_unicos = {p['asin']: p for p in productos if p.get('asin')}.values()
+                productos_finales = list(productos_unicos)
+
+                # Ordenar por descuento
+                productos_finales.sort(key=lambda x: x.get('discount', 0), reverse=True)
+
+                # Aplicar scoring usando LÓGICA del core pero HISTORIAL del feed
+                if _HV_OK:
+                    # Cargar historial específico del feed
+                    historial_feed = cargar_historial_feed(audiencia_id)
+
+                    # Usar la LÓGICA de historial_variedad pero con el historial del feed
+                    from datetime import datetime, timezone
+                    now = datetime.now(timezone.utc)
+
+                    for producto in productos_finales:
+                        asin = producto.get('asin')
+                        title = producto.get('title', '')
+
+                        # Extraer modelo usando la función del CORE
+                        modelo = _hv._extraer_modelo(title) if hasattr(_hv, '_extraer_modelo') else ""
+
+                        # Buscar en historial del feed (no del core)
+                        item_id = asin or modelo
+                        if item_id and item_id in historial_feed:
+                            # Calcular score usando la LÓGICA del core
+                            registro = historial_feed[item_id]
+                            ultima_vez = registro.get('ultima_vez', '')
+
+                            try:
+                                ultima_fecha = datetime.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                                dias = (now - ultima_fecha).days
+
+                                # Misma lógica de scoring que el core
+                                if dias > 14:
+                                    score = 0.8
+                                elif dias > 7:
+                                    score = 0.5
+                                elif dias > 3:
+                                    score = 0.2
+                                else:
+                                    score = 0.0
+                            except:
+                                score = 0.5
+
+                            producto['novedad_score'] = score
+                        else:
+                            producto['novedad_score'] = 1.0
+
+                    ya_vistos = sum(1 for p in productos_finales if p.get('novedad_score', 1.0) < 1.0)
+                    print(f"  📚 Historial Feed '{audiencia_id}': {ya_vistos} ya vistos", flush=True)
+                else:
+                    # Fallback simple
+                    historial = cargar_historial_feed(audiencia_id)
+                    for producto in productos_finales:
+                        asin = producto.get('asin')
+                        producto['novedad_score'] = 0.5 if (asin and asin in historial) else 1.0
+                    print(f"  📚 Historial Feed: {sum(1 for p in productos_finales if p.get('novedad_score', 1.0) < 1.0)} ya vistos", flush=True)
+
+                # Guardar en cache
+                from datetime import datetime
+                cache[audiencia_id] = {
+                    "fecha": datetime.now().strftime('%Y-%m-%d'),
+                    "productos": productos_finales
+                }
+                guardar_feed_cache(cache)
+
+                print(f"✅ Feed '{audiencia_id}' generado: {len(productos_finales)} productos únicos", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "audiencia": audiencia_id,
+                    "productos": productos_finales,
+                    "total": len(productos_finales),
+                    "from_cache": False
+                }).encode())
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+        # ==================== FIN ENDPOINTS DE FEEDS ====================
+
         else:
             self.send_response(200); self._cors()
             self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1015,3 +1582,5 @@ if __name__ == "__main__":
     print(f"   👉 Abre en Chrome: http://localhost:{port}")
     print("   Ctrl+C para detener\n")
     _Servidor(("localhost", port), Handler).serve_forever()
+
+

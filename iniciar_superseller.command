@@ -1,3 +1,4 @@
 #!/bin/bash
-cd "/Users/inpace/Library/CloudStorage/GoogleDrive-isaac@elsuperseller.com/Mi unidad/BBQ/PITON/CREATOR APP"
+cd "$(dirname "$0")"
+echo "🚀 Iniciando Superseller..."
 python3 servidor.py
