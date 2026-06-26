@@ -9,6 +9,7 @@ import sys as _sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import time
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -201,6 +202,11 @@ def guardar_historial_feed(feed_id, historial):
     os.makedirs(os.path.dirname(ruta), exist_ok=True)
     with open(ruta, 'w', encoding='utf-8') as f:
         json.dump(historial, f, indent=2, ensure_ascii=False)
+
+def esta_bloqueado(feed_id, asin):
+    """Verifica si un ASIN fue descartado manualmente por el usuario"""
+    historial = cargar_historial_feed(feed_id)
+    return historial.get(asin, {}).get("blocked", False)
 
 def marcar_asins_vistos(feed_id, asins):
     """Marca ASINs como ya vistos en el historial del feed"""
@@ -1062,6 +1068,36 @@ class Handler(BaseHTTPRequestHandler):
                     n = marcar_asins_vistos(feed_id, asins_exportados)
                     print(f"  📚 {n} ASINs marcados en historial del feed '{feed_id}'", flush=True)
 
+                # Aprender keywords de productos publicados
+                todas_keywords = set()
+                for item in items:
+                    title = item.get('title', '')
+                    if title:
+                        titulo_words = title.lower().split()
+                        # Filtrar palabras significativas (más de 3 caracteres, no números puros)
+                        palabras_significativas = [
+                            w for w in titulo_words
+                            if len(w) > 3 and not w.isdigit()
+                            and w not in ['para', 'with', 'from', 'that', 'this', 'have', 'the']
+                        ]
+                        todas_keywords.update(palabras_significativas[:3])  # Tomar primeras 3 de cada producto
+
+                if todas_keywords:
+                    keywords_actuales = set(perfil.get('keywords', []))
+                    keywords_nuevas = [k for k in todas_keywords if k not in keywords_actuales]
+
+                    if keywords_nuevas:
+                        keywords_actuales.update(keywords_nuevas)
+                        perfil['keywords'] = sorted(list(keywords_actuales))
+
+                        # Guardar cambios
+                        perfiles[feed_id] = perfil
+                        perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                        with open(perfiles_path, 'w', encoding='utf-8') as f:
+                            json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                        print(f"  🎓 {len(keywords_nuevas)} keywords aprendidas de productos publicados", flush=True)
+
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({
@@ -1072,6 +1108,225 @@ class Handler(BaseHTTPRequestHandler):
 
             except Exception as e:
                 print(f"❌ /feeds/export-sheets: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/descartar":
+            # Endpoint para descartar productos y aprender exclusiones por feed
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                audiencia_id = body.get("audiencia_id", "")
+                asin = body.get("asin", "")
+                title = body.get("title", "")
+
+                if not audiencia_id or not asin:
+                    raise ValueError("audiencia_id y asin requeridos")
+
+                print(f"🚫 Descartando producto en '{audiencia_id}': {asin}", flush=True)
+
+                # 1. Marcar ASIN como bloqueado en historial del feed
+                from datetime import datetime as dt, timezone as tz
+                historial_feed = cargar_historial_feed(audiencia_id)
+                historial_feed[asin] = {
+                    "blocked": True,
+                    "blocked_at": dt.now(tz.utc).isoformat(),
+                    "title": title
+                }
+                guardar_historial_feed(audiencia_id, historial_feed)
+                print(f"  ✅ ASIN {asin} marcado como bloqueado en historial", flush=True)
+
+                # 2. Extraer keywords del título para aprender
+                # Palabras comunes que indican categoría no deseada
+                palabras_clave = []
+                titulo_lower = title.lower()
+
+                # Lista de palabras importantes a detectar
+                palabras_importantes = [
+                    # Electrónica
+                    "cámara", "camera", "impresora", "printer", "televisión", "tv",
+                    "laptop", "monitor", "tablet", "celular", "smartphone",
+                    # Hogar
+                    "refrigerador", "estufa", "lavadora", "secadora",
+                    # Otros
+                    "libro", "book", "cd", "dvd", "blu-ray"
+                ]
+
+                for palabra in palabras_importantes:
+                    if palabra in titulo_lower:
+                        palabras_clave.append(palabra)
+
+                # 3. Actualizar excludeKeywords del perfil (si encontramos palabras relevantes)
+                if palabras_clave:
+                    perfiles = cargar_perfiles()
+                    perfil = perfiles.get(audiencia_id)
+
+                    if perfil:
+                        exclude_actual = set(perfil['filtros'].get('excludeKeywords', []))
+                        exclude_actual.update(palabras_clave)
+                        perfil['filtros']['excludeKeywords'] = sorted(list(exclude_actual))
+
+                        # Guardar cambios en archivo
+                        perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                        with open(perfiles_path, 'w', encoding='utf-8') as f:
+                            json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                        print(f"  🎓 Keywords aprendidas: {palabras_clave}", flush=True)
+                        print(f"  📝 excludeKeywords actualizado: {perfil['filtros']['excludeKeywords']}", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "asin": asin,
+                    "keywords_aprendidas": palabras_clave,
+                    "mensaje": f"Producto descartado y {len(palabras_clave)} keywords aprendidas"
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/descartar: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/agregar_manual":
+            # Endpoint para agregar productos manualmente o URLs de categorías
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                audiencia_id = body.get("audiencia_id", "")
+                input_value = body.get("asin", "")  # Puede ser ASIN o URL
+
+                if not audiencia_id or not input_value:
+                    raise ValueError("audiencia_id y asin/url requeridos")
+
+                # Detectar si es URL de categoría o producto individual
+                if 'amazon' in input_value.lower() and '/dp/' not in input_value and '/gp/product/' not in input_value:
+                    # Es una URL de categoría (no tiene ASIN)
+                    print(f"📂 Agregando URL de categoría en '{audiencia_id}': {input_value[:80]}...", flush=True)
+
+                    perfiles = cargar_perfiles()
+                    perfil = perfiles.get(audiencia_id)
+
+                    if not perfil:
+                        raise ValueError(f"Feed '{audiencia_id}' no encontrado")
+
+                    # Agregar a urls_fijas
+                    urls_fijas = perfil.get('urls_fijas', [])
+
+                    # Verificar si ya existe
+                    if any(u.get('url') == input_value for u in urls_fijas):
+                        raise ValueError("Esta URL de categoría ya está agregada")
+
+                    # Agregar nueva URL
+                    urls_fijas.append({
+                        "url": input_value,
+                        "plataforma": "amazon",
+                        "descripcion": f"Categoría agregada manualmente"
+                    })
+
+                    perfil['urls_fijas'] = urls_fijas
+                    perfiles[audiencia_id] = perfil
+
+                    # Guardar cambios
+                    perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                    with open(perfiles_path, 'w', encoding='utf-8') as f:
+                        json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                    print(f"  ✅ URL de categoría agregada a urls_fijas", flush=True)
+
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True,
+                        "tipo": "categoria",
+                        "mensaje": "URL de categoría agregada. Aparecerá en la próxima generación del feed."
+                    }).encode())
+                    return
+
+                # Si llegamos aquí, es un ASIN o URL de producto individual
+                asin = input_value
+                print(f"➕ Agregando producto manual en '{audiencia_id}': {asin}", flush=True)
+
+                # 1. Enriquecer el ASIN con la API de Amazon
+                items = enriquecer_asins([asin], minSavingPercent=0)
+
+                if not items or len(items) == 0:
+                    raise ValueError(f"No se pudo enriquecer el ASIN {asin}. Verifica que sea válido.")
+
+                item = items[0]
+                parsed = parsear_item(item)
+
+                if not parsed:
+                    raise ValueError(f"No se pudo parsear el producto {asin}")
+
+                title = parsed.get("title", "")
+                print(f"  📦 Producto: {title[:80]}...", flush=True)
+
+                # 2. Guardar en historial como aprobado manualmente
+                from datetime import datetime as dt, timezone as tz
+                historial_feed = cargar_historial_feed(audiencia_id)
+                historial_feed[asin] = {
+                    "manually_added": True,
+                    "added_at": dt.now(tz.utc).isoformat(),
+                    "title": title,
+                    "blocked": False  # Explícitamente NO bloqueado
+                }
+                guardar_historial_feed(audiencia_id, historial_feed)
+                print(f"  ✅ ASIN {asin} guardado en historial como aprobado", flush=True)
+
+                # 3. Extraer keywords positivas del título
+                # Estas son palabras que indican el tipo de producto que SÍ queremos
+                palabras_clave = []
+                titulo_words = title.lower().split()
+
+                # Filtrar palabras significativas (más de 3 caracteres, no números puros)
+                palabras_significativas = [
+                    w for w in titulo_words
+                    if len(w) > 3 and not w.isdigit()
+                    and w not in ['para', 'with', 'from', 'that', 'this', 'have']
+                ]
+
+                # Tomar las primeras 3-5 palabras significativas
+                palabras_clave = palabras_significativas[:5]
+
+                print(f"  🎓 Keywords identificadas: {palabras_clave}", flush=True)
+
+                # 4. Agregar keywords al perfil para futuras búsquedas
+                if palabras_clave:
+                    perfiles = cargar_perfiles()
+                    perfil = perfiles.get(audiencia_id)
+
+                    if perfil:
+                        keywords_actuales = set(perfil.get('keywords', []))
+                        keywords_nuevas = [k for k in palabras_clave if k not in keywords_actuales]
+
+                        if keywords_nuevas:
+                            keywords_actuales.update(keywords_nuevas)
+                            perfil['keywords'] = sorted(list(keywords_actuales))
+
+                            # Guardar cambios en archivo
+                            perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                            with open(perfiles_path, 'w', encoding='utf-8') as f:
+                                json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                            print(f"  ➕ {len(keywords_nuevas)} keywords agregadas al perfil: {keywords_nuevas}", flush=True)
+                        else:
+                            print(f"  ℹ️  Keywords ya existían en el perfil", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "asin": asin,
+                    "title": title,
+                    "keywords_aprendidas": palabras_clave,
+                    "mensaje": f"Producto agregado: {title[:50]}..."
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/agregar_manual: {e}", flush=True)
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
@@ -1359,6 +1614,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self._cors()
                 self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.send_header("Pragma", "no-cache")
+                self.send_header("Expires", "0")
                 self.end_headers()
                 self.wfile.write(content.encode("utf-8"))
             except Exception as e:
@@ -1411,6 +1669,26 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        # Servir archivos .js del directorio base
+        elif path.endswith(".js"):
+            try:
+                file_path = os.path.join(BASE_DIR, path.lstrip('/'))
+                if os.path.exists(file_path):
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/javascript"); self.end_headers()
+                    self.wfile.write(content.encode('utf-8'))
+                else:
+                    # Si no existe, devolver archivo vacío para evitar errores
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/javascript"); self.end_headers()
+                    self.wfile.write(b"// File not found but returning empty to prevent errors\nconsole.log('Placeholder JS file');\n")
+            except Exception as e:
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/javascript"); self.end_headers()
+                self.wfile.write(b"// Error loading JS file\n")
+
         # ==================== ENDPOINTS DE FEEDS ====================
         elif path == "/feeds/listar":
             try:
@@ -1444,24 +1722,85 @@ class Handler(BaseHTTPRequestHandler):
                 perfil = perfiles[audiencia_id]
                 cache = cargar_feed_cache()
 
-                # Si tiene cache y no es refresh, retornar cache
+                # Si tiene cache y no es refresh, verificar expiración
                 if not refresh and audiencia_id in cache:
                     cache_data = cache[audiencia_id]
-                    # Verificar si cache es del mismo día
-                    from datetime import datetime
-                    if cache_data.get('fecha') == datetime.now().strftime('%Y-%m-%d'):
-                        print(f"📊 /feeds/{audiencia_id} → {len(cache_data.get('productos', []))} productos (cache)", flush=True)
-                        self.send_response(200); self._cors()
-                        self.send_header("Content-Type", "application/json"); self.end_headers()
-                        self.wfile.write(json.dumps({
-                            "ok": True,
-                            "audiencia": audiencia_id,
-                            "productos": cache_data['productos'],
-                            "total": len(cache_data['productos']),
-                            "from_cache": True,
-                            "fecha": cache_data['fecha']
-                        }).encode())
-                        return
+                    from datetime import datetime as dt, timedelta
+
+                    # Obtener timestamp del cache
+                    cache_timestamp_str = cache_data.get('timestamp')
+                    if cache_timestamp_str:
+                        try:
+                            cache_timestamp = dt.fromisoformat(cache_timestamp_str)
+                            now = dt.now()
+
+                            # Determinar tiempo de expiración según configuración del perfil
+                            frecuencia = perfil.get('frecuencia_actualizacion', 'diaria')
+
+                            cache_valido = False
+                            horas_restantes = 0
+
+                            if frecuencia == 'diaria':
+                                # Expiración por DÍA CALENDARIO (no por 24 horas exactas)
+                                # Si el caché es de hoy, es válido. Si es de ayer o antes, expiró.
+                                fecha_cache = cache_timestamp.date()
+                                fecha_hoy = now.date()
+                                cache_valido = (fecha_cache == fecha_hoy)
+                                if cache_valido:
+                                    # Calcular horas hasta medianoche
+                                    medianoche = dt.combine(fecha_hoy + timedelta(days=1), dt.min.time())
+                                    horas_restantes = int((medianoche - now).total_seconds() / 3600)
+                            elif frecuencia == 'manual':
+                                # Nunca expira automáticamente
+                                cache_valido = True
+                                horas_restantes = 999999
+                            else:
+                                # Expiración por HORAS EXACTAS (cada_12_horas, cada_6_horas, etc.)
+                                expiracion_horas = {
+                                    'cada_12_horas': 12,
+                                    'cada_6_horas': 6,
+                                    'cada_3_horas': 3
+                                }.get(frecuencia, 24)
+
+                                tiempo_transcurrido = now - cache_timestamp
+                                cache_valido = tiempo_transcurrido < timedelta(hours=expiracion_horas)
+                                if cache_valido:
+                                    horas_restantes = int((timedelta(hours=expiracion_horas) - tiempo_transcurrido).total_seconds() / 3600)
+
+                            # Si el cache sigue válido, retornarlo
+                            if cache_valido:
+                                horas_restantes = int((timedelta(hours=expiracion_horas) - tiempo_transcurrido).total_seconds() / 3600)
+
+                                # Filtrar productos bloqueados del caché
+                                productos_cache = cache_data.get('productos', [])
+                                productos_filtrados = [
+                                    p for p in productos_cache
+                                    if not esta_bloqueado(audiencia_id, p.get('asin', ''))
+                                ]
+
+                                bloqueados_filtrados = len(productos_cache) - len(productos_filtrados)
+                                if bloqueados_filtrados > 0:
+                                    print(f"  🚫 {bloqueados_filtrados} productos descartados filtrados del caché", flush=True)
+
+                                print(f"📊 /feeds/{audiencia_id} → {len(productos_filtrados)} productos (cache válido por {horas_restantes}h más)", flush=True)
+                                self.send_response(200); self._cors()
+                                self.send_header("Content-Type", "application/json"); self.end_headers()
+                                self.wfile.write(json.dumps({
+                                    "ok": True,
+                                    "audiencia": audiencia_id,
+                                    "productos": productos_filtrados,
+                                    "total": len(productos_filtrados),
+                                    "from_cache": True,
+                                    "cache_expira_en_horas": horas_restantes
+                                }).encode())
+                                return
+                            else:
+                                print(f"⏰ Cache de '{audiencia_id}' expirado (>{expiracion_horas}h), regenerando...", flush=True)
+                        except Exception as e:
+                            print(f"⚠️  Error verificando cache: {e}, regenerando...", flush=True)
+                    else:
+                        # Cache viejo sin timestamp, regenerar
+                        print(f"⚠️  Cache sin timestamp, regenerando...", flush=True)
 
                 # Buscar productos frescos
                 print(f"🔄 Generando feed para '{audiencia_id}'...", flush=True)
@@ -1494,6 +1833,11 @@ class Handler(BaseHTTPRequestHandler):
                                 parsed = parsear_item(item)
                                 if not parsed:
                                     items_sin_parse += 1
+                                    continue
+
+                                # Verificar si fue descartado manualmente
+                                asin = parsed.get("asin", "")
+                                if esta_bloqueado(audiencia_id, asin):
                                     continue
 
                                 # Obtener precio (para mostrar, pero no filtrar)
@@ -1566,6 +1910,10 @@ class Handler(BaseHTTPRequestHandler):
                                         if descuento_real < min_descuento:
                                             continue
 
+                                        # Verificar si fue descartado manualmente
+                                        if esta_bloqueado(audiencia_id, parsed.get("asin", "")):
+                                            continue
+
                                         productos.append({
                                             "asin": parsed.get("asin", ""),
                                             "title": parsed.get("title", ""),
@@ -1626,6 +1974,10 @@ class Handler(BaseHTTPRequestHandler):
 
                                 if descuento_real < min_descuento:
                                     continue  # Descartar productos sin descuento suficiente
+
+                                # Verificar si fue descartado manualmente
+                                if esta_bloqueado(audiencia_id, parsed.get("asin", "")):
+                                    continue
 
                                 # parsear_item() ya devuelve todo lo que necesitamos
                                 productos.append({
@@ -1712,9 +2064,11 @@ class Handler(BaseHTTPRequestHandler):
                     print(f"  📚 Historial Feed: {sum(1 for p in productos_finales if p.get('novedad_score', 1.0) < 1.0)} ya vistos", flush=True)
 
                 # Guardar en cache
-                from datetime import datetime
+                from datetime import datetime as dt
+                now = dt.now()
                 cache[audiencia_id] = {
-                    "fecha": datetime.now().strftime('%Y-%m-%d'),
+                    "fecha": now.strftime('%Y-%m-%d'),
+                    "timestamp": now.isoformat(),  # Timestamp preciso para expiración
                     "productos": productos_finales
                 }
                 guardar_feed_cache(cache)

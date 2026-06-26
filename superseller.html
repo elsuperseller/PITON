@@ -470,6 +470,7 @@ input[type=file] {
   </div>
   <div class="topbar-actions">
     <button id="btnDetener" onclick="detenerProceso()" style="display:none;" class="btn btn-danger">⏹ Detener</button>
+    <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;background:#dc2626;color:#fff;border:none;" class="btn">👎 Descartar Seleccionados</button>
     <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar Ofertas</button>
   </div>
 </header>
@@ -822,6 +823,25 @@ input[type=file] {
       </div>
 
       <div id="promo-filtros" style="display:none;margin-bottom:14px;padding:12px 16px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);"></div>
+
+      <div id="filtro-fuente" style="display:none;margin-bottom:14px;padding:12px 16px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);">
+        <div style="font-size:10px;font-weight:700;color:#6366f1;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">📍 Filtrar por fuente</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn-xs" onclick="filtrarPorFuente('all')" style="background:rgba(107,114,128,.12);color:#6b7280;">Todas</button>
+          <button class="btn-xs" onclick="filtrarPorFuente('telegram')" style="background:rgba(34,197,94,.12);color:#16a34a;border:1px solid rgba(34,197,94,.3);">📱 Telegram</button>
+          <button class="btn-xs" onclick="filtrarPorFuente('url_fija')" style="background:rgba(59,130,246,.12);color:#2563eb;border:1px solid rgba(59,130,246,.3);">🔗 URLs Fijas</button>
+          <button class="btn-xs" onclick="filtrarPorFuente('keyword')" style="background:rgba(156,163,175,.12);color:#6b7280;border:1px solid rgba(156,163,175,.3);">🔎 Keywords</button>
+        </div>
+      </div>
+
+      <div id="agregar-manual" style="display:block;margin-bottom:14px;padding:12px 16px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
+        <div style="font-size:10px;font-weight:700;color:#16a34a;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">➕ Agregar producto manual</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="input-asin-manual" type="text" placeholder="ASIN, URL de producto o URL de categoría" style="flex:1;padding:6px 10px;font-size:12px;border:1px solid rgba(34,197,94,.3);border-radius:4px;font-family:monospace;">
+          <button class="btn-xs" onclick="agregarProductoManual()" style="background:#16a34a;color:#fff;border:none;padding:6px 14px;font-weight:600;">Agregar</button>
+        </div>
+        <div style="font-size:10px;color:#6b7280;margin-top:6px;">Entrena el algoritmo agregando productos que te gustan de este feed</div>
+      </div>
 
       <div id="fecha-filtros">
         <div style="font-size:10px;font-weight:700;color:var(--red);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;">▶ Filtrar por fecha de inicio</div>
@@ -1369,6 +1389,7 @@ function setStatus(msg, cls="") {
 
 let allItems = []
 let currentFeedId = null // Para tracking de qué feed está cargado actualmente
+let descartadosEnSesion = new Set() // ASINs descartados en esta sesión (no volver a mostrar)
 
 async function buscar() {
   const subcats = getSelectedSubcats()
@@ -1380,6 +1401,10 @@ async function buscar() {
   document.getElementById("btnBuscar").disabled = true
   document.getElementById("results").style.display = "none"
   document.getElementById("exportBar").style.display = "none"
+  document.getElementById("btnDescartarSeleccionados").style.display = "none"
+  document.getElementById("filtro-fuente").style.display = "none"
+  document.getElementById("agregar-manual").style.display = "none"
+  currentFeedId = null
 
   const filtros = {
     solo_permanentes: document.getElementById("f_solo_perm").checked,
@@ -1475,7 +1500,9 @@ function renderResults(items) {
           <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${getPromoLabel(p)}</span>
           ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
           ${p.badge && p.badge.includes('🎯') ? `<span style="background:rgba(168,85,247,.12);color:#9333ea;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;border:1.5px solid rgba(168,85,247,.3);">${p.badge}</span>` : p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
+          ${p.source_type ? `<span style="background:${p.source_type==='telegram'?'rgba(34,197,94,.12)':p.source_type==='url_fija'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${p.source_type==='telegram'?'#16a34a':p.source_type==='url_fija'?'#2563eb':'#6b7280'};font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${p.source_type==='telegram'?'rgba(34,197,94,.3)':p.source_type==='url_fija'?'rgba(59,130,246,.3)':'rgba(156,163,175,.3)'};" title="${p.source_channel||''}">${p.source_type==='telegram'?'📱':'📍'} ${p.source_channel||p.source_type||''}</span>` : ''}
         </div>
+        ${currentFeedId ? `<button onclick="descartarProducto('${p.asin}', '${(p.title||'').replace(/'/g, "\\'")}', ${i}, event)" style="margin-top:8px;padding:4px 8px;font-size:11px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.3);border-radius:4px;cursor:pointer;width:100%;" title="Descartar este producto y aprender a evitar similares">👎 Descartar</button>` : ''}
         <div style="margin-top:4px;font-size:10px;color:#415f7a;line-height:1.7;">
           ${p.badge && p.badge.includes('🎯') ? `<div><strong style="color:#9333ea;">Keyword match:</strong> <span style="color:#6b21a8;font-weight:500;">${p.badge.replace('🎯 ', '')}</span></div>` : p.badge && !p.badge.includes('🎯') ? `<div>🏷️ <span style="color:#f59e0b;">${p.badge}</span></div>` : ''}
           ${p.access_type && p.access_type !== 'ALL' ? `<div>🔒 <span style="color:#7090ff;">${p.access_type === 'PRIME_EXCLUSIVE' ? 'Prime Exclusive' : 'Prime Early Access'}</span></div>` : ''}
@@ -1486,6 +1513,17 @@ function renderResults(items) {
       </div>
     </div>
   `).join("")
+
+  // Ocultar productos descartados en esta sesión (después de renderizar)
+  setTimeout(() => {
+    document.querySelectorAll(".product-card").forEach((card, i) => {
+      const asin = items[i]?.asin
+      if (asin && descartadosEnSesion.has(asin)) {
+        card.style.display = 'none'
+      }
+    })
+  }, 0)
+
   updateCount()
   document.getElementById("results").style.display = "block"
   document.getElementById("exportBar").style.display = "flex"
@@ -1990,11 +2028,26 @@ function aplicarFiltroSuperseller() {
   if (!allItems.length) return
   _allItemsOriginal = [...allItems]
 
-  // Respetar el filtro de promo activo: solo procesar lo que el usuario ya filtró
+  // IMPORTANTE: Trabajar SOLO sobre productos VISIBLES (acumular filtros)
+  const productosVisibles = []
+  document.querySelectorAll(".product-card").forEach((card, i) => {
+    if (card.style.display !== "none" && allItems[i]) {
+      productosVisibles.push(allItems[i])
+    }
+  })
+
+  let items = productosVisibles
+
+  // Respetar el filtro de promo activo
   const selPromos = new Set([...document.querySelectorAll(".promo-chk:checked")].map(c => c.value))
   const totalPromos = Object.keys(promoDisponibles || {}).length
   const sinFiltroPromo = selPromos.size === 0 || selPromos.size === totalPromos
-  let items = sinFiltroPromo ? [...allItems] : allItems.filter(p => selPromos.has(getPromoLabel(p)))
+  if (!sinFiltroPromo) {
+    items = items.filter(p => selPromos.has(getPromoLabel(p)))
+  }
+
+  // Excluir productos descartados en esta sesión
+  items = items.filter(p => !descartadosEnSesion.has(p.asin))
 
   const antes = items.length
   const log = []
@@ -2067,8 +2120,19 @@ function aplicarFiltroSuperseller() {
   items = Object.values(porTipo).flatMap(g => rankPorTipo(g, 3))
   log.push("Rank tipo top3: " + items.length + " (-" + (prev - items.length) + ")")
 
-  allItems = items
-  renderResults(items)
+  // En lugar de re-renderizar, ocultar tarjetas que NO pasaron el filtro
+  const asinsAprobados = new Set(items.map(p => p.asin))
+
+  document.querySelectorAll(".product-card").forEach((card, i) => {
+    const asin = allItems[i]?.asin
+    // Ocultar si NO pasó el filtro Y la tarjeta estaba visible
+    if (asin && !asinsAprobados.has(asin) && card.style.display !== "none") {
+      card.style.display = "none"
+      const chk = card.querySelector(".card-checkbox")
+      if (chk) { chk.checked = false; card.classList.remove("selected") }
+    }
+  })
+
   updateCount()
 
   const infoEl = document.getElementById("filtroSuperInfo")
@@ -2101,12 +2165,15 @@ function quitarRepetidos() {
     if (card.style.display === "none") return
     const score = parseFloat(card.dataset.novedad ?? "1")
     if (score < 1.0) {
+      // Ocultar el producto en lugar de solo desmarcarlo
+      card.style.display = "none"
       const chk = card.querySelector(".card-checkbox")
-      if (chk) { chk.checked = false; card.classList.remove("selected"); count++ }
+      if (chk) { chk.checked = false; card.classList.remove("selected") }
+      count++
     }
   })
   updateCount()
-  setStatus(`🔁 ${count} productos ya publicados deseleccionados`, "done")
+  setStatus(`🔁 ${count} productos ya publicados ocultados`, "done")
 }
 
 function verTodasLasOfertas() {
@@ -2626,6 +2693,9 @@ async function cargarFeed(refresh = false) {
   setStatus(`Cargando feed "${audienciaId}"...`, "running")
   document.getElementById("results").style.display = "none"
 
+  // Limpiar productos descartados de sesión anterior (cada feed es independiente)
+  descartadosEnSesion.clear()
+
   try {
     const url = `http://localhost:8765/feeds/${audienciaId}${refresh ? '?refresh=true' : ''}`
     const res = await fetch(url)
@@ -2648,11 +2718,25 @@ async function cargarFeed(refresh = false) {
       access_type: "ALL",
       start_time: "",
       end_time: "",
-      pct_claimed: null
+      pct_claimed: null,
+      source_type: p.source_type,
+      source_channel: p.source_channel,
+      novedad_score: p.novedad_score
     }))
 
     // Renderizar en grid principal (igual que búsquedas normales)
     renderResults(allItems)
+
+    // Mostrar filtro de fuentes si hay productos de diferentes tipos
+    const tiposFuente = [...new Set(allItems.map(p => p.source_type).filter(Boolean))]
+    if (tiposFuente.length > 0) {
+      document.getElementById("filtro-fuente").style.display = "block"
+    }
+
+    // Mostrar input de agregar manual y botón de descarte masivo
+    document.getElementById("agregar-manual").style.display = "block"
+    document.getElementById("btnDescartarSeleccionados").style.display = "inline-block"
+
     setStatus(`✅ Feed "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
 
   } catch(e) {
@@ -2671,7 +2755,294 @@ document.addEventListener("DOMContentLoaded", () => {
   actualizarAudiencias()
 })
 
+// ==================== DESCARTE DE PRODUCTOS ====================
+async function descartarSeleccionados() {
+  if (!currentFeedId) {
+    alert('No hay feed seleccionado')
+    return
+  }
+
+  // Obtener productos seleccionados
+  const seleccionados = []
+  document.querySelectorAll(".product-card").forEach((card, i) => {
+    const chk = card.querySelector(".card-checkbox")
+    if (chk && chk.checked && card.style.display !== "none") {
+      const item = allItems[i]
+      if (item) {
+        seleccionados.push({
+          asin: item.asin,
+          title: item.title,
+          cardIndex: i
+        })
+      }
+    }
+  })
+
+  if (seleccionados.length === 0) {
+    alert('No hay productos seleccionados')
+    return
+  }
+
+  if (!confirm(`¿Descartar ${seleccionados.length} productos seleccionados?\n\nEl sistema aprenderá a evitar productos similares.`)) {
+    return
+  }
+
+  let exitosos = 0
+  let fallidos = 0
+  const keywordsAprendidas = new Set()
+
+  setStatus(`Descartando ${seleccionados.length} productos...`, "running")
+
+  // Descartar en lotes de 5 para no saturar
+  for (let i = 0; i < seleccionados.length; i++) {
+    const prod = seleccionados[i]
+    try {
+      const res = await fetch('http://localhost:8765/feeds/descartar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audiencia_id: currentFeedId,
+          asin: prod.asin,
+          title: prod.title
+        })
+      })
+
+      const data = await res.json()
+
+      if (data.ok) {
+        exitosos++
+        // Agregar a lista de descartados en sesión
+        descartadosEnSesion.add(prod.asin)
+
+        // Ocultar la card
+        const card = document.getElementById(`card_${prod.cardIndex}`)
+        if (card) card.style.display = 'none'
+
+        // Recopilar keywords aprendidas
+        if (data.keywords_aprendidas) {
+          data.keywords_aprendidas.forEach(kw => keywordsAprendidas.add(kw))
+        }
+      } else {
+        fallidos++
+      }
+    } catch (err) {
+      console.error('Error descartando:', err)
+      fallidos++
+    }
+
+    // Pequeña pausa para no saturar
+    if (i % 5 === 0) await new Promise(r => setTimeout(r, 100))
+  }
+
+  updateCount()
+
+  const keywords = Array.from(keywordsAprendidas).join(', ')
+  const msg = `✅ ${exitosos} productos descartados${fallidos > 0 ? `, ${fallidos} fallidos` : ''}\n\n${keywords ? `🎓 Keywords aprendidas: ${keywords}` : ''}`
+
+  setStatus(msg, "done")
+  alert(msg)
+}
+
+async function descartarProducto(asin, title, cardIndex, event) {
+  event.preventDefault()
+  event.stopPropagation()
+
+  if (!currentFeedId) {
+    alert('No hay feed seleccionado')
+    return
+  }
+
+  if (!confirm(`¿Descartar "${title.substring(0, 50)}..."?\n\nEl sistema aprenderá a evitar productos similares.`)) {
+    return
+  }
+
+  try {
+    const res = await fetch('http://localhost:8765/feeds/descartar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        audiencia_id: currentFeedId,
+        asin: asin,
+        title: title
+      })
+    })
+
+    const data = await res.json()
+
+    if (data.ok) {
+      // Agregar a lista de descartados en sesión
+      descartadosEnSesion.add(asin)
+
+      // Ocultar la card
+      const card = document.getElementById(`card_${cardIndex}`)
+      if (card) {
+        card.style.display = 'none'
+      }
+
+      // Mostrar mensaje de éxito
+      const msg = data.keywords_aprendidas && data.keywords_aprendidas.length > 0
+        ? `✅ Producto descartado\n\n🎓 Keywords aprendidas: ${data.keywords_aprendidas.join(', ')}\n\nEstos productos ya no aparecerán en el feed.`
+        : '✅ Producto descartado\n\nNo se encontraron keywords específicas, pero el ASIN está bloqueado.'
+
+      alert(msg)
+    } else {
+      alert('❌ Error al descartar: ' + (data.error || 'Unknown'))
+    }
+  } catch (err) {
+    console.error('Error descartando:', err)
+    alert('❌ Error al descartar producto')
+  }
+}
+
+// Filtrar por fuente
+function filtrarPorFuente(sourceType) {
+  if (!allItems) return
+
+  const grid = document.getElementById("product-grid")
+  const items = sourceType === 'all'
+    ? allItems
+    : allItems.filter(p => p.source_type === sourceType)
+
+  grid.innerHTML = items.map((p, i) => {
+    // Re-usar el mismo template de renderizado
+    return `
+    <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
+      <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'">
+      <div class="product-info">
+        <div class="product-title">${p.title}</div>
+        <div class="product-prices">
+          <span class="price-disc">$${p.price_discounted.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
+          ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
+        </div>
+        ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+          ${p.source_type ? `<span style="background:${p.source_type==='telegram'?'rgba(34,197,94,.12)':p.source_type==='url_fija'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${p.source_type==='telegram'?'#16a34a':p.source_type==='url_fija'?'#2563eb':'#6b7280'};font-size:10px;padding:2px 6px;border-radius:4px;" title="${p.source_channel||''}">${p.source_type==='telegram'?'📱':'📍'} ${p.source_channel||p.source_type||''}</span>` : ''}
+        </div>
+        ${currentFeedId ? `<button onclick="descartarProducto('${p.asin}', '${(p.title||'').replace(/'/g, "\\'")}', ${i}, event)" style="margin-top:8px;padding:4px 8px;font-size:11px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.3);border-radius:4px;cursor:pointer;width:100%;">👎 Descartar</button>` : ''}
+        <a class="btn-ver" href="${p.link}" target="_blank" onclick="event.stopPropagation()">Ver en Amazon →</a>
+      </div>
+    </div>
+    `
+  }).join("")
+
+  updateCount()
+
+  // Actualizar contador en UI
+  document.getElementById("count").textContent = `${items.length} productos ${sourceType !== 'all' ? `(${sourceType})` : ''}`
+}
+
+async function agregarProductoManual() {
+  if (!currentFeedId) {
+    alert('No hay feed seleccionado')
+    return
+  }
+
+  const input = document.getElementById("input-asin-manual")
+  const valor = input.value.trim()
+
+  if (!valor) {
+    alert('Ingresa un ASIN, URL de producto o URL de categoría de Amazon')
+    return
+  }
+
+  // Extraer ASIN de URL o detectar si es categoría
+  let asin = valor
+  let esCategoria = false
+
+  // Si es URL de Amazon
+  if (valor.includes('amazon') || valor.includes('amzn')) {
+    const match = valor.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i)
+    if (match) {
+      // Es URL de producto individual
+      asin = match[1]
+    } else {
+      // Es URL de categoría (no tiene ASIN)
+      esCategoria = true
+      asin = valor
+    }
+  }
+
+  // Validar formato ASIN solo si no es categoría
+  if (!esCategoria && !/^[A-Z0-9]{10}$/i.test(asin)) {
+    alert('ASIN inválido. Debe tener 10 caracteres alfanuméricos')
+    return
+  }
+
+  const mensaje = esCategoria ? 'Agregando categoría...' : `Agregando producto ${asin}...`
+  setStatus(mensaje, "running")
+
+  try {
+    const res = await fetch('http://localhost:8765/feeds/agregar_manual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        audiencia_id: currentFeedId,
+        asin: esCategoria ? asin : asin.toUpperCase()
+      })
+    })
+
+    const data = await res.json()
+
+    if (data.ok) {
+      input.value = '' // Limpiar input
+      setStatus(`✅ ${data.mensaje}`, "done")
+
+      if (data.tipo === 'categoria') {
+        // Es una categoría
+        setTimeout(() => {
+          alert(`✅ Categoría agregada exitosamente\n\nAparecerá en la próxima generación del feed (mañana o al usar "Refrescar")`)
+        }, 300)
+      } else if (data.keywords_aprendidas && data.keywords_aprendidas.length > 0) {
+        // Es un producto con keywords
+        setTimeout(() => {
+          alert(`✅ Producto agregado exitosamente\n\n🎓 Keywords aprendidas: ${data.keywords_aprendidas.join(', ')}`)
+        }, 300)
+      } else {
+        // Es un producto sin keywords
+        setTimeout(() => {
+          alert('✅ Producto agregado exitosamente')
+        }, 300)
+      }
+    } else {
+      setStatus(`❌ ${data.error || 'Error al agregar'}`, "error")
+      alert(`❌ Error: ${data.error || 'No se pudo agregar'}`)
+    }
+  } catch (err) {
+    setStatus(`❌ Error: ${err.message}`, "error")
+    alert(`❌ Error de conexión: ${err.message}`)
+  }
+}
+
 // ==================== FIN FEEDS ====================
+
+// ==================== ERROR HANDLER ====================
+// Captura errores de scripts externos para que no bloqueen la app
+window.addEventListener('error', function(e) {
+  // Si el error es de share-modal.js u otros scripts externos, ignorarlo
+  if (e.filename && (e.filename.includes('share-modal') || e.filename.endsWith('.js'))) {
+    console.warn('Error ignorado de script externo:', e.filename);
+    e.preventDefault();
+    return true;
+  }
+}, true);
+
+// Forzar mostrar elementos de feed si están cargados
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    // Si hay un feed cargado (currentFeedId definido), asegurar que los elementos estén visibles
+    if (window.currentFeedId && window.allItems && window.allItems.length > 0) {
+      try {
+        document.getElementById("agregar-manual").style.display = "block";
+        document.getElementById("btnDescartarSeleccionados").style.display = "inline-block";
+        document.getElementById("filtro-fuente").style.display = "block";
+      } catch(e) {
+        console.error("Error mostrando elementos de feed:", e);
+      }
+    }
+  }, 500);
+});
+
 </script>
 </body>
 </html>
