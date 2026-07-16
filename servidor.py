@@ -14,6 +14,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Sistema de jobs en background
+import threading
+import uuid
+JOBS_BACKGROUND = {}  # {job_id: {"status": "processing|completed|error", "progreso": {...}, "resultados": [...]}}
+
 try:
     import scraper_ml as _ml
     _ML_OK = True
@@ -61,7 +66,7 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         "partnerTag": CREDS["partner_tag"],
         "marketplace": "www.amazon.com.mx",
         "searchIndex": search_index,
-        "itemCount": 10,
+        "itemCount": 15,  # Aumentado de 10 a 15 (15×2 páginas = 30 productos/keyword)
         "itemPage": pagina,
         "sortBy": sort_by,
         "keywords": keywords,
@@ -203,6 +208,99 @@ def guardar_historial_feed(feed_id, historial):
     with open(ruta, 'w', encoding='utf-8') as f:
         json.dump(historial, f, indent=2, ensure_ascii=False)
 
+def cargar_keyword_stats(feed_id):
+    """Carga estadísticas de keywords de un feed"""
+    ruta = os.path.join(BASE_DIR, 'feeds', feed_id, 'keyword_stats.json')
+    if os.path.exists(ruta):
+        with open(ruta, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+def guardar_keyword_stats(feed_id, stats):
+    """Guarda estadísticas de keywords de un feed"""
+    ruta = os.path.join(BASE_DIR, 'feeds', feed_id, 'keyword_stats.json')
+    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    with open(ruta, 'w', encoding='utf-8') as f:
+        json.dump(stats, f, indent=2, ensure_ascii=False)
+
+def get_keywords_originales():
+    """Retorna el set de keywords originales que NUNCA se eliminan"""
+    return {
+        "Funko Pop", "Funko", "Hot Toys", "Bandai", "Banpresto", "Hasbro",
+        "McFarlane", "NECA", "Good Smile", "Kotobukiya", "Square Enix",
+        "Mattel", "LEGO", "Sideshow", "Iron Studios", "Diamond Select",
+        "Jada Toys", "Jazwares", "Medicom", "Beast Kingdom",
+        "Marvel Legends", "Marvel", "DC Multiverse", "DC Comics",
+        "Batman", "Superman", "Spider-Man", "Avengers", "X-Men",
+        "Deadpool", "Venom",
+        "Dragon Ball", "Dragon Ball Z", "Dragon Ball Super",
+        "One Piece", "Naruto", "Demon Slayer", "Kimetsu no Yaiba",
+        "Jujutsu Kaisen", "My Hero Academia", "Attack on Titan",
+        "Pokemon", "Digimon", "Sailor Moon", "Gundam",
+        "Star Wars", "Harry Potter", "Lord of the Rings",
+        "Transformers", "G.I. Joe", "Teenage Mutant Ninja Turtles",
+        "Power Rangers", "Spawn", "The Walking Dead", "Fortnite",
+        "Halo", "Minecraft", "Disney", "Pixar", "Hello Kitty",
+        "Godzilla", "King Kong"
+    }
+
+def aplicar_limite_keywords(feed_id, perfil, limite=200):
+    """
+    Aplica límite de keywords manteniendo las mejores por score.
+
+    Lógica:
+    - Keywords originales: SIEMPRE protegidas
+    - Keywords aprendidas: ordenadas por score, mantener solo las mejores
+    """
+    keywords_actuales = perfil.get('keywords', [])
+
+    if len(keywords_actuales) <= limite:
+        return perfil  # No hay nada que hacer
+
+    # Cargar stats
+    stats = cargar_keyword_stats(feed_id)
+    keywords_originales = get_keywords_originales()
+
+    # Separar keywords
+    kw_protegidas = []
+    kw_aprendidas = []
+
+    for kw in keywords_actuales:
+        if kw in keywords_originales:
+            kw_protegidas.append(kw)
+        else:
+            kw_aprendidas.append(kw)
+
+    # Si después de proteger las originales aún excedemos, eliminar aprendidas por score
+    espacio_disponible = limite - len(kw_protegidas)
+
+    if len(kw_aprendidas) > espacio_disponible:
+        # Ordenar aprendidas por score (descendente)
+        kw_aprendidas_con_score = [
+            (kw, stats.get(kw, {}).get('score', 0))
+            for kw in kw_aprendidas
+        ]
+        kw_aprendidas_con_score.sort(key=lambda x: x[1], reverse=True)
+
+        # Mantener solo las mejores
+        kw_aprendidas_mantener = [kw for kw, score in kw_aprendidas_con_score[:espacio_disponible]]
+        kw_eliminadas = [kw for kw, score in kw_aprendidas_con_score[espacio_disponible:]]
+
+        print(f"  🧹 Límite de {limite} keywords alcanzado: eliminando {len(kw_eliminadas)} keywords con menor score", flush=True)
+
+        # Mostrar ejemplos de eliminadas
+        if kw_eliminadas:
+            ejemplos_eliminadas = kw_eliminadas[:5]
+            if len(kw_eliminadas) > 5:
+                print(f"     Ejemplos eliminados: {', '.join(ejemplos_eliminadas)}... (+{len(kw_eliminadas)-5} más)", flush=True)
+            else:
+                print(f"     Eliminados: {', '.join(ejemplos_eliminadas)}", flush=True)
+
+        # Actualizar perfil
+        perfil['keywords'] = sorted(kw_protegidas + kw_aprendidas_mantener)
+
+    return perfil
+
 def esta_bloqueado(feed_id, asin):
     """Verifica si un ASIN fue descartado manualmente por el usuario"""
     historial = cargar_historial_feed(feed_id)
@@ -227,6 +325,64 @@ def marcar_asins_vistos(feed_id, asins):
 
     guardar_historial_feed(feed_id, historial)
     return len(asins)
+
+def aplicar_novedad_score_feed(items, feed_id):
+    """
+    Aplica novedad_score a items basándose en el historial del feed específico.
+    1.0  — nunca visto
+    0.8  — publicado hace >14 días
+    0.5  — publicado hace 7-14 días
+    0.2  — publicado hace 3-7 días
+    0.0  — publicado hace <3 días o bloqueado
+    """
+    from datetime import datetime, timezone
+
+    historial_feed = cargar_historial_feed(feed_id)
+    now = datetime.now(timezone.utc)
+
+    for producto in items:
+        asin = producto.get('asin') or producto.get('id', '')
+
+        if not asin:
+            producto['novedad_score'] = 1.0
+            continue
+
+        # Verificar si está bloqueado
+        if historial_feed.get(asin, {}).get('blocked', False):
+            producto['novedad_score'] = 0.0
+            producto['blocked'] = True
+            continue
+
+        # Verificar si ya fue visto
+        if asin in historial_feed:
+            registro = historial_feed[asin]
+            ultima_vez = registro.get('ultima_vez', '')
+
+            try:
+                ultima_fecha = datetime.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                if ultima_fecha.tzinfo is None:
+                    ultima_fecha = ultima_fecha.replace(tzinfo=timezone.utc)
+                dias = (now - ultima_fecha).days
+
+                # Scoring de novedad
+                if dias >= 14:
+                    score = 0.8
+                elif dias >= 7:
+                    score = 0.5
+                elif dias >= 3:
+                    score = 0.2
+                else:
+                    score = 0.0
+
+                producto['novedad_score'] = score
+            except:
+                producto['novedad_score'] = 0.5
+        else:
+            producto['novedad_score'] = 1.0
+
+    # Ordenar por novedad_score (mayor a menor)
+    items.sort(key=lambda p: p.get('novedad_score', 1.0), reverse=True)
+    return items
 
 def extraer_precio(item):
     """Extrae precio con descuento de un item de Amazon"""
@@ -329,6 +485,346 @@ def es_categoria_coleccionable(item):
         return False
     except:
         return True  # En caso de error, dejarlo pasar
+
+def extraer_keywords_inteligentes(titulo):
+    """
+    Extrae SOLO el NÚCLEO: personajes, franquicias, marcas.
+    NO extrae tipos de producto (reloj, camisa, figura, etc.)
+
+    Ejemplo:
+    - "Reloj Yoshi Nintendo" → ["Yoshi", "Nintendo"]
+    - "Figura Dragon Ball Z Goku" → ["Dragon Ball Z", "Goku"]
+
+    Retorna: lista de keywords núcleo (máximo 3)
+    """
+    import re
+
+    # Stopwords
+    STOPWORDS = {
+        'the', 'and', 'for', 'with', 'from', 'that', 'this', 'have',
+        'para', 'con', 'de', 'la', 'el', 'en', 'y', 'of', 'to', 'in', 'a', 'an'
+    }
+
+    # TIPOS DE PRODUCTO - Filtrar estas palabras (NO son el núcleo)
+    TIPOS_PRODUCTO = {
+        # Productos físicos
+        'figura', 'figure', 'statue', 'estatua', 'toy', 'juguete',
+        'reloj', 'watch', 'camisa', 'shirt', 'playera', 'camiseta',
+        'libro', 'book', 'comic', 'manga', 'album', 'poster',
+        'funko', 'pop', 'plush', 'peluche', 'mug', 'taza',
+        'card', 'carta', 'game', 'juego', 'videojuego',
+        'model', 'modelo', 'kit', 'set', 'pack', 'collection',
+        'collectible', 'coleccionable', 'merchandise',
+        # Descriptores
+        'deluxe', 'premium', 'special', 'limited', 'exclusive',
+        'edition', 'edicion', 'version', 'series', 'vol', 'volume',
+        'new', 'nuevo', 'original', 'official', 'oficial',
+        'mini', 'mega', 'super', 'ultra', 'giant', 'large', 'small',
+        # Números
+        'one', 'two', 'three', 'four', 'five', 'first', 'second',
+        'piece', 'pieces', 'pcs', 'cm', 'inch', 'pulgadas'
+    }
+
+    # MARCAS reconocidas (pueden ser keywords pero de baja prioridad)
+    MARCAS = {
+        'bandai', 'hasbro', 'mattel', 'lego', 'neca', 'mcfarlane',
+        'good smile', 'kotobukiya', 'square enix', 'sideshow',
+        'hot toys', 'diamond select', 'jada', 'jazwares', 'medicom',
+        'beast kingdom', 'iron studios', 'banpresto'
+    }
+
+    # Limpiar título
+    titulo_lower = titulo.lower()
+    titulo_clean = re.sub(r'[^\w\s]', ' ', titulo_lower)
+    palabras = titulo_clean.split()
+
+    # Filtrar stopwords y tipos de producto
+    palabras_filtradas = [
+        p for p in palabras
+        if p not in STOPWORDS
+        and p not in TIPOS_PRODUCTO
+        and len(p) > 2
+        and not p.isdigit()
+    ]
+
+    keywords_extraidas = []
+
+    # 1. Buscar franquicias compuestas conocidas (bigramas/trigramas)
+    FRANQUICIAS_COMPUESTAS = [
+        'dragon ball z', 'dragon ball super', 'dragon ball',
+        'one piece', 'my hero academia', 'demon slayer',
+        'star wars', 'harry potter', 'lord of the rings',
+        'teenage mutant ninja turtles', 'power rangers',
+        'marvel legends', 'dc multiverse', 'dc comics',
+        'jujutsu kaisen', 'attack on titan', 'sailor moon',
+        'the walking dead'
+    ]
+
+    for franquicia in FRANQUICIAS_COMPUESTAS:
+        if franquicia in titulo_lower:
+            keywords_extraidas.append(franquicia.title())
+
+    # 2. Extraer nombres propios (primera letra mayúscula en título original)
+    # Buscar palabras que empiezan con mayúscula (probable personaje/franquicia)
+    palabras_originales = re.findall(r'\b[A-Z][a-z]+\b', titulo)
+    for palabra in palabras_originales:
+        palabra_lower = palabra.lower()
+        if (palabra_lower not in TIPOS_PRODUCTO
+            and palabra_lower not in STOPWORDS
+            and len(palabra_lower) > 3):
+            keywords_extraidas.append(palabra)
+
+    # 3. Si no encontramos nombres propios, buscar palabras largas únicas (≥6 chars)
+    if not keywords_extraidas:
+        for palabra in palabras_filtradas:
+            if len(palabra) >= 6 and palabra not in MARCAS:
+                keywords_extraidas.append(palabra.title())
+
+    # Deduplicar (case-insensitive)
+    keywords_unicas = []
+    vistos = set()
+    for kw in keywords_extraidas:
+        kw_lower = kw.lower()
+        if kw_lower not in vistos:
+            keywords_unicas.append(kw)
+            vistos.add(kw_lower)
+
+    # Retornar máximo 3 keywords núcleo
+    return keywords_unicas[:3]
+
+def evaluar_exclusion_contextual(titulo, perfil, es_url_fija=False):
+    """
+    Evalúa si un producto debe excluirse considerando el contexto completo.
+
+    Retorna: (debe_excluir: bool, razon: str)
+
+    Lógica:
+    - Si viene de URL fija (Best Sellers, etc.) y es de marca premium → NO excluir
+    - Si tiene múltiples keywords positivas → Alta tolerancia a excludeKeywords
+    - Solo excluir si las palabras negativas son claramente problemáticas
+    """
+    titulo_lower = titulo.lower()
+
+    # Marcas premium que tienen prioridad (no se excluyen fácilmente)
+    MARCAS_PREMIUM = {
+        'hot toys', 'bandai', 'hasbro', 'funko', 'mcfarlane', 'neca',
+        'good smile', 'kotobukiya', 'square enix', 'mattel', 'lego',
+        'sideshow', 'prime 1', 'iron studios', 'tweeterhead', 'medicom'
+    }
+
+    # Franquicias/keywords positivas importantes
+    FRANQUICIAS_IMPORTANTES = {
+        'marvel', 'dc comics', 'dc', 'star wars', 'pokemon', 'dragon ball',
+        'naruto', 'one piece', 'anime', 'disney', 'pixar', 'transformers',
+        'spawn', 'batman', 'superman', 'spider-man', 'iron man', 'deadpool'
+    }
+
+    # Verificar si es de marca premium
+    es_marca_premium = any(marca in titulo_lower for marca in MARCAS_PREMIUM)
+
+    # Contar keywords positivas presentes
+    keywords_positivas = perfil.get('keywords', [])
+    keywords_presentes = sum(1 for kw in keywords_positivas if kw.lower() in titulo_lower)
+
+    # Contar franquicias importantes
+    franquicias_presentes = sum(1 for franq in FRANQUICIAS_IMPORTANTES if franq in titulo_lower)
+
+    # Calcular "confianza" del producto (0-100)
+    confianza = 0
+    if es_url_fija:
+        confianza += 30  # URL fija da +30 puntos
+    if es_marca_premium:
+        confianza += 40  # Marca premium da +40 puntos
+    confianza += min(keywords_presentes * 10, 30)  # Hasta +30 por keywords
+    confianza += min(franquicias_presentes * 10, 20)  # Hasta +20 por franquicias
+
+    # Obtener excludeKeywords
+    exclude_keywords = perfil.get('filtros', {}).get('excludeKeywords', [])
+
+    # Buscar palabras excluidas presentes
+    palabras_excluidas_encontradas = [
+        ex for ex in exclude_keywords
+        if ex.lower() in titulo_lower
+    ]
+
+    if not palabras_excluidas_encontradas:
+        return False, ""  # No hay palabras excluidas, no excluir
+
+    # Si tiene alta confianza (≥60), solo excluir por palabras MUY problemáticas
+    PALABRAS_MUY_PROBLEMATICAS = {
+        'pirata', 'replica', 'bootleg', 'fake', 'copia', 'imitacion',
+        'usado', 'dañado', 'roto', 'defecto', 'segunda mano'
+    }
+
+    palabras_muy_problematicas_encontradas = [
+        p for p in palabras_excluidas_encontradas
+        if p.lower() in PALABRAS_MUY_PROBLEMATICAS
+    ]
+
+    if confianza >= 60:
+        # Alta confianza: solo excluir si tiene palabras MUY problemáticas
+        if palabras_muy_problematicas_encontradas:
+            return True, f"Palabra crítica: {palabras_muy_problematicas_encontradas[0]}"
+        else:
+            # Tiene palabras excluidas pero el contexto es bueno
+            return False, ""
+
+    elif confianza >= 40:
+        # Confianza media: tolerancia moderada
+        # Excluir solo si tiene 2+ palabras excluidas o 1 muy problemática
+        if palabras_muy_problematicas_encontradas:
+            return True, f"Palabra crítica: {palabras_muy_problematicas_encontradas[0]}"
+        elif len(palabras_excluidas_encontradas) >= 2:
+            return True, f"Múltiples keywords excluidas: {', '.join(palabras_excluidas_encontradas[:2])}"
+        else:
+            return False, ""
+
+    else:
+        # Baja confianza: aplicar excludeKeywords normalmente
+        return True, f"Keyword excluida: {palabras_excluidas_encontradas[0]}"
+
+def _procesar_urls_completo(job_id, urls, pages, min_discount, feed_id=""):
+    """Procesa URLs y actualiza el progreso en JOBS_BACKGROUND[job_id]"""
+    job = JOBS_BACKGROUND[job_id]
+
+    try:
+        # Fase 1: Scraping
+        job["progreso"]["fase"] = "scraping"
+        _ZG = ("/gp/movers-and-shakers/", "/gp/bestsellers/", "/gp/new-releases/", "/zgbs/")
+        zg_urls   = [u for u in urls if any(p in u for p in _ZG)]
+        rest_urls = [u for u in urls if not any(p in u for p in _ZG)]
+
+        all_asins, vistos = [], set()
+
+        # Ranking ZG
+        if zg_urls:
+            print(f"  📊 Batch ranking: {len(zg_urls)} URL(s) en 1 browser", flush=True)
+            asins, _ = _az.scrape_zg_batch(zg_urls, pages=1, per_url_limit=50)
+            for a in asins:
+                if a not in vistos:
+                    vistos.add(a); all_asins.append(a)
+            job["progreso"]["urls_procesadas"] += len(zg_urls)
+
+        # Resto de URLs
+        for i, url in enumerate(rest_urls, 1):
+            asins, _ = _az.scrape_url_custom(url, pages=pages)
+            for a in asins:
+                if a not in vistos:
+                    vistos.add(a); all_asins.append(a)
+            job["progreso"]["urls_procesadas"] += 1
+
+        job["progreso"]["asins_extraidos"] = len(all_asins)
+        print(f"  → {len(all_asins)} ASINs únicos, enriqueciendo…", flush=True)
+
+        if not all_asins:
+            job["status"] = "completed"
+            job["resultados"] = {"ok": True, "items": [], "total": 0}
+            return
+
+        # Fase 2: Enriquecimiento
+        job["progreso"]["fase"] = "enriquecimiento"
+        token = get_token()
+        api_headers = {"Authorization": f"Bearer {token}",
+                       "Content-Type": "application/json",
+                       "x-marketplace": "www.amazon.com.mx"}
+
+        _RECURSOS = ["itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
+                     "offersV2.listings.price", "offersV2.listings.dealDetails",
+                     "offersV2.listings.isBuyBoxWinner"]
+        _stats = {"ok": 0, "no200": 0, "empty": 0, "no_listing": 0, "err": 0}
+
+        def _enriquecer_batch(batch):
+            try:
+                r = requests.post(
+                    "https://creatorsapi.amazon/catalog/v1/getItems",
+                    headers=api_headers,
+                    json={"partnerTag": CREDS["partner_tag"],
+                          "marketplace": "www.amazon.com.mx",
+                          "itemIds": batch,
+                          "languagesOfPreference": ["es_MX"],
+                          "currencyOfPreference": "MXN",
+                          "resources": _RECURSOS},
+                    timeout=60  # Aumentado de 20 a 60 segundos
+                )
+                if r.status_code != 200:
+                    _stats["no200"] += len(batch)
+                    if r.status_code in (429, 500, 502, 503):
+                        time.sleep(3.0)
+                        r2 = requests.post(
+                            "https://creatorsapi.amazon/catalog/v1/getItems",
+                            headers=api_headers,
+                            json={"partnerTag": CREDS["partner_tag"],
+                                  "marketplace": "www.amazon.com.mx",
+                                  "itemIds": batch,
+                                  "languagesOfPreference": ["es_MX"],
+                                  "currencyOfPreference": "MXN",
+                                  "resources": _RECURSOS},
+                            timeout=60
+                        )
+                        if r2.status_code != 200:
+                            return []
+                        r = r2
+                    else:
+                        return []
+                items = r.json().get("itemsResult", {}).get("items", [])
+                if not items:
+                    _stats["empty"] += len(batch)
+                    return []
+                resultados_batch = []
+                for item in items:
+                    p = parsear_item(item)
+                    if p is None:
+                        _stats["no_listing"] += 1
+                    else:
+                        _stats["ok"] += 1
+                        if p["descuento_pct"] >= min_discount:
+                            resultados_batch.append(p)
+                return resultados_batch
+            except Exception as e:
+                _stats["err"] += len(batch)
+                return []
+
+        batches = [all_asins[i:i+10] for i in range(0, len(all_asins), 10)]
+        job["progreso"]["batches_total"] = len(batches)
+        print(f"  📦 {len(all_asins)} ASINs → {len(batches)} batches vía getItems", flush=True)
+
+        resultados = []
+        completados = 0
+        with ThreadPoolExecutor(max_workers=5) as pool:
+            futuros = {pool.submit(_enriquecer_batch, b): b for b in batches}
+            for fut in as_completed(futuros):
+                completados += 1
+                resultados.extend(fut.result())
+                job["progreso"]["batches_completados"] = completados
+                job["progreso"]["productos_ok"] = _stats['ok']
+                if completados % 20 == 0:
+                    print(f"  ⏳ {completados}/{len(batches)} | ok={_stats['ok']} no200={_stats['no200']}", flush=True)
+
+        print(f"  📊 Final: ok={_stats['ok']} no200={_stats['no200']} sin_listing={_stats['no_listing']}", flush=True)
+
+        # Fase 3: Deduplicación e historial
+        job["progreso"]["fase"] = "finalizando"
+        seen, unicos = set(), []
+        for p in resultados:
+            if p["asin"] not in seen:
+                seen.add(p["asin"])
+                unicos.append(p)
+
+        if _HV_OK:
+            if feed_id:
+                unicos = aplicar_novedad_score_feed(unicos, feed_id)
+                print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+            else:
+                unicos = _hv.aplicar_scores(unicos)
+                print(f"  📚 Historial global aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+
+        job["status"] = "completed"
+        job["resultados"] = {"ok": True, "items": unicos, "total": len(unicos), "asins": len(all_asins)}
+
+    except Exception as e:
+        job["status"] = "error"
+        job["error"] = str(e)
+        print(f"❌ Job {job_id} error: {e}", flush=True)
 
 def enriquecer_asins(asins, minSavingPercent=1):
     """Enriquece ASINs usando Creators API getItems en batches de 10"""
@@ -464,11 +960,13 @@ class Handler(BaseHTTPRequestHandler):
                 length = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(length))
                 query = body.get("query", "").strip()
-                
+                feed_id = body.get("feed_id", "") or body.get("audiencia_id", "")  # Aceptar ambos nombres
+
                 if not query:
                     raise ValueError("query requerida")
-                
-                print(f"🔍 Búsqueda directa: {query}", flush=True)
+
+                log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
+                print(f"🔍 {log_prefix}Búsqueda directa: {query}", flush=True)
                 
                 token = get_token()
                 headers = {
@@ -523,8 +1021,13 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"  → {len(resultados)} producto(s) encontrado(s)", flush=True)
 
                 if _HV_OK:
-                    resultados = _hv.aplicar_scores(resultados)
-                    print(f"  📚 Historial aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+                    # Usar historial del feed si feed_id está disponible
+                    if feed_id:
+                        resultados = aplicar_novedad_score_feed(resultados, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+                    else:
+                        resultados = _hv.aplicar_scores(resultados)
+                        print(f"  📚 Historial global aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
 
                 self.send_response(200)
                 self._cors()
@@ -545,6 +1048,7 @@ class Handler(BaseHTTPRequestHandler):
                 length = int(self.headers.get("Content-Length", 0))
                 raw = self.rfile.read(length)
                 html_text = raw.decode("utf-8", errors="ignore")
+                feed_id  = self.headers.get("X-Feed-Id", "")  # Opcional: feed ID desde header
 
                 import re as _re
                 # Cortar el HTML en el punto donde empiezan productos de historial/recomendaciones
@@ -553,7 +1057,9 @@ class Handler(BaseHTTPRequestHandler):
                 html_principal = html_text[:corte] if corte != -1 else html_text
                 asins = list(set(_re.findall(r"/dp/([A-Z0-9]{10})", html_principal)))
                 total_html = len(set(_re.findall(r"/dp/([A-Z0-9]{10})", html_text)))
-                print(f"📦 /procesar-html → {len(asins)} ASINs principales (de {total_html} totales, {total_html - len(asins)} descartados por historial)", flush=True)
+
+                log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
+                print(f"📦 {log_prefix}/procesar-html → {len(asins)} ASINs principales (de {total_html} totales, {total_html - len(asins)} descartados por historial)", flush=True)
 
                 if not asins:
                     self.send_response(200); self._cors()
@@ -606,8 +1112,12 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"  → {len(resultados)} productos con datos de API", flush=True)
 
                 if _HV_OK:
-                    resultados = _hv.aplicar_scores(resultados)
-                    print(f"  📚 Historial aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+                    if feed_id:
+                        resultados = aplicar_novedad_score_feed(resultados, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+                    else:
+                        resultados = _hv.aplicar_scores(resultados)
+                        print(f"  📚 Historial global aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -625,6 +1135,7 @@ class Handler(BaseHTTPRequestHandler):
                     raise ImportError("scraper_ml no disponible — instala: pip install beautifulsoup4")
                 length = int(self.headers.get("Content-Length", 0))
                 body   = json.loads(self.rfile.read(length))
+                feed_id      = body.get("feed_id", "") or body.get("audiencia_id", "")
                 filtros      = body.get("filtros", {})
                 queries      = body.get("queries")      or None
                 urls         = body.get("urls")         or None
@@ -635,7 +1146,8 @@ class Handler(BaseHTTPRequestHandler):
                 max_por_query= int(body.get("max_por_query", 50))
                 paginas      = int(body.get("paginas", 1))
 
-                print(f"🛒 /buscar-ml → queries={queries} cats={categorias} urls={len(urls or [])} desc≥{min_discount}% pages={paginas}", flush=True)
+                log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
+                print(f"🛒 {log_prefix}/buscar-ml → queries={queries} cats={categorias} urls={len(urls or [])} desc≥{min_discount}% pages={paginas}", flush=True)
 
                 items = _ml.scrape(
                     queries=queries, urls=urls, categorias=categorias,
@@ -645,8 +1157,12 @@ class Handler(BaseHTTPRequestHandler):
                 )
 
                 if _HV_OK:
-                    items = _hv.aplicar_scores(items)
-                    print(f"  📚 Historial aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+                    if feed_id:
+                        items = aplicar_novedad_score_feed(items, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+                    else:
+                        items = _hv.aplicar_scores(items)
+                        print(f"  📚 Historial global aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -663,6 +1179,7 @@ class Handler(BaseHTTPRequestHandler):
                     raise ImportError("scraper_ml no disponible")
                 length   = int(self.headers.get("Content-Length", 0))
                 html_txt = self.rfile.read(length).decode("utf-8", errors="ignore")
+                feed_id  = self.headers.get("X-Feed-Id", "")  # Opcional: feed ID desde header
                 min_disc = 1
                 try:
                     qs = self.headers.get("X-Min-Discount", "1")
@@ -670,11 +1187,17 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 items, total_raw = _ml.scrape_html_texto(html_txt, min_discount=min_disc)
-                print(f"📦 /procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
+
+                log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
+                print(f"📦 {log_prefix}/procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
 
                 if _HV_OK:
-                    items = _hv.aplicar_scores(items)
-                    print(f"  📚 Historial aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+                    if feed_id:
+                        items = aplicar_novedad_score_feed(items, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+                    else:
+                        items = _hv.aplicar_scores(items)
+                        print(f"  📚 Historial global aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -691,9 +1214,11 @@ class Handler(BaseHTTPRequestHandler):
                     raise ImportError("scraper_amazon no disponible")
                 length = int(self.headers.get("Content-Length", 0))
                 body   = json.loads(self.rfile.read(length)) if length else {}
+                feed_id      = body.get("feed_id", "") or body.get("audiencia_id", "")
                 urls         = body.get("urls", [])
-                pages        = int(body.get("pages", 3))
+                pages        = int(body.get("pages", 1))  # Reducido de 3 a 1 para evitar timeout
                 min_discount = int(body.get("min_discount", 0))
+                background   = body.get("background", False)  # Por default síncrono (compatibilidad)
 
                 if not urls:
                     raise ValueError("Se requiere al menos una URL")
@@ -701,7 +1226,56 @@ class Handler(BaseHTTPRequestHandler):
                 for i, u in enumerate(urls):
                     print(f"  🔎 URL[{i}] len={len(u)}: {repr(u)}", flush=True)
 
-                print(f"🛒 /buscar-amazon-url → {len(urls)} URL(s), {pages} páginas c/u", flush=True)
+                log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
+                print(f"🛒 {log_prefix}/buscar-amazon-url → {len(urls)} URL(s), {pages} páginas c/u", flush=True)
+
+                # Si background=True, devolver job_id inmediatamente y procesar en thread
+                if background:
+                    job_id = str(uuid.uuid4())
+                    JOBS_BACKGROUND[job_id] = {
+                        "status": "processing",
+                        "progreso": {
+                            "fase": "iniciando",
+                            "urls_total": len(urls),
+                            "urls_procesadas": 0,
+                            "asins_extraidos": 0,
+                            "batches_total": 0,
+                            "batches_completados": 0,
+                            "productos_ok": 0
+                        },
+                        "resultados": None,
+                        "error": None
+                    }
+
+                    # Procesar en background
+                    def procesar_urls_bg():
+                        try:
+                            _procesar_urls_completo(job_id, urls, pages, min_discount, feed_id)
+                        except Exception as e:
+                            JOBS_BACKGROUND[job_id]["status"] = "error"
+                            JOBS_BACKGROUND[job_id]["error"] = str(e)
+                            print(f"❌ Job {job_id} error: {e}", flush=True)
+
+                    thread = threading.Thread(target=procesar_urls_bg, daemon=True)
+                    thread.start()
+
+                    # Devolver job_id inmediatamente
+                    self.send_response(202); self._cors()  # 202 Accepted
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True,
+                        "job_id": job_id,
+                        "message": "Procesando en background. Consulta /progreso-busqueda?job_id=" + job_id
+                    }).encode())
+                    return
+
+                # Si background=False, procesar síncronamente (comportamiento original)
+                job_id = "sync"
+                JOBS_BACKGROUND[job_id] = {
+                    "status": "processing",
+                    "progreso": {"fase": "iniciando", "urls_total": len(urls)},
+                    "resultados": None
+                }
 
                 _ZG = ("/gp/movers-and-shakers/", "/gp/bestsellers/", "/gp/new-releases/", "/zgbs/")
                 zg_urls   = [u for u in urls if any(p in u for p in _ZG)]
@@ -755,7 +1329,7 @@ class Handler(BaseHTTPRequestHandler):
                                   "languagesOfPreference": ["es_MX"],
                                   "currencyOfPreference": "MXN",
                                   "resources": _RECURSOS},
-                            timeout=20
+                            timeout=60  # Aumentado de 20 a 60 segundos
                         )
                         if r.status_code != 200:
                             _stats["no200"] += len(batch)
@@ -770,7 +1344,7 @@ class Handler(BaseHTTPRequestHandler):
                                           "languagesOfPreference": ["es_MX"],
                                           "currencyOfPreference": "MXN",
                                           "resources": _RECURSOS},
-                                    timeout=20
+                                    timeout=60  # Aumentado de 20 a 60 segundos
                                 )
                                 if r2.status_code != 200:
                                     return []
@@ -819,8 +1393,12 @@ class Handler(BaseHTTPRequestHandler):
                         unicos.append(p)
 
                 if _HV_OK:
-                    unicos = _hv.aplicar_scores(unicos)
-                    print(f"  📚 Historial aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos de {len(unicos)}", flush=True)
+                    if feed_id:
+                        unicos = aplicar_novedad_score_feed(unicos, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos de {len(unicos)}", flush=True)
+                    else:
+                        unicos = _hv.aplicar_scores(unicos)
+                        print(f"  📚 Historial global aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos de {len(unicos)}", flush=True)
 
                 print(f"  → {len(unicos)} productos", flush=True)
                 self.send_response(200); self._cors()
@@ -833,16 +1411,57 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path.startswith("/progreso-busqueda"):
+            # Endpoint para consultar el progreso de un job en background
+            try:
+                parsed_url = urlparse(self.path)
+                params = parse_qs(parsed_url.query)
+                job_id = params.get("job_id", [None])[0]
+
+                if not job_id or job_id not in JOBS_BACKGROUND:
+                    self.send_response(404); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({"ok": False, "error": "Job no encontrado"}).encode())
+                    return
+
+                job = JOBS_BACKGROUND[job_id]
+
+                response = {
+                    "ok": True,
+                    "job_id": job_id,
+                    "status": job["status"],
+                    "progreso": job["progreso"]
+                }
+
+                # Si está completado, incluir resultados
+                if job["status"] == "completed":
+                    response["resultados"] = job["resultados"]
+                elif job["status"] == "error":
+                    response["error"] = job["error"]
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps(response).encode())
+
+            except Exception as e:
+                print(f"❌ /progreso-busqueda: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         elif self.path == "/buscar-amazon-deals":
             try:
                 if not _AZ_OK:
                     raise ImportError("scraper_amazon no disponible")
                 length  = int(self.headers.get("Content-Length", 0))
                 body    = json.loads(self.rfile.read(length)) if length else {}
+                feed_id = body.get("feed_id", "") or body.get("audiencia_id", "")
                 buckets = body.get("buckets", list(_az.DEALS_URLS.keys()))
                 min_discount = int(body.get("min_discount", 0))
                 pw_ok = _az.playwright_disponible()
-                print(f"🛒 /buscar-amazon-deals → buckets={buckets} playwright={'✅' if pw_ok else '❌'}", flush=True)
+
+                log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
+                print(f"🛒 {log_prefix}/buscar-amazon-deals → buckets={buckets} playwright={'✅' if pw_ok else '❌'}", flush=True)
 
                 # 1. Extraer ASINs de cada bucket
                 all_asins = []
@@ -944,8 +1563,12 @@ class Handler(BaseHTTPRequestHandler):
                         unicos.append(p)
 
                 if _HV_OK:
-                    unicos = _hv.aplicar_scores(unicos)
-                    print(f"  📚 Historial: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+                    if feed_id:
+                        unicos = aplicar_novedad_score_feed(unicos, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+                    else:
+                        unicos = _hv.aplicar_scores(unicos)
+                        print(f"  📚 Historial global aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
 
                 print(f"  → {len(unicos)} productos con descuento", flush=True)
                 self.send_response(200); self._cors()
@@ -968,16 +1591,24 @@ class Handler(BaseHTTPRequestHandler):
                     raise ImportError("historial_variedad no disponible")
                 length = int(self.headers.get("Content-Length", 0))
                 body   = json.loads(self.rfile.read(length))
-                action = body.get("action", "score")
-                items  = body.get("items", [])
+                action  = body.get("action", "score")
+                items   = body.get("items", [])
+                feed_id = body.get("feed_id", "") or body.get("audiencia_id", "")
 
                 if action == "score":
-                    resultado = _hv.aplicar_scores(items)
+                    if feed_id:
+                        resultado = aplicar_novedad_score_feed(items, feed_id)
+                    else:
+                        resultado = _hv.aplicar_scores(items)
                     resp = {"ok": True, "items": resultado}
 
                 elif action == "filtrar":
                     min_score = float(body.get("min_score", 0.1))
-                    resultado = _hv.filtrar(items, min_score=min_score)
+                    if feed_id:
+                        resultado = aplicar_novedad_score_feed(items, feed_id)
+                        resultado = [p for p in resultado if p.get("novedad_score", 1.0) >= min_score]
+                    else:
+                        resultado = _hv.filtrar(items, min_score=min_score)
                     resp = {"ok": True, "items": resultado, "total": len(resultado)}
 
                 elif action == "marcar":
@@ -1051,7 +1682,23 @@ class Handler(BaseHTTPRequestHandler):
                 if not sheets_url:
                     raise ValueError(f"Feed '{feed_id}' no tiene sheets_export_url configurado")
 
-                print(f"📊 /feeds/export-sheets → Feed: {feed_id}, Items: {len(items)}", flush=True)
+                print(f"📊 /feeds/export-sheets → Feed: {feed_id}, Items recibidos: {len(items)}", flush=True)
+
+                # FILTRO DE SEGURIDAD: Eliminar productos bloqueados/descartados
+                items_antes = len(items)
+                items = [
+                    item for item in items
+                    if not esta_bloqueado(feed_id, item.get('asin', ''))
+                ]
+                items_bloqueados = items_antes - len(items)
+
+                if items_bloqueados > 0:
+                    print(f"  🚫 {items_bloqueados} productos descartados filtrados (no se exportarán)", flush=True)
+
+                if not items:
+                    raise ValueError("Todos los productos seleccionados fueron descartados previamente")
+
+                print(f"  📤 Exportando {len(items)} productos a Google Sheets...", flush=True)
 
                 # Enviar a Google Apps Script
                 r = requests.post(sheets_url, data=json.dumps(items),
@@ -1068,21 +1715,30 @@ class Handler(BaseHTTPRequestHandler):
                     n = marcar_asins_vistos(feed_id, asins_exportados)
                     print(f"  📚 {n} ASINs marcados en historial del feed '{feed_id}'", flush=True)
 
-                # Aprender keywords de productos publicados
+                # Aprender keywords INTELIGENTES de productos publicados
+                # SOLO núcleo: personajes, franquicias, marcas (NO tipos de producto)
                 todas_keywords = set()
                 for item in items:
                     title = item.get('title', '')
                     if title:
-                        titulo_words = title.lower().split()
-                        # Filtrar palabras significativas (más de 3 caracteres, no números puros)
-                        palabras_significativas = [
-                            w for w in titulo_words
-                            if len(w) > 3 and not w.isdigit()
-                            and w not in ['para', 'with', 'from', 'that', 'this', 'have', 'the']
-                        ]
-                        todas_keywords.update(palabras_significativas[:3])  # Tomar primeras 3 de cada producto
+                        keywords_nucleo = extraer_keywords_inteligentes(title)
+                        todas_keywords.update(keywords_nucleo)
 
                 if todas_keywords:
+                    # Cargar stats de keywords
+                    stats = cargar_keyword_stats(feed_id)
+
+                    # Incrementar score de keywords extraídas (aprobadas)
+                    for kw in todas_keywords:
+                        if kw not in stats:
+                            stats[kw] = {'score': 0, 'productos_aprobados': 0}
+                        stats[kw]['score'] += 1
+                        stats[kw]['productos_aprobados'] += 1
+
+                    # Guardar stats actualizadas
+                    guardar_keyword_stats(feed_id, stats)
+
+                    # Agregar nuevas keywords al perfil
                     keywords_actuales = set(perfil.get('keywords', []))
                     keywords_nuevas = [k for k in todas_keywords if k not in keywords_actuales]
 
@@ -1090,13 +1746,22 @@ class Handler(BaseHTTPRequestHandler):
                         keywords_actuales.update(keywords_nuevas)
                         perfil['keywords'] = sorted(list(keywords_actuales))
 
+                        # Aplicar límite de 200 keywords
+                        perfil = aplicar_limite_keywords(feed_id, perfil, limite=200)
+
                         # Guardar cambios
                         perfiles[feed_id] = perfil
                         perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
                         with open(perfiles_path, 'w', encoding='utf-8') as f:
                             json.dump(perfiles, f, indent=2, ensure_ascii=False)
 
-                        print(f"  🎓 {len(keywords_nuevas)} keywords aprendidas de productos publicados", flush=True)
+                        # Mostrar keywords aprendidas
+                        ejemplos = list(keywords_nuevas)[:10]
+                        if len(keywords_nuevas) > 10:
+                            print(f"  🎓 {len(keywords_nuevas)} keywords núcleo aprendidas: {', '.join(ejemplos)}... (+{len(keywords_nuevas)-10} más)", flush=True)
+                        else:
+                            print(f"  🎓 {len(keywords_nuevas)} keywords núcleo aprendidas: {', '.join(ejemplos)}", flush=True)
+                        print(f"  📊 Total keywords activas: {len(perfil['keywords'])}/200", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1137,51 +1802,130 @@ class Handler(BaseHTTPRequestHandler):
                 guardar_historial_feed(audiencia_id, historial_feed)
                 print(f"  ✅ ASIN {asin} marcado como bloqueado en historial", flush=True)
 
-                # 2. Extraer keywords del título para aprender
-                # Palabras comunes que indican categoría no deseada
+                # 2. Extraer keywords DEL TÍTULO del producto descartado
+                # NO tocar las keywords de búsqueda (para evitar matar búsquedas buenas)
                 palabras_clave = []
                 titulo_lower = title.lower()
 
-                # Lista de palabras importantes a detectar
-                palabras_importantes = [
-                    # Electrónica
-                    "cámara", "camera", "impresora", "printer", "televisión", "tv",
-                    "laptop", "monitor", "tablet", "celular", "smartphone",
-                    # Hogar
-                    "refrigerador", "estufa", "lavadora", "secadora",
-                    # Otros
-                    "libro", "book", "cd", "dvd", "blu-ray"
-                ]
+                # Stopwords comunes que no son útiles para filtrar
+                stopwords = {
+                    'de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'en', 'y', 'o',
+                    'para', 'con', 'sin', 'por', 'the', 'a', 'an', 'and', 'or', 'of',
+                    'to', 'for', 'with', 'in', 'on', 'at', 'by', 'from', 'set', 'pack',
+                    'piezas', 'piece', 'pieces', 'color', 'size', 'talla', 'modelo'
+                }
 
-                for palabra in palabras_importantes:
-                    if palabra in titulo_lower:
-                        palabras_clave.append(palabra)
+                # WHITELIST: Palabras genéricas que NUNCA se deben descartar
+                # (categorías amplias, colores, atributos, conectividad, materiales)
+                palabras_genericas = {
+                    # Categorías amplias que podrían tener productos buenos
+                    'figura', 'figuras', 'figure', 'figures', 'juguete', 'juguetes', 'toy', 'toys',
+                    'libro', 'libros', 'book', 'books', 'caja', 'box', 'case', 'estuche',
+                    'camiseta', 'playera', 'shirt', 'tshirt', 'tenis', 'zapatos', 'shoes',
+                    'poster', 'póster', 'print', 'cuadro', 'arte', 'artwork',
+                    'colección', 'collection', 'collectible', 'coleccionable',
+                    'edición', 'edition', 'limited', 'limitada', 'exclusivo', 'exclusive',
+                    'set', 'pack', 'bundle', 'kit', 'combo',
+
+                    # Colores
+                    'negro', 'black', 'blanco', 'white', 'azul', 'blue', 'rojo', 'red',
+                    'verde', 'green', 'amarillo', 'yellow', 'rosa', 'pink', 'gris', 'gray', 'grey',
+                    'morado', 'purple', 'naranja', 'orange', 'café', 'brown', 'dorado', 'gold',
+                    'plateado', 'silver', 'multicolor',
+
+                    # Conectividad y tecnología genérica (podría aplicar a coleccionables tech)
+                    'bluetooth', 'wifi', 'wireless', 'inalámbrico', 'inalámbricos',
+                    'cable', 'usb', 'hdmi', 'aux', 'jack',
+
+                    # Materiales comunes
+                    'papel', 'paper', 'plástico', 'plastic', 'metal', 'vinyl', 'vinilo',
+                    'tela', 'fabric', 'foam', 'goma', 'rubber', 'madera', 'wood',
+
+                    # Atributos y tamaños
+                    'grande', 'large', 'pequeño', 'small', 'mini', 'micro', 'giant', 'gigante',
+                    'mediano', 'medium', 'xl', 'xxl', 'jumbo',
+                    'nuevo', 'new', 'usado', 'used', 'original', 'authentic', 'auténtico',
+                    'oficial', 'official', 'premium', 'deluxe', 'standard', 'básico', 'basic',
+
+                    # Palabras de empaquetado/presentación
+                    'caja', 'empaque', 'packaging', 'display', 'incluye', 'includes',
+                    'con', 'with', 'sin', 'without', 'más', 'more', 'extra',
+
+                    # Palabras temporales/comerciales
+                    'nuevo', 'oferta', 'sale', 'deal', 'descuento', 'discount',
+                    'regalo', 'gift', 'gratis', 'free', 'bonus'
+                }
+
+                # Extraer palabras del título, filtrando genéricas
+                palabras = titulo_lower.split()
+                for palabra in palabras:
+                    # Limpiar caracteres especiales
+                    palabra_limpia = ''.join(c for c in palabra if c.isalnum())
+
+                    # Filtrar palabras que SÍ deben descartarse:
+                    # - Más de 3 caracteres
+                    # - No es solo números
+                    # - No es stopword
+                    # - NO es palabra genérica (NUEVO FILTRO)
+                    if (len(palabra_limpia) > 3 and
+                        not palabra_limpia.isdigit() and
+                        palabra_limpia not in stopwords and
+                        palabra_limpia not in palabras_genericas):
+                        palabras_clave.append(palabra_limpia)
 
                 # 3. Actualizar excludeKeywords del perfil (si encontramos palabras relevantes)
+                palabras_a_excluir = []
+                palabras_protegidas = []
+
                 if palabras_clave:
                     perfiles = cargar_perfiles()
                     perfil = perfiles.get(audiencia_id)
 
                     if perfil:
-                        exclude_actual = set(perfil['filtros'].get('excludeKeywords', []))
-                        exclude_actual.update(palabras_clave)
-                        perfil['filtros']['excludeKeywords'] = sorted(list(exclude_actual))
+                        # FILTRO INTELIGENTE: NO agregar palabras que están en keywords POSITIVAS del perfil
+                        # (estas son parte del nicho y no deberían excluirse)
+                        keywords_positivas = set(kw.lower() for kw in perfil.get('keywords', []))
 
-                        # Guardar cambios en archivo
-                        perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
-                        with open(perfiles_path, 'w', encoding='utf-8') as f:
-                            json.dump(perfiles, f, indent=2, ensure_ascii=False)
+                        # Filtrar palabras que NO están en keywords positivas
+                        palabras_a_excluir = [
+                            palabra for palabra in palabras_clave
+                            if palabra not in keywords_positivas
+                        ]
 
-                        print(f"  🎓 Keywords aprendidas: {palabras_clave}", flush=True)
-                        print(f"  📝 excludeKeywords actualizado: {perfil['filtros']['excludeKeywords']}", flush=True)
+                        if palabras_a_excluir:
+                            exclude_actual = set(perfil['filtros'].get('excludeKeywords', []))
+                            exclude_actual.update(palabras_a_excluir)
+                            perfil['filtros']['excludeKeywords'] = sorted(list(exclude_actual))
+                        else:
+                            palabras_a_excluir = []  # Para logging
+
+                        # Palabras protegidas (no se excluyeron porque están en keywords positivas)
+                        palabras_protegidas = [p for p in palabras_clave if p in keywords_positivas]
+
+                        # Guardar cambios en archivo si hubo modificaciones
+                        if palabras_a_excluir:
+                            perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                            with open(perfiles_path, 'w', encoding='utf-8') as f:
+                                json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                        # Logging mejorado
+                        print(f"  📝 Palabras del título: {palabras_clave}", flush=True)
+                        if palabras_protegidas:
+                            print(f"  🛡️  Protegidas (en keywords positivas): {palabras_protegidas}", flush=True)
+                        if palabras_a_excluir:
+                            print(f"  ❌ Excluidas: {palabras_a_excluir}", flush=True)
+                        else:
+                            print(f"  ✅ Ninguna palabra excluida (todas están protegidas o son genéricas)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({
                     "ok": True,
                     "asin": asin,
-                    "keywords_aprendidas": palabras_clave,
-                    "mensaje": f"Producto descartado y {len(palabras_clave)} keywords aprendidas"
+                    "palabras_del_titulo": palabras_clave,
+                    "palabras_excluidas": palabras_a_excluir,
+                    "palabras_protegidas": palabras_protegidas,
+                    "mensaje": f"Producto descartado. {len(palabras_a_excluir)} palabras excluidas, {len(palabras_protegidas)} protegidas"
                 }).encode())
 
             except Exception as e:
@@ -1782,7 +2526,48 @@ class Handler(BaseHTTPRequestHandler):
                                 if bloqueados_filtrados > 0:
                                     print(f"  🚫 {bloqueados_filtrados} productos descartados filtrados del caché", flush=True)
 
-                                print(f"📊 /feeds/{audiencia_id} → {len(productos_filtrados)} productos (cache válido por {horas_restantes}h más)", flush=True)
+                                # RECALCULAR novedad_score con historial actualizado
+                                # (el historial puede haber cambiado desde que se creó el cache)
+                                historial_feed = cargar_historial_feed(audiencia_id)
+                                from datetime import datetime as fecha_dt, timezone
+                                now_recalc = fecha_dt.now(timezone.utc)
+
+                                for producto in productos_filtrados:
+                                    asin = producto.get('asin')
+                                    title = producto.get('title', '')
+
+                                    # Extraer modelo usando la función del CORE
+                                    modelo = _hv._extraer_modelo(title) if _HV_OK and hasattr(_hv, '_extraer_modelo') else ""
+
+                                    # Buscar en historial del feed
+                                    item_id = asin or modelo
+                                    if item_id and item_id in historial_feed:
+                                        registro = historial_feed[item_id]
+                                        ultima_vez = registro.get('ultima_vez', '')
+
+                                        try:
+                                            ultima_fecha = fecha_dt.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                                            dias = (now_recalc - ultima_fecha).days
+
+                                            # Scoring de novedad
+                                            if dias > 14:
+                                                score = 0.8
+                                            elif dias > 7:
+                                                score = 0.5
+                                            elif dias > 3:
+                                                score = 0.2
+                                            else:
+                                                score = 0.0
+                                        except:
+                                            score = 0.5
+
+                                        producto['novedad_score'] = score
+                                    else:
+                                        producto['novedad_score'] = 1.0
+
+                                ya_vistos_cache = sum(1 for p in productos_filtrados if p.get('novedad_score', 1.0) < 1.0)
+                                print(f"📊 /feeds/{audiencia_id} → {len(productos_filtrados)} productos (cache, {ya_vistos_cache} ya vistos, válido {horas_restantes}h)", flush=True)
+
                                 self.send_response(200); self._cors()
                                 self.send_header("Content-Type", "application/json"); self.end_headers()
                                 self.wfile.write(json.dumps({
@@ -1805,6 +2590,22 @@ class Handler(BaseHTTPRequestHandler):
                 # Buscar productos frescos
                 print(f"🔄 Generando feed para '{audiencia_id}'...", flush=True)
                 productos = []
+
+                # Contadores para resumen de filtrado
+                stats_filtrado = {
+                    'total_procesados': 0,
+                    'aceptados': 0,
+                    'excluidos': 0,
+                    'razones_exclusion': {
+                        'sin_keywords_core': 0,
+                        'precio_minimo': 0,
+                        'precio_maximo': 0,
+                        'keyword_excluida': 0,
+                        'descuento_minimo': 0,
+                        'bloqueado_manual': 0,
+                        'sin_parsear': 0
+                    }
+                }
 
                 # 0. SCRAPE TELEGRAM (si está configurado)
                 telegram_sources = perfil.get('telegram_sources', [])
@@ -1837,7 +2638,11 @@ class Handler(BaseHTTPRequestHandler):
 
                                 # Verificar si fue descartado manualmente
                                 asin = parsed.get("asin", "")
+                                titulo = parsed.get("title", "")
+                                titulo_short = (titulo[:60] + "...") if len(titulo) > 60 else titulo
+
                                 if esta_bloqueado(audiencia_id, asin):
+                                    print(f"      ❌ Excluido (Telegram): \"{titulo_short}\" (ASIN: {asin}) - Bloqueado manualmente", flush=True)
                                     continue
 
                                 # Obtener precio (para mostrar, pero no filtrar)
@@ -1888,30 +2693,53 @@ class Handler(BaseHTTPRequestHandler):
                                 # Filtrar y parsear
                                 items_validos = 0
                                 for item in items:
+                                    stats_filtrado['total_procesados'] += 1
+
+                                    # Obtener título para logging
+                                    titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "")
+                                    titulo_short = (titulo[:60] + "...") if len(titulo) > 60 else titulo
+
                                     precio = extraer_precio(item)
                                     if precio:
-                                        if precio < perfil['filtros'].get('minPrice', 0):
+                                        min_price = perfil['filtros'].get('minPrice', 0)
+                                        if precio < min_price:
+                                            print(f"      ❌ Excluido: \"{titulo_short}\" - Precio ${precio:.0f} < mínimo ${min_price:.0f}", flush=True)
+                                            stats_filtrado['excluidos'] += 1
+                                            stats_filtrado['razones_exclusion']['precio_minimo'] += 1
                                             continue
-                                        if precio > perfil['filtros'].get('maxPrice', 999999):
+                                        max_price = perfil['filtros'].get('maxPrice', 999999)
+                                        if precio > max_price:
+                                            print(f"      ❌ Excluido: \"{titulo_short}\" - Precio ${precio:.0f} > máximo ${max_price:.0f}", flush=True)
+                                            stats_filtrado['excluidos'] += 1
+                                            stats_filtrado['razones_exclusion']['precio_maximo'] += 1
                                             continue
 
-                                    # Excluir keywords (solo palabras claramente malas)
-                                    titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "").lower()
-                                    if any(ex.lower() in titulo for ex in perfil['filtros'].get('excludeKeywords', [])):
+                                    # Para URLs fijas: filtros MUY permisivos
+                                    # El usuario configuró estas URLs porque son importantes
+
+                                    # Solo aplicar exclusión contextual (palabras críticas)
+                                    debe_excluir, razon_exclusion = evaluar_exclusion_contextual(
+                                        titulo, perfil, es_url_fija=True
+                                    )
+                                    if debe_excluir:
+                                        print(f"      ❌ Excluido: \"{titulo_short}\" - {razon_exclusion}", flush=True)
+                                        stats_filtrado['excluidos'] += 1
+                                        stats_filtrado['razones_exclusion']['keyword_excluida'] += 1
                                         continue
 
                                     # Parsear item
                                     parsed = parsear_item(item)
                                     if parsed:
-                                        # Verificar descuento real
+                                        # Para URLs fijas: NO filtrar por descuento
+                                        # Best Sellers pueden no tener descuento pero son importantes
                                         descuento_real = parsed.get("descuento_pct", 0)
-                                        min_descuento = perfil['filtros'].get('minSavingPercent', 1)
-
-                                        if descuento_real < min_descuento:
-                                            continue
 
                                         # Verificar si fue descartado manualmente
-                                        if esta_bloqueado(audiencia_id, parsed.get("asin", "")):
+                                        asin = parsed.get("asin", "")
+                                        if esta_bloqueado(audiencia_id, asin):
+                                            print(f"      ❌ Excluido: \"{titulo_short}\" (ASIN: {asin}) - Bloqueado manualmente", flush=True)
+                                            stats_filtrado['excluidos'] += 1
+                                            stats_filtrado['razones_exclusion']['bloqueado_manual'] += 1
                                             continue
 
                                         productos.append({
@@ -1926,6 +2754,7 @@ class Handler(BaseHTTPRequestHandler):
                                             "keyword_match": f"🔗 {desc}"
                                         })
                                         items_validos += 1
+                                        stats_filtrado['aceptados'] += 1
 
                                 if items_validos > 0:
                                     print(f"    ✅ {desc}: {items_validos} productos agregados", flush=True)
@@ -1953,16 +2782,45 @@ class Handler(BaseHTTPRequestHandler):
                         # Filtrar según perfil
                         items_validos = 0
                         for item in items:
+                            stats_filtrado['total_procesados'] += 1
+
+                            # Obtener título para logging
+                            titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "")
+                            titulo_short = (titulo[:60] + "...") if len(titulo) > 60 else titulo
+
                             precio = extraer_precio(item)
                             if precio:
-                                if precio < perfil['filtros'].get('minPrice', 0):
+                                min_price = perfil['filtros'].get('minPrice', 0)
+                                if precio < min_price:
+                                    print(f"      ❌ Excluido: \"{titulo_short}\" - Precio ${precio:.0f} < mínimo ${min_price:.0f}", flush=True)
+                                    stats_filtrado['excluidos'] += 1
+                                    stats_filtrado['razones_exclusion']['precio_minimo'] += 1
                                     continue
-                                if precio > perfil['filtros'].get('maxPrice', 999999):
+                                max_price = perfil['filtros'].get('maxPrice', 999999)
+                                if precio > max_price:
+                                    print(f"      ❌ Excluido: \"{titulo_short}\" - Precio ${precio:.0f} > máximo ${max_price:.0f}", flush=True)
+                                    stats_filtrado['excluidos'] += 1
+                                    stats_filtrado['razones_exclusion']['precio_maximo'] += 1
                                     continue
 
-                            # Excluir keywords
-                            titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "").lower()
-                            if any(ex.lower() in titulo for ex in perfil['filtros'].get('excludeKeywords', [])):
+                            # Verificar que el producto tenga al menos UNA keyword core
+                            keywords_perfil = [kw.lower() for kw in perfil.get('keywords', [])]
+                            tiene_keyword_core = any(kw in titulo.lower() for kw in keywords_perfil)
+
+                            if not tiene_keyword_core:
+                                print(f"      ❌ Excluido: \"{titulo_short}\" - Sin relación con keywords core", flush=True)
+                                stats_filtrado['excluidos'] += 1
+                                stats_filtrado['razones_exclusion']['sin_keywords_core'] += 1
+                                continue
+
+                            # Evaluación contextual de exclusión
+                            debe_excluir, razon_exclusion = evaluar_exclusion_contextual(
+                                titulo, perfil, es_url_fija=False
+                            )
+                            if debe_excluir:
+                                print(f"      ❌ Excluido: \"{titulo_short}\" - {razon_exclusion}", flush=True)
+                                stats_filtrado['excluidos'] += 1
+                                stats_filtrado['razones_exclusion']['keyword_excluida'] += 1
                                 continue
 
                             # Parsear item
@@ -1973,10 +2831,17 @@ class Handler(BaseHTTPRequestHandler):
                                 min_descuento = perfil['filtros'].get('minSavingPercent', 1)
 
                                 if descuento_real < min_descuento:
-                                    continue  # Descartar productos sin descuento suficiente
+                                    print(f"      ❌ Excluido: \"{titulo_short}\" - Descuento {descuento_real}% < mínimo {min_descuento}%", flush=True)
+                                    stats_filtrado['excluidos'] += 1
+                                    stats_filtrado['razones_exclusion']['descuento_minimo'] += 1
+                                    continue
 
                                 # Verificar si fue descartado manualmente
-                                if esta_bloqueado(audiencia_id, parsed.get("asin", "")):
+                                asin = parsed.get("asin", "")
+                                if esta_bloqueado(audiencia_id, asin):
+                                    print(f"      ❌ Excluido: \"{titulo_short}\" (ASIN: {asin}) - Bloqueado manualmente", flush=True)
+                                    stats_filtrado['excluidos'] += 1
+                                    stats_filtrado['razones_exclusion']['bloqueado_manual'] += 1
                                     continue
 
                                 # parsear_item() ya devuelve todo lo que necesitamos
@@ -1992,6 +2857,7 @@ class Handler(BaseHTTPRequestHandler):
                                     "keyword_match": keyword
                                 })
                                 items_validos += 1
+                                stats_filtrado['aceptados'] += 1
 
                         keywords_procesados += 1
                         if items_validos > 0:
@@ -2006,9 +2872,6 @@ class Handler(BaseHTTPRequestHandler):
                 # Deduplicar por ASIN
                 productos_unicos = {p['asin']: p for p in productos if p.get('asin')}.values()
                 productos_finales = list(productos_unicos)
-
-                # Ordenar por descuento
-                productos_finales.sort(key=lambda x: x.get('discount', 0), reverse=True)
 
                 # Aplicar scoring usando LÓGICA del core pero HISTORIAL del feed
                 if _HV_OK:
@@ -2063,6 +2926,13 @@ class Handler(BaseHTTPRequestHandler):
                         producto['novedad_score'] = 0.5 if (asin and asin in historial) else 1.0
                     print(f"  📚 Historial Feed: {sum(1 for p in productos_finales if p.get('novedad_score', 1.0) < 1.0)} ya vistos", flush=True)
 
+                # Ordenar por novedad_score (prioridad) y descuento (secundario)
+                # novedad_score: 1.0 (nuevos) aparecen primero, 0.0 (recién vistos) al final
+                productos_finales.sort(key=lambda x: (
+                    x.get('novedad_score', 0.5),  # Prioridad 1: novedad
+                    x.get('discount', 0)          # Prioridad 2: descuento
+                ), reverse=True)
+
                 # Guardar en cache
                 from datetime import datetime as dt
                 now = dt.now()
@@ -2073,7 +2943,32 @@ class Handler(BaseHTTPRequestHandler):
                 }
                 guardar_feed_cache(cache)
 
-                print(f"✅ Feed '{audiencia_id}' generado: {len(productos_finales)} productos únicos", flush=True)
+                # IMPRIMIR RESUMEN DE FILTRADO
+                print(f"\n📊 RESUMEN DE FILTRADO:", flush=True)
+                print(f"  📦 Total procesados: {stats_filtrado['total_procesados']} productos", flush=True)
+                print(f"  ✅ Aceptados: {stats_filtrado['aceptados']} productos", flush=True)
+                print(f"  ❌ Excluidos: {stats_filtrado['excluidos']} productos", flush=True)
+
+                if stats_filtrado['excluidos'] > 0:
+                    print(f"\n  📋 Razones de exclusión:", flush=True)
+                    razones = stats_filtrado['razones_exclusion']
+                    if razones['sin_keywords_core'] > 0:
+                        print(f"    • Sin keywords core: {razones['sin_keywords_core']}", flush=True)
+                    if razones['precio_minimo'] > 0:
+                        print(f"    • Precio < mínimo: {razones['precio_minimo']}", flush=True)
+                    if razones['precio_maximo'] > 0:
+                        print(f"    • Precio > máximo: {razones['precio_maximo']}", flush=True)
+                    if razones['descuento_minimo'] > 0:
+                        print(f"    • Descuento < mínimo: {razones['descuento_minimo']}", flush=True)
+                    if razones['keyword_excluida'] > 0:
+                        print(f"    • Keyword excluida: {razones['keyword_excluida']}", flush=True)
+                    if razones['bloqueado_manual'] > 0:
+                        print(f"    • Bloqueado manualmente: {razones['bloqueado_manual']}", flush=True)
+
+                tasa_aprobacion = (stats_filtrado['aceptados'] / stats_filtrado['total_procesados'] * 100) if stats_filtrado['total_procesados'] > 0 else 0
+                print(f"\n  📈 Tasa de aprobación: {tasa_aprobacion:.1f}%", flush=True)
+
+                print(f"\n✅ Feed '{audiencia_id}' generado: {len(productos_finales)} productos únicos", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()

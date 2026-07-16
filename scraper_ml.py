@@ -152,9 +152,34 @@ def _normalizar(raw):
 
         elif t == "price":
             p = comp.get("price", {})
-            price_disc = float(p.get("current_price",  {}).get("value", 0) or 0)
-            price_orig = float(p.get("previous_price", {}).get("value", 0) or price_disc)
-            desc_pct   = float(p.get("discount",       {}).get("value", 0) or 0)
+
+            # Extraer precio con descuento (actual)
+            price_disc = float(p.get("current_price", {}).get("value", 0) or 0)
+
+            # Extraer precio original y descuento de price_labels
+            price_orig = price_disc  # Default si no hay descuento
+            desc_pct = 0.0
+
+            price_labels = p.get("price_labels", [])
+            for label_group in price_labels:
+                values = label_group.get("values", [])
+                for val in values:
+                    # Buscar precio original
+                    if val.get("key") == "previous_price":
+                        price_data = val.get("price", {})
+                        price_orig = float(price_data.get("value", 0) or price_disc)
+
+                    # Buscar descuento en la etiqueta pill (ej: "25% OFF")
+                    if val.get("key") == "previous_label":
+                        pill = val.get("pill", {})
+                        pill_text = pill.get("text", "")
+                        # Extraer número del texto "25% OFF"
+                        import re
+                        match = re.search(r'(\d+)%', pill_text)
+                        if match:
+                            desc_pct = float(match.group(1))
+
+            # Si no encontramos descuento en pill, calcular manualmente
             if desc_pct == 0 and price_orig > price_disc > 0:
                 desc_pct = round((price_orig - price_disc) / price_orig * 100, 1)
 
@@ -484,14 +509,23 @@ def scrape_url(url, min_discount=0, pages=1):
     """
     # Listado URLs son SPAs — renderizar con Playwright e interceptar XHR
     if "listado.mercadolibre.com.mx" in url:
+        # 1. Intentar Playwright primero
         if _PLAYWRIGHT_OK:
-            return _scrape_listado_playwright(url, pages=pages, min_discount=min_discount)
-        # Sin Playwright: intentar API con filtros extraídos
+            resultados_pw = _scrape_listado_playwright(url, pages=pages, min_discount=min_discount)
+            if resultados_pw:  # Si Playwright funcionó, retornar
+                return resultados_pw
+            print(f"  ⚠️  Playwright devolvió 0 productos, intentando fallback...", flush=True)
+
+        # 2. Fallback: intentar API con filtros extraídos
         filtros = _parse_filtros_listado(url)
         if filtros:
             print(f"  🔌 Listado → ML API (filtros: {filtros})", flush=True)
-            return _scrape_via_api(filtros, pages=pages, min_discount=min_discount)
-        # Sin filtros ni Playwright → convertir a container y scrapear HTML
+            resultados_api = _scrape_via_api(filtros, pages=pages, min_discount=min_discount)
+            if resultados_api:  # Si API funcionó, retornar
+                return resultados_api
+            print(f"  ⚠️  API devolvió 0 productos, intentando HTML scraping...", flush=True)
+
+        # 3. Último fallback: convertir a container y scrapear HTML
 
     url = _convertir_listado_url(url)
     if not url:
