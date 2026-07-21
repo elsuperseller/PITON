@@ -306,25 +306,49 @@ def esta_bloqueado(feed_id, asin):
     historial = cargar_historial_feed(feed_id)
     return historial.get(asin, {}).get("blocked", False)
 
-def marcar_asins_vistos(feed_id, asins):
-    """Marca ASINs como ya vistos en el historial del feed"""
+def marcar_asins_vistos(feed_id, asins_o_items):
+    """
+    Marca ASINs como ya vistos en el historial del feed.
+    Acepta lista de ASINs (strings) o lista de items (dicts con asin y title).
+    """
     from datetime import datetime
     historial = cargar_historial_feed(feed_id)
     timestamp = datetime.now().isoformat()
 
-    for asin in asins:
+    # Determinar si son ASINs simples o items completos
+    if not asins_o_items:
+        return 0
+
+    es_dict = isinstance(asins_o_items[0], dict)
+
+    for item in asins_o_items:
+        if es_dict:
+            asin = item.get('asin', '')
+            title = item.get('title', '')
+        else:
+            asin = item
+            title = ''
+
+        if not asin:
+            continue
+
         if asin not in historial:
             historial[asin] = {
                 "primera_vez": timestamp,
                 "ultima_vez": timestamp,
                 "veces_visto": 1
             }
+            if title:
+                historial[asin]["title"] = title
         else:
             historial[asin]["ultima_vez"] = timestamp
             historial[asin]["veces_visto"] = historial[asin].get("veces_visto", 0) + 1
+            # Actualizar título si está disponible y no existía antes
+            if title and not historial[asin].get("title"):
+                historial[asin]["title"] = title
 
     guardar_historial_feed(feed_id, historial)
-    return len(asins)
+    return len(asins_o_items)
 
 def aplicar_novedad_score_feed(items, feed_id):
     """
@@ -1710,10 +1734,11 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"  ✅ Exportado a Google Sheets: {resp_data.get('rows', len(items))} productos", flush=True)
 
                 # Marcar SOLO en historial del feed (NO en el core de Superseller)
-                asins_exportados = [item.get('asin') for item in items if item.get('asin')]
-                if asins_exportados:
-                    n = marcar_asins_vistos(feed_id, asins_exportados)
-                    print(f"  📚 {n} ASINs marcados en historial del feed '{feed_id}'", flush=True)
+                # Pasar items completos para guardar títulos
+                items_con_asin = [item for item in items if item.get('asin')]
+                if items_con_asin:
+                    n = marcar_asins_vistos(feed_id, items_con_asin)
+                    print(f"  📚 {n} productos marcados en historial del feed '{feed_id}' (con títulos)", flush=True)
 
                 # Aprender keywords INTELIGENTES de productos publicados
                 # SOLO núcleo: personajes, franquicias, marcas (NO tipos de producto)
@@ -2071,6 +2096,129 @@ class Handler(BaseHTTPRequestHandler):
 
             except Exception as e:
                 print(f"❌ /feeds/agregar_manual: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/stats":
+            # Dashboard de performance del feed
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length)) if length else {}
+                feed_id = body.get("feed_id", "") or body.get("audiencia_id", "")
+                dias = int(body.get("dias", 30))  # Período de análisis
+
+                if not feed_id:
+                    raise ValueError("feed_id requerido")
+
+                print(f"📊 /feeds/stats → Feed: {feed_id}, Período: {dias} días", flush=True)
+
+                # Generar estadísticas
+                from datetime import timedelta
+                from collections import Counter
+
+                # Cargar datos
+                perfiles = cargar_perfiles()
+                if feed_id not in perfiles:
+                    raise ValueError(f"Feed '{feed_id}' no encontrado")
+
+                keywords_actuales = perfiles[feed_id].get('keywords', [])
+                historial = cargar_historial_feed(feed_id)
+                keyword_stats = cargar_keyword_stats(feed_id)
+
+                # Análisis temporal
+                ahora = datetime.now(timezone.utc)
+                fecha_inicio = ahora - timedelta(days=dias)
+
+                productos_periodo = []
+                for asin, data in historial.items():
+                    ultima_vez = data.get('ultima_vez', '')
+                    if ultima_vez:
+                        try:
+                            if '+' in ultima_vez or ultima_vez.endswith('Z'):
+                                fecha = datetime.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                            else:
+                                fecha = datetime.fromisoformat(ultima_vez).replace(tzinfo=timezone.utc)
+
+                            if fecha >= fecha_inicio:
+                                productos_periodo.append({
+                                    'asin': asin,
+                                    'title': data.get('title', ''),
+                                    'fecha': fecha,
+                                    'bloqueado': data.get('blocked', False)
+                                })
+                        except:
+                            pass
+
+                # Contar keywords en productos
+                keyword_matches = Counter()
+                for kw in keywords_actuales:
+                    kw_lower = kw.lower()
+                    for prod in productos_periodo:
+                        if prod['title'] and kw_lower in prod['title'].lower():
+                            keyword_matches[kw] += 1
+
+                # Preparar respuesta
+                stats = {
+                    'feed_id': feed_id,
+                    'nombre': perfiles[feed_id].get('nombre', ''),
+                    'periodo_dias': dias,
+                    'fecha_analisis': datetime.now(timezone.utc).isoformat(),
+
+                    'keywords': {
+                        'total_configuradas': len(keywords_actuales),
+                        'activas': len([kw for kw in keywords_actuales if keyword_matches.get(kw, 0) > 0]),
+                        'inactivas': len([kw for kw in keywords_actuales if keyword_matches.get(kw, 0) == 0]),
+                        'porcentaje_activas': round(100 * len([kw for kw in keywords_actuales if keyword_matches.get(kw, 0) > 0]) / len(keywords_actuales), 1) if keywords_actuales else 0
+                    },
+
+                    'productos': {
+                        'total': len(productos_periodo),
+                        'con_titulo': len([p for p in productos_periodo if p['title']]),
+                        'bloqueados': len([p for p in productos_periodo if p['bloqueado']]),
+                        'promedio_diario': round(len(productos_periodo) / dias, 1) if dias > 0 else 0
+                    },
+
+                    'top_keywords': [
+                        {
+                            'keyword': kw,
+                            'productos_generados': count,
+                            'score_aprendizaje': keyword_stats.get(kw, {}).get('score', 0),
+                            'productos_aprobados': keyword_stats.get(kw, {}).get('productos_aprobados', 0)
+                        }
+                        for kw, count in keyword_matches.most_common(30)
+                    ],
+
+                    'keywords_inactivas': sorted([
+                        kw for kw in keywords_actuales
+                        if keyword_matches.get(kw, 0) == 0
+                    ])
+                }
+
+                # Tendencia por día (últimos 7 días)
+                tendencia = {}
+                for dias_atras in range(min(7, dias)):
+                    fecha_dia = ahora - timedelta(days=dias_atras)
+                    fecha_ant = fecha_dia - timedelta(days=1)
+
+                    productos_dia = len([
+                        p for p in productos_periodo
+                        if fecha_ant <= p['fecha'] < fecha_dia
+                    ])
+
+                    fecha_str = fecha_dia.strftime('%Y-%m-%d')
+                    tendencia[fecha_str] = productos_dia
+
+                stats['tendencia_diaria'] = tendencia
+
+                print(f"  ✅ Stats generadas: {stats['keywords']['activas']}/{stats['keywords']['total_configuradas']} keywords activas", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "stats": stats}).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/stats: {e}", flush=True)
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
