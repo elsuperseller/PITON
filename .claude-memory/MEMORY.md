@@ -1,0 +1,1 @@
+- [Superceller Creator App setup](project_superceller_setup.md) — Python app en Google Drive, scraping Amazon/ML, servidor.py
