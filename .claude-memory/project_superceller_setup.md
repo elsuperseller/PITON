@@ -1,18 +1,32 @@
 ---
 name: project-superceller-setup
-description: "Ubicación y configuración del proyecto Superceller Creator App"
+description: "Ubicación y configuración del proyecto Superceller Creator App en Desktop con GitHub"
 type: project
 originSessionId: 3c427a7a-6e2e-47b6-825f-95f257333752
 ---
-El proyecto **Superceller Creator App** está ubicado en:
-`/Users/isaac/Library/CloudStorage/GoogleDrive-isaac@elsuperseller.com/Mi unidad/BBQ/PITON/CREATOR APP`
 
-**Why:** Es una aplicación Python para scraping y gestión de productos (Amazon, MercadoLibre), manejo de keywords, historial de variedad. El servidor principal está en `servidor.py` y tiene un script de inicio `iniciar_superseller.command`.
+El proyecto **Superceller Creator App** ahora corre desde una ubicación local:
+`/Users/isaac/Desktop/superceller`
 
-**How to apply:** Para continuar trabajando en este proyecto después de reiniciar:
+**Why:** Es una aplicación Python para scraping y gestión de productos (Amazon, MercadoLibre), manejo de keywords, historial de variedad. Se movió de Google Drive a Desktop para evitar problemas de ETIMEDOUT y sincronización. El servidor principal está en `servidor.py`.
+
+**Repositorio GitHub:** https://github.com/elsuperseller/PITON
+
+**How to apply:** Para continuar trabajando en este proyecto:
 ```bash
-cd "/Users/isaac/Library/CloudStorage/GoogleDrive-isaac@elsuperseller.com/Mi unidad/BBQ/PITON/CREATOR APP"
+cd ~/Desktop/superceller
 claude
 ```
 
-**ADVERTENCIA:** Este proyecto actualmente corre desde Google Drive. Según experiencia previa con el proyecto mercadoads, correr servidores de desarrollo desde carpetas sincronizadas con Drive puede causar errores ETIMEDOUT porque Drive transmite archivos bajo demanda en lugar de mantenerlos completamente locales. Si experimentas problemas de estabilidad, considera clonar a una ubicación local (ej. `~/Desktop/superceller` o `~/dev/superceller`).
+**Scripts de control:**
+- Iniciar servidor: `./start.sh` (corre en background, puerto 8765)
+- Detener servidor: `./stop.sh`
+- Ver logs: `tail -f ~/Desktop/superceller/servidor.log`
+
+**Flujo de trabajo con GitHub:**
+1. Trabajar en `~/Desktop/superceller` (desarrollo local)
+2. Hacer commits frecuentes
+3. Push a GitHub: `git push origin main`
+4. Google Drive es SOLO respaldo (no correr servidor desde ahí)
+
+**Nota:** La versión original en Google Drive (`Mi unidad/BBQ/PITON/CREATOR APP`) se mantiene como respaldo pero NO debe usarse para desarrollo.
