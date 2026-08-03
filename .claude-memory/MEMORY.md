@@ -1,3 +1,3 @@
-- [Superceller Creator App setup](project_superceller_setup.md) — Python app en ~/Desktop/superceller, GitHub elsuperseller/PITON, start.sh/stop.sh
+- [Superceller Creator App setup](project_superceller_setup.md) — Python app en ~/Desktop/SUPERSELLER, GitHub elsuperseller/PITON, start.sh/stop.sh
 - [Mercado Ads Manager setup](project_mercadoads_setup.md) — runs from /Users/isaac/Desktop/mercadoads (PM2 auto-start), GitHub repo prototipoinc/mercadoads
 - [Avoid cloud-sync for dev servers](feedback_avoid_cloud_sync_for_dev_servers.md) — never run Node/git directly from Google Drive folders, causes ETIMEDOUT

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Logs
+*.log
+servidor.log
+
+# Archivos de datos locales
+historial.json
+nodos_*.json
+feeds/*/historial.json
+feeds/feeds_cache.json
+feeds/*/keyword_stats.json
+feeds/*/performance_stats.json
+feeds/*_backup_*.json
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

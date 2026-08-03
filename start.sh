@@ -11,7 +11,7 @@ if lsof -Pi :8765 -sTCP:LISTEN -t >/dev/null 2>&1 ; then
 fi
 
 echo "🚀 Iniciando Superseller..."
-echo "   📁 Ubicación: ~/Desktop/superceller"
+echo "   📁 Ubicación: ~/Desktop/SUPERSELLER"
 echo "   🌐 URL: http://localhost:8765"
 echo ""
 
@@ -26,10 +26,10 @@ sleep 2
 if ps -p $PID > /dev/null 2>&1; then
     echo "✅ Superseller iniciado correctamente (PID: $PID)"
     echo "   👉 Abre: http://localhost:8765"
-    echo "   📋 Logs: tail -f ~/Desktop/superceller/servidor.log"
+    echo "   📋 Logs: tail -f ~/Desktop/SUPERSELLER/servidor.log"
     echo "   🛑 Detener: ./stop.sh"
 else
     echo "❌ Error al iniciar Superseller"
-    echo "   Revisa: cat ~/Desktop/superceller/servidor.log"
+    echo "   Revisa: cat ~/Desktop/SUPERSELLER/servidor.log"
     exit 1
 fi

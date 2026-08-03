@@ -21,7 +21,7 @@ kill $(lsof -ti:8765)
 
 ### 2. Iniciar servidor nuevo (Desktop)
 ```bash
-cd ~/Desktop/superceller
+cd ~/Desktop/SUPERSELLER
 ./start.sh
 ```
 
@@ -30,7 +30,7 @@ Abre en Chrome: http://localhost:8765
 
 ### 4. Verificar que puedes hacer cambios y pushear a GitHub
 ```bash
-cd ~/Desktop/superceller
+cd ~/Desktop/SUPERSELLER
 
 # Hacer algún cambio de prueba
 echo "# Test" >> test.txt
@@ -54,12 +54,12 @@ git push origin main
 
 **Iniciar servidor:**
 ```bash
-cd ~/Desktop/superceller && ./start.sh
+cd ~/Desktop/SUPERSELLER && ./start.sh
 ```
 
 **Detener servidor:**
 ```bash
-cd ~/Desktop/superceller && ./stop.sh
+cd ~/Desktop/SUPERSELLER && ./stop.sh
 ```
 
 **Ver logs:**
