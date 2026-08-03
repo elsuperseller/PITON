@@ -8,6 +8,7 @@ __pycache__/
 # Logs
 *.log
 servidor.log
+auto-sync.log
 
 # Archivos de datos locales
 historial.json
@@ -26,3 +27,7 @@ feeds/*_backup_*.json
 .idea/
 *.swp
 *.swo
+
+# Process IDs
+.server.pid
+.sync.pid
