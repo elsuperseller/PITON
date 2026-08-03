@@ -5,30 +5,40 @@ cd "$(dirname "$0")"
 
 echo "🛑 Deteniendo Superseller..."
 
-# Buscar proceso en puerto 8765
+# Detener servidor
 PID=$(lsof -ti:8765 2>/dev/null)
 
-if [ -z "$PID" ]; then
-    echo "⚠️  Superseller no está corriendo"
-    exit 0
-fi
-
-# Detener proceso
-kill $PID 2>/dev/null
-
-# Esperar a que termine
-sleep 1
-
-# Verificar que se detuvo
-if ps -p $PID > /dev/null 2>&1; then
-    echo "⚠️  El proceso no se detuvo, forzando..."
-    kill -9 $PID 2>/dev/null
+if [ -n "$PID" ]; then
+    kill $PID 2>/dev/null
     sleep 1
+
+    if ps -p $PID > /dev/null 2>&1; then
+        kill -9 $PID 2>/dev/null
+        sleep 1
+    fi
+
+    if lsof -Pi :8765 -sTCP:LISTEN -t >/dev/null 2>&1 ; then
+        echo "❌ No se pudo detener el servidor"
+    else
+        echo "✅ Servidor detenido"
+    fi
+else
+    echo "⚠️  Servidor no estaba corriendo"
 fi
 
-if lsof -Pi :8765 -sTCP:LISTEN -t >/dev/null 2>&1 ; then
-    echo "❌ No se pudo detener el servidor"
-    exit 1
-else
-    echo "✅ Superseller detenido correctamente"
+# Detener auto-sync
+if [ -f .sync.pid ]; then
+    SYNC_PID=$(cat .sync.pid)
+    if ps -p $SYNC_PID > /dev/null 2>&1; then
+        kill $SYNC_PID 2>/dev/null
+        echo "✅ Auto-sync detenido"
+    fi
+    rm .sync.pid
 fi
+
+# Limpiar archivo de PID del servidor
+if [ -f .server.pid ]; then
+    rm .server.pid
+fi
+
+echo "✅ Todo detenido correctamente"

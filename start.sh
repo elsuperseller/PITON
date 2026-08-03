@@ -17,17 +17,27 @@ echo ""
 
 # Iniciar servidor en background
 nohup python3 servidor.py > servidor.log 2>&1 &
-PID=$!
+SERVER_PID=$!
+echo $SERVER_PID > .server.pid
 
 # Esperar un momento para verificar que inició
 sleep 2
 
 # Verificar que el proceso sigue corriendo
-if ps -p $PID > /dev/null 2>&1; then
-    echo "✅ Superseller iniciado correctamente (PID: $PID)"
+if ps -p $SERVER_PID > /dev/null 2>&1; then
+    echo "✅ Superseller iniciado correctamente (PID: $SERVER_PID)"
     echo "   👉 Abre: http://localhost:8765"
     echo "   📋 Logs: tail -f ~/Desktop/SUPERSELLER/servidor.log"
-    echo "   🛑 Detener: ./stop.sh"
+
+    # Iniciar auto-sync en background
+    nohup ./auto-sync.sh > /dev/null 2>&1 &
+    SYNC_PID=$!
+    echo $SYNC_PID > .sync.pid
+    echo "🔄 Auto-sync activado (cada 60 minutos, PID: $SYNC_PID)"
+    echo "   📋 Sync logs: tail -f ~/Desktop/SUPERSELLER/auto-sync.log"
+
+    echo ""
+    echo "   🛑 Detener todo: ./stop.sh"
 else
     echo "❌ Error al iniciar Superseller"
     echo "   Revisa: cat ~/Desktop/SUPERSELLER/servidor.log"
