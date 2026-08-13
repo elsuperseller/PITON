@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Cupones Superseller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: #4ade80;
+            color: #000;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .cupones-lista {
+            margin-top: 2rem;
+        }
+
+        .cupon-item {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cupon-info {
+            flex: 1;
+        }
+
+        .cupon-titulo {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .cupon-codigo {
+            font-family: monospace;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .cupon-detalles {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            width: auto;
+            margin-left: 0.5rem;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        .badge-top {
+            background: #fbbf24;
+            color: #000;
+        }
+
+        .badge-inactivo {
+            background: #9ca3af;
+            color: white;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+            border: 2px solid #ddd;
+        }
+
+        .success-msg {
+            background: #4ade80;
+            color: #000;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .success-msg.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Panel Admin - Cupones</h1>
+            <p>Agrega y administra cupones de forma fácil</p>
+        </div>
+
+        <div id="successMsg" class="success-msg">
+            ✅ Cupón guardado correctamente!
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">➕ Agregar Nuevo Cupón</h2>
+
+            <form id="cuponForm">
+                <div class="form-group">
+                    <label>Título del cupón</label>
+                    <input type="text" id="titulo" placeholder="Ej: 15% de descuento" required>
+                    <p class="help-text">Lo que verán los usuarios como título principal</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Código del cupón</label>
+                    <input type="text" id="codigo" placeholder="Ej: SUPERSELLER15" required>
+                    <p class="help-text">El código que se copiará al portapapeles</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Categoría del cupón</label>
+                    <select id="categoria" required>
+                        <option value="regular">📦 Cupón Regular (ofertas normales)</option>
+                        <option value="bancario">🏦 Cupón Bancario (requiere tarjeta específica)</option>
+                    </select>
+                    <p class="help-text">Los cupones bancarios aparecen en su propia sección</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Tipo de descuento</label>
+                    <select id="tipo" required>
+                        <option value="porcentaje">Porcentaje (%)</option>
+                        <option value="monto">Monto fijo ($)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor del descuento</label>
+                    <input type="number" id="descuento" placeholder="Ej: 15" required>
+                    <p class="help-text">Sin símbolo de % o $, solo el número</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Compra mínima ($)</label>
+                    <input type="number" id="compra_minima" placeholder="Ej: 500" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Descuento máximo ($)</label>
+                    <input type="number" id="descuento_maximo" placeholder="Ej: 150" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de vencimiento</label>
+                    <input type="date" id="vencimiento" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Color del cupón</label>
+                    <select id="color_fondo" onchange="updateColorPreview()">
+                        <option value="gold">🟡 Dorado (para cupones TOP)</option>
+                        <option value="blue">🔵 Azul/Morado</option>
+                        <option value="purple">🟣 Rosa</option>
+                        <option value="green">🟢 Verde</option>
+                        <option value="red">🔴 Rojo</option>
+                    </select>
+                    <div id="colorPreview" class="color-preview" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="destacado" style="width: auto; margin-right: 0.5rem;">
+                        Marcar como CUPÓN TOP (⭐ destacado)
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">💾 Guardar Cupón</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">📋 Cupones Actuales</h2>
+            <div id="cuponesList" class="cupones-lista">
+                Cargando...
+            </div>
+        </div>
+
+        <div class="card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+            <h3 style="color: #0369a1; margin-bottom: 1rem;">💡 ¡Súper Fácil!</h3>
+            <ol style="margin-left: 1.5rem; line-height: 1.8; font-size: 1.05rem;">
+                <li><strong>Llena el formulario</strong> con los datos del cupón</li>
+                <li><strong>Haz clic en "Guardar Cupón"</strong></li>
+                <li><strong>¡Y ya!</strong> El cupón se guarda automáticamente</li>
+                <li>Recarga <code style="background: #ddd; padding: 0.2rem 0.5rem; border-radius: 4px;">http://localhost:8080</code> para verlo</li>
+            </ol>
+            <p style="margin-top: 1rem; padding: 1rem; background: #dfffd6; border-radius: 8px; font-weight: 600;">
+                ✨ No necesitas editar archivos JSON ni copiar nada. Todo se actualiza automáticamente.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const colores = {
+            'gold': 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+            'blue': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'purple': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            'green': 'linear-gradient(135deg, #13547a 0%, #80d0c7 100%)',
+            'red': 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)'
+        };
+
+        function updateColorPreview() {
+            const color = document.getElementById('color_fondo').value;
+            document.getElementById('colorPreview').style.background = colores[color];
+        }
+
+        // Cargar cupones existentes
+        async function cargarCupones() {
+            try {
+                const response = await fetch('/api/cupones');
+                const data = await response.json();
+                mostrarCupones(data.cupones);
+            } catch (error) {
+                document.getElementById('cuponesList').innerHTML = '<p style="color: #666;">No se pudieron cargar los cupones</p>';
+            }
+        }
+
+        function mostrarCupones(cupones) {
+            const lista = document.getElementById('cuponesList');
+
+            if (cupones.length === 0) {
+                lista.innerHTML = '<p style="color: #666;">No hay cupones todavía</p>';
+                return;
+            }
+
+            lista.innerHTML = cupones.map(cupon => `
+                <div class="cupon-item">
+                    <div class="cupon-info">
+                        <div class="cupon-titulo">
+                            ${cupon.titulo}
+                            ${cupon.categoria === 'bancario' ? '<span class="badge" style="background: #3b82f6; color: white;">🏦 Bancario</span>' : '<span class="badge" style="background: #8b5cf6; color: white;">📦 Regular</span>'}
+                            ${cupon.destacado ? '<span class="badge badge-top">⭐ TOP</span>' : ''}
+                            ${!cupon.activo ? '<span class="badge badge-inactivo">Inactivo</span>' : ''}
+                        </div>
+                        <div>
+                            <span class="cupon-codigo">${cupon.codigo}</span>
+                        </div>
+                        <div class="cupon-detalles">
+                            Compra mín: $${cupon.compra_minima.toLocaleString()} |
+                            Max: $${cupon.descuento_maximo.toLocaleString()} |
+                            Vence: ${cupon.vencimiento}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Generar ID único
+        function generarId() {
+            const cupones = JSON.parse(localStorage.getItem('cupones_count') || '0');
+            const newId = cupones + 1;
+            localStorage.setItem('cupones_count', newId);
+            return `cup${String(newId).padStart(3, '0')}`;
+        }
+
+        // Guardar cupón
+        document.getElementById('cuponForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const nuevoCupon = {
+                id: generarId(),
+                titulo: document.getElementById('titulo').value,
+                codigo: document.getElementById('codigo').value.toUpperCase(),
+                categoria: document.getElementById('categoria').value,
+                tipo: document.getElementById('tipo').value,
+                descuento: parseInt(document.getElementById('descuento').value),
+                compra_minima: parseInt(document.getElementById('compra_minima').value),
+                descuento_maximo: parseInt(document.getElementById('descuento_maximo').value),
+                plataforma: "Mercado Libre",
+                logo_url: "https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png",
+                vencimiento: document.getElementById('vencimiento').value,
+                destacado: document.getElementById('destacado').checked,
+                color_fondo: document.getElementById('color_fondo').value,
+                activo: true
+            };
+
+            // Cargar cupones existentes
+            try {
+                const response = await fetch('/api/cupones');
+                const data = await response.json();
+
+                // Agregar nuevo cupón
+                data.cupones.push(nuevoCupon);
+
+                // Guardar en el servidor
+                const saveResponse = await fetch('/api/cupones', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (saveResponse.ok) {
+                    // Mostrar mensaje de éxito
+                    const msg = document.getElementById('successMsg');
+                    msg.textContent = '✅ Cupón guardado correctamente! Ya está visible en la página principal.';
+                    msg.classList.add('show');
+                    setTimeout(() => msg.classList.remove('show'), 4000);
+
+                    // Limpiar formulario
+                    document.getElementById('cuponForm').reset();
+                    document.getElementById('vencimiento').valueAsDate = new Date();
+
+                    // Recargar lista
+                    setTimeout(() => cargarCupones(), 500);
+                } else {
+                    alert('Error al guardar en el servidor');
+                }
+
+            } catch (error) {
+                alert('Error al guardar el cupón: ' + error.message);
+            }
+        });
+
+        function descargarJSON(data) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cupones.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Establecer fecha de hoy por defecto
+        document.getElementById('vencimiento').valueAsDate = new Date();
+
+        // Cargar cupones al iniciar
+        cargarCupones();
+    </script>
+</body>
+</html>

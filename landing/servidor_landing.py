@@ -8,12 +8,13 @@ import json
 import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
-PORT = 8080
+PORT = int(os.environ.get("PORT", 8080))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CUPONES_FILE = os.path.join(BASE_DIR, "cupones.json")
 TEMPLATE_FILE = os.path.join(BASE_DIR, "index.html")
+ADMIN_FILE = os.path.join(BASE_DIR, "admin.html")
 
 
 def cargar_cupones():
@@ -60,9 +61,10 @@ def generar_html():
     # Filtrar cupones activos y vigentes
     cupones_activos = [c for c in cupones if c.get("activo", True) and esta_vigente(c.get("vencimiento", ""))]
 
-    # Separar destacados
+    # Separar por categorías
     destacados = [c for c in cupones_activos if c.get("destacado", False)]
-    normales = [c for c in cupones_activos if not c.get("destacado", False)]
+    regulares = [c for c in cupones_activos if c.get("categoria", "regular") == "regular" and not c.get("destacado", False)]
+    bancarios = [c for c in cupones_activos if c.get("categoria", "regular") == "bancario" and not c.get("destacado", False)]
 
     # Leer template
     with open(TEMPLATE_FILE, 'r', encoding='utf-8') as f:
@@ -73,16 +75,22 @@ def generar_html():
     for cupon in destacados:
         html_destacados += generar_tarjeta_cupon(cupon, destacado=True)
 
-    # Generar HTML de cupones normales
-    html_normales = ""
-    for cupon in normales:
-        html_normales += generar_tarjeta_cupon(cupon, destacado=False)
+    # Generar HTML de cupones regulares
+    html_regulares = ""
+    for cupon in regulares:
+        html_regulares += generar_tarjeta_cupon(cupon, destacado=False)
+
+    # Generar HTML de cupones bancarios
+    html_bancarios = ""
+    for cupon in bancarios:
+        html_bancarios += generar_tarjeta_cupon(cupon, destacado=False)
 
     # Reemplazar en template
     html = template.replace("{{TITULO_SITIO}}", config.get("titulo_sitio", "Cupones Superseller"))
     html = html.replace("{{DESCRIPCION}}", config.get("descripcion", "Los mejores cupones"))
     html = html.replace("{{CUPONES_DESTACADOS}}", html_destacados)
-    html = html.replace("{{CUPONES_NORMALES}}", html_normales)
+    html = html.replace("{{CUPONES_NORMALES}}", html_regulares)
+    html = html.replace("{{CUPONES_BANCARIOS}}", html_bancarios)
     html = html.replace("{{WHATSAPP_URL}}", config.get("redes_sociales", {}).get("whatsapp", "#"))
     html = html.replace("{{TELEGRAM_URL}}", config.get("redes_sociales", {}).get("telegram", "#"))
     html = html.replace("{{FACEBOOK_URL}}", config.get("redes_sociales", {}).get("facebook", "#"))
@@ -154,12 +162,25 @@ class RequestHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self.send_error(500, f"Error generando página: {str(e)}")
 
+        elif path == "/admin" or path == "/admin.html":
+            # Panel de administración
+            try:
+                with open(ADMIN_FILE, 'r', encoding='utf-8') as f:
+                    html = f.read()
+                self.send_response(200)
+                self.send_header("Content-type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(html.encode('utf-8'))
+            except Exception as e:
+                self.send_error(500, f"Error cargando admin: {str(e)}")
+
         elif path == "/api/cupones":
             # API endpoint para obtener cupones en JSON
             try:
                 data = cargar_cupones()
                 self.send_response(200)
                 self.send_header("Content-type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
             except Exception as e:
@@ -167,6 +188,39 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         else:
             self.send_error(404, "Página no encontrada")
+
+    def do_POST(self):
+        """Manejar peticiones POST"""
+        path = urlparse(self.path).path
+
+        if path == "/api/cupones":
+            # Guardar cupones
+            try:
+                content_length = int(self.headers['Content-Length'])
+                post_data = self.rfile.read(content_length)
+                data = json.loads(post_data.decode('utf-8'))
+
+                # Guardar en archivo
+                with open(CUPONES_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+
+                self.send_response(200)
+                self.send_header("Content-type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True}).encode('utf-8'))
+            except Exception as e:
+                self.send_error(500, f"Error guardando cupones: {str(e)}")
+        else:
+            self.send_error(404, "Endpoint no encontrado")
+
+    def do_OPTIONS(self):
+        """Manejar peticiones OPTIONS para CORS"""
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
 
     def log_message(self, format, *args):
         """Sobrescribir para logging personalizado"""

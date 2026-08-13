@@ -1,0 +1,2 @@
+web: python3 servidor_landing.py
+bot: python3 bot_telegram.py
