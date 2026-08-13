@@ -1,0 +1,61 @@
+{
+  "cupones": [
+    {
+      "id": "cup001",
+      "titulo": "15% de descuento",
+      "codigo": "SUPERSELLER15",
+      "tipo": "porcentaje",
+      "descuento": 15,
+      "compra_minima": 500,
+      "descuento_maximo": 150,
+      "plataforma": "Mercado Libre",
+      "logo_url": "https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png",
+      "vencimiento": "2026-08-13",
+      "destacado": true,
+      "color_fondo": "gold",
+      "activo": true
+    },
+    {
+      "id": "cup002",
+      "titulo": "$500 de descuento",
+      "codigo": "SUPER500",
+      "tipo": "monto",
+      "descuento": 500,
+      "compra_minima": 3000,
+      "descuento_maximo": 500,
+      "plataforma": "Mercado Libre",
+      "logo_url": "https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png",
+      "vencimiento": "2026-08-13",
+      "destacado": false,
+      "color_fondo": "blue",
+      "activo": true
+    },
+    {
+      "id": "cup003",
+      "titulo": "10% de descuento",
+      "codigo": "AHORRA10",
+      "tipo": "porcentaje",
+      "descuento": 10,
+      "compra_minima": 800,
+      "descuento_maximo": 100,
+      "plataforma": "Mercado Libre",
+      "logo_url": "https://http2.mlstatic.com/frontend-assets/ml-web-navigation/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png",
+      "vencimiento": "2026-08-14",
+      "destacado": false,
+      "color_fondo": "purple",
+      "activo": true
+    }
+  ],
+  "configuracion": {
+    "titulo_sitio": "Cupones Superseller",
+    "descripcion": "Los mejores cupones de descuento para Mercado Libre",
+    "redes_sociales": {
+      "whatsapp": "https://wa.me/1234567890",
+      "telegram": "https://t.me/superseller",
+      "facebook": "https://facebook.com/superseller",
+      "youtube": "https://youtube.com/@superseller"
+    },
+    "logo_url": "",
+    "actualizado": "2026-08-13"
+  }
+}

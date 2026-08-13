@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>{{TITULO_SITIO}}</title>
+    <meta name="description" content="{{DESCRIPCION}}">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-green: #4ade80;
+            --accent-gold: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #0a0a0a 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 9999px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            text-decoration: none;
+            color: white;
+            display: inline-block;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-whatsapp { background: #25d366; }
+        .btn-telegram { background: #0088cc; }
+        .btn-facebook { background: #1877f2; }
+        .btn-youtube { background: #ff0000; }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Secciones */
+        .seccion {
+            margin-bottom: 3rem;
+        }
+
+        .seccion-titulo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .cupones-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Tarjetas de Cupón */
+        .cupon-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cupon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        }
+
+        .cupon-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cupon-titulo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        .vencimiento {
+            background: var(--accent-gold);
+            color: #000;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-destacado {
+            padding: 0.5rem 1.5rem;
+            background: var(--accent-gold);
+            color: #000;
+            font-weight: 900;
+            font-size: 0.8rem;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .cupon-contenido {
+            display: flex;
+            height: 180px;
+            position: relative;
+        }
+
+        .logo-seccion {
+            width: 35%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .logo-plataforma {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .info-seccion {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1.5rem;
+            color: white;
+            text-align: center;
+        }
+
+        .codigo-oculto {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .condiciones {
+            font-size: 0.85rem;
+            font-weight: 700;
+            opacity: 0.95;
+        }
+
+        .condiciones div {
+            margin: 0.3rem 0;
+        }
+
+        .btn-copiar {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-copiar:hover {
+            background: #22c55e;
+            transform: scale(1.02);
+        }
+
+        .btn-copiar:active {
+            transform: scale(0.98);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent-green);
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .cupones-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .social-links {
+                flex-wrap: wrap;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">S</div>
+                <div>
+                    <div class="site-title">SUPERSELLER</div>
+                    <div class="tagline">{{DESCRIPCION}}</div>
+                </div>
+            </div>
+            <nav class="social-links">
+                <a href="{{WHATSAPP_URL}}" class="social-btn btn-whatsapp" target="_blank">WhatsApp</a>
+                <a href="{{TELEGRAM_URL}}" class="social-btn btn-telegram" target="_blank">Telegram</a>
+                <a href="{{FACEBOOK_URL}}" class="social-btn btn-facebook" target="_blank">Facebook</a>
+                <a href="{{YOUTUBE_URL}}" class="social-btn btn-youtube" target="_blank">YouTube</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-badge">ACTUALIZADOS DIARIAMENTE</div>
+            <h1 class="hero-title">Cupones de Superseller</h1>
+            <p class="hero-subtitle">Copia el cupón y entra directamente a Mercado Libre para aprovecharlo.</p>
+        </div>
+
+        <!-- Cupones Destacados -->
+        <section class="seccion">
+            <h2 class="seccion-titulo">⭐ Cupones Destacados</h2>
+            <div class="cupones-grid">
+                {{CUPONES_DESTACADOS}}
+            </div>
+        </section>
+
+        <!-- Cupones Normales -->
+        <section class="seccion">
+            <h2 class="seccion-titulo">Todos los cupones</h2>
+            <div class="cupones-grid">
+                {{CUPONES_NORMALES}}
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 Superseller. Todos los derechos reservados.</p>
+        <p>Cupones actualizados diariamente · Los descuentos están sujetos a términos y condiciones de cada plataforma</p>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        ✓ Cupón copiado! Redirigiendo a Mercado Libre...
+    </div>
+
+    <script>
+        function copiarCupon(codigo, plataforma) {
+            // Copiar al portapapeles
+            navigator.clipboard.writeText(codigo).then(() => {
+                // Mostrar toast
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+
+                // Ocultar después de 2 segundos
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+
+                // Redirigir a Mercado Libre después de 1.5 segundos
+                setTimeout(() => {
+                    if (plataforma === "Mercado Libre") {
+                        window.open('https://www.mercadolibre.com.mx/', '_blank');
+                    }
+                }, 1500);
+            }).catch(err => {
+                alert('Error al copiar el cupón: ' + err);
+            });
+        }
+    </script>
+</body>
+</html>
