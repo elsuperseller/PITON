@@ -1912,14 +1912,34 @@ const VARIANTES_STRIP = [
   "grey","yellow","orange","purple","brown","pink","gold","silver",
   "xs","s","m","l","xl","xxl","xxxl","4xl","5xl",
   "chico","chica","mediano","mediana","grande","pequeno","pequena","mini","micro",
-  "slim","fit","regular","plus"
+  "slim","fit","regular","plus","basico","basica","premium","deluxe","pro","lite",
+  // Variantes comunes de productos
+  "pack","paquete","set","kit","unidades","piezas","pieza"
 ]
 
 function normalizarDedup(titulo) {
   let n = normalizarT(titulo)
+
+  // Eliminar patrones de especificaciones técnicas comunes
+  n = n.replace(/\b\d+w-?\d+\b/gi, '') // Viscosidades (5W-30)
+  n = n.replace(/\b\d+v\b/gi, '') // Voltajes (12V, 110V)
+  n = n.replace(/\bv\d+\b/gi, '') // Versiones (V2, V3)
+  n = n.replace(/\b\d+gb?\b/gi, '') // Generaciones (4G, 5G)
+  n = n.replace(/\b(?:gen|generacion)\s*\d+\b/gi, '') // Gen 3, Generación 4
+
+  // Eliminar palabras de variantes
   VARIANTES_STRIP.forEach(v => { n = n.replace(new RegExp('(?:^|\\s)' + v + '(?:\\s|$)', 'g'), ' ') })
-  n = n.replace(/\b\d+\s*(?:gb|tb|mb|ml|lt?|kg|g|cm|mm|mah|hz|mp|w|oz)\b/gi, '')
+
+  // Eliminar cantidades y unidades de medida
+  n = n.replace(/\b\d+\s*(?:gb|tb|mb|ml|lt?|kg|g|cm|mm|mah|hz|mp|w|oz|qt|gal|galones?|litros?|cuartos?|pulgadas?|pulg|inches?|in|ft|pies)\b/gi, '')
+
+  // Eliminar números de paquete/pack/set
+  n = n.replace(/\b(?:pack|paquete|set|kit)\s*(?:de|x)?\s*\d+\b/gi, '')
+  n = n.replace(/\b\d+\s*(?:pack|paquete|set|kit|unidades?|piezas?|pzas?)\b/gi, '')
+
+  // Eliminar pulgadas y números sueltos
   n = n.replace(/\b\d+"\b/g, '').replace(/\b\d+\b/g, '')
+
   return n.replace(/\s+/g, ' ').trim()
 }
 
@@ -2087,6 +2107,61 @@ function aplicarFiltroSuperseller() {
     )
   )
   log.push("Smart dedup: " + items.length + " (-" + (prev - items.length) + ")")
+
+  // NUEVO: Segundo paso de deduplicación más agresivo para variantes muy similares
+  prev = items.length
+
+  // Función para calcular similitud entre dos productos
+  function similitud(p1, p2) {
+    // Si tienen diferente marca, no son variantes
+    const m1 = extraerMarcaS(p1.title)
+    const m2 = extraerMarcaS(p2.title)
+    if (m1 !== m2) return 0
+
+    // Obtener palabras clave de cada título (normalizadas y sin marca)
+    const palabras1 = new Set(normalizarDedup(p1.title).split(' ').filter(w => w.length > 2 && w !== m1.toLowerCase()))
+    const palabras2 = new Set(normalizarDedup(p2.title).split(' ').filter(w => w.length > 2 && w !== m2.toLowerCase()))
+
+    // Calcular similitud Jaccard (intersección / unión)
+    const interseccion = [...palabras1].filter(w => palabras2.has(w)).length
+    const union = new Set([...palabras1, ...palabras2]).size
+
+    return union > 0 ? interseccion / union : 0
+  }
+
+  // Agrupar productos similares
+  const procesados = new Set()
+  const gruposFinales = []
+
+  items.forEach((p1, i) => {
+    if (procesados.has(i)) return
+
+    const grupo = [p1]
+    procesados.add(i)
+
+    // Buscar todos los productos similares
+    items.forEach((p2, j) => {
+      if (i !== j && !procesados.has(j)) {
+        const sim = similitud(p1, p2)
+        // Si similitud > 70%, son variantes del mismo producto
+        if (sim > 0.7) {
+          grupo.push(p2)
+          procesados.add(j)
+        }
+      }
+    })
+
+    gruposFinales.push(grupo)
+  })
+
+  // De cada grupo, quedarnos solo con el de MEJOR descuento
+  items = gruposFinales.map(g =>
+    g.reduce((mejor, p) =>
+      p.descuento_pct > mejor.descuento_pct ? p :
+      (p.descuento_pct === mejor.descuento_pct && p.price_discounted < mejor.price_discounted ? p : mejor)
+    )
+  )
+  log.push("Dedup agresivo (variantes): " + items.length + " (-" + (prev - items.length) + ")")
 
   // Ordenar por descuento desc antes de los caps para que siempre sobrevivan las mejores ofertas
   items.sort((a, b) => (b.descuento_pct || 0) - (a.descuento_pct || 0))
