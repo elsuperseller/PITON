@@ -2108,60 +2108,64 @@ function aplicarFiltroSuperseller() {
   )
   log.push("Smart dedup: " + items.length + " (-" + (prev - items.length) + ")")
 
-  // NUEVO: Segundo paso de deduplicación más agresivo para variantes muy similares
+  // NUEVO: Deduplicación agresiva por MARCA + TIPO DE PRODUCTO
   prev = items.length
+  console.log("🔥 DEDUP AGRESIVO ACTIVADO - Versión 2.0")
 
-  // Función para calcular similitud entre dos productos
-  function similitud(p1, p2) {
-    // Si tienen diferente marca, no son variantes
-    const m1 = extraerMarcaS(p1.title)
-    const m2 = extraerMarcaS(p2.title)
-    if (m1 !== m2) return 0
+  // Función para extraer el tipo de producto del título (primera palabra clave importante)
+  function extraerTipoProducto(titulo) {
+    const palabras = normalizarDedup(titulo).split(' ').filter(w => w.length > 3)
 
-    // Obtener palabras clave de cada título (normalizadas y sin marca)
-    const palabras1 = new Set(normalizarDedup(p1.title).split(' ').filter(w => w.length > 2 && w !== m1.toLowerCase()))
-    const palabras2 = new Set(normalizarDedup(p2.title).split(' ').filter(w => w.length > 2 && w !== m2.toLowerCase()))
+    // Lista de palabras clave que identifican tipos de productos
+    const tiposConocidos = [
+      'calcetines', 'guantes', 'audifonos', 'auriculares', 'cable', 'cargador',
+      'mouse', 'teclado', 'monitor', 'laptop', 'telefono', 'celular', 'funda',
+      'protector', 'bateria', 'bocina', 'camara', 'reloj', 'smartwatch',
+      'impresora', 'router', 'ssd', 'disco', 'memoria', 'usb', 'mochila',
+      'bolsa', 'cartera', 'zapatos', 'tenis', 'playera', 'pantalon', 'gorra',
+      'lentes', 'termo', 'botella', 'toalla', 'cobija', 'almohada', 'sarten',
+      'licuadora', 'cafetera', 'freidora', 'olla', 'cuchillo', 'tabla'
+    ]
 
-    // Calcular similitud Jaccard (intersección / unión)
-    const interseccion = [...palabras1].filter(w => palabras2.has(w)).length
-    const union = new Set([...palabras1, ...palabras2]).size
+    // Buscar la primera palabra que sea un tipo conocido
+    for (const palabra of palabras) {
+      if (tiposConocidos.includes(palabra)) {
+        return palabra
+      }
+    }
 
-    return union > 0 ? interseccion / union : 0
+    // Si no se encuentra un tipo conocido, usar las primeras 2 palabras significativas
+    return palabras.slice(0, 2).join(' ')
   }
 
-  // Agrupar productos similares
-  const procesados = new Set()
-  const gruposFinales = []
+  // Agrupar por MARCA + TIPO
+  const gruposAgresivos = {}
+  items.forEach(p => {
+    const marca = extraerMarcaS(p.title)
+    const tipo = extraerTipoProducto(p.title)
+    const keyAgresiva = marca.toLowerCase() + "_" + tipo
 
-  items.forEach((p1, i) => {
-    if (procesados.has(i)) return
-
-    const grupo = [p1]
-    procesados.add(i)
-
-    // Buscar todos los productos similares
-    items.forEach((p2, j) => {
-      if (i !== j && !procesados.has(j)) {
-        const sim = similitud(p1, p2)
-        // Si similitud > 70%, son variantes del mismo producto
-        if (sim > 0.7) {
-          grupo.push(p2)
-          procesados.add(j)
-        }
-      }
-    })
-
-    gruposFinales.push(grupo)
+    if (!gruposAgresivos[keyAgresiva]) gruposAgresivos[keyAgresiva] = []
+    gruposAgresivos[keyAgresiva].push(p)
   })
 
-  // De cada grupo, quedarnos solo con el de MEJOR descuento
-  items = gruposFinales.map(g =>
+  console.log("📊 Grupos por marca+tipo:", Object.keys(gruposAgresivos).length)
+  // Mostrar grupos con más de 1 producto (variantes detectadas)
+  Object.entries(gruposAgresivos).forEach(([key, productos]) => {
+    if (productos.length > 1) {
+      console.log(`  🔹 ${key}: ${productos.length} variantes`)
+      productos.forEach(p => console.log(`    - ${p.title.substring(0, 60)}... (${p.descuento_pct}%)`))
+    }
+  })
+
+  // De cada grupo (marca + tipo), quedarnos SOLO con el de MEJOR descuento
+  items = Object.values(gruposAgresivos).map(g =>
     g.reduce((mejor, p) =>
       p.descuento_pct > mejor.descuento_pct ? p :
       (p.descuento_pct === mejor.descuento_pct && p.price_discounted < mejor.price_discounted ? p : mejor)
     )
   )
-  log.push("Dedup agresivo (variantes): " + items.length + " (-" + (prev - items.length) + ")")
+  log.push("Dedup agresivo (marca+tipo): " + items.length + " (-" + (prev - items.length) + ")")
 
   // Ordenar por descuento desc antes de los caps para que siempre sobrevivan las mejores ofertas
   items.sort((a, b) => (b.descuento_pct || 0) - (a.descuento_pct || 0))
