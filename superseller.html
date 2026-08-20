@@ -1971,8 +1971,33 @@ const CATEGORIAS_CAP = {
   "smart_tv":   ["smart tv","television","televisor","qled","oled tv","pantalla tv"],
   "camara_foto":["camara fotografica","camara digital","mirrorless","dslr"],
   "consola":    ["playstation","xbox","nintendo switch","ps5","ps4"],
+  "llanta":     ["llanta","neumatico","tire","rin","rueda"],
+  "herramienta":["taladro","destornillador","llave","pinza","martillo","sierra","nivel","cinta metrica"],
+  "calcetines": ["calcetines","calcetas","socks"],
+  "guantes":    ["guantes","gloves"],
+  "zapatos":    ["zapatos","tenis","botas","calzado","sneakers","shoes"],
+  "ropa":       ["playera","camisa","pantalon","short","sudadera","chamarra","vestido","falda"],
+  "mochila":    ["mochila","backpack","morral","bolsa"],
+  "bateria":    ["bateria","pila","power bank","cargador portatil"],
+  "cable":      ["cable","adaptador","hub","conversor"],
+  "mouse":      ["mouse","raton"],
+  "teclado":    ["teclado","keyboard"],
+  "monitor":    ["monitor","pantalla","display"],
+  "ssd":        ["ssd","disco duro","hard drive","hdd"],
+  "memoria":    ["memoria ram","ram"],
+  "bocina":     ["bocina","altavoz","speaker","parlante"],
+  "reloj":      ["reloj","smartwatch","watch"],
+  "router":     ["router","modem","wifi","repetidor"],
+  "impresora":  ["impresora","printer","multifuncional"],
+  "aceite":     ["aceite motor","aceite sintetico","aceite lubricante"],
+  "filtro":     ["filtro aire","filtro aceite","filtro combustible"],
+  "limpieza":   ["aspiradora","trapeador","escoba","cepillo","limpiador"],
+  "cocina":     ["sarten","olla","licuadora","cafetera","freidora","batidora","exprimidor"],
+  "hogar":      ["almohada","cobija","toalla","cortina","tapete","alfombra"],
+  "deporte":    ["balon","pesas","colchoneta","cuerda","banda elastica","mancuerna"],
+  "juguete":    ["juguete","muneco","figura","lego","peluche","rompecabezas"],
 }
-const CAP_CATEGORIA = 3  // máximo por categoría de producto
+const CAP_CATEGORIA = 2  // máximo por categoría de producto (reducido de 3 a 2 para MÁS diversidad)
 
 function extraerMarcaS(titulo) {
   const palabras = normalizarT(titulo).split(" ").filter(p => p.length > 2)
