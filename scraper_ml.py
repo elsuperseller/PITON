@@ -226,7 +226,8 @@ def _parse_filtros_listado(url):
     """
     Extrae filtros de búsqueda desde una URL listado.mercadolibre.com.mx.
     Devuelve dict con params para la API pública de ML (sin key).
-    Ejemplo: /_Envio_Full_Discount_15-100_Container_... → {discount:"15-100", shipping:"me2"}
+    Ejemplo: /_Envio_Full_Discount_15-100_PriceRange_0MXN-999MXN_Container_...
+    → {discount:"15-100", shipping:"me2", price:"0-999"}
     """
     path   = urlparse(url).path
     params = {}
@@ -235,6 +236,11 @@ def _parse_filtros_listado(url):
     m = re.search(r'_Discount_(\d+)-(\d+)', path, re.IGNORECASE)
     if m:
         params["discount"] = f"{m.group(1)}-{m.group(2)}"
+
+    # Precio: _PriceRange_0MXN-999MXN_
+    m = re.search(r'_PriceRange_(\d+)MXN-(\d+)MXN', path, re.IGNORECASE)
+    if m:
+        params["price"] = f"{m.group(1)}-{m.group(2)}"
 
     # Envío full/gratis
     if re.search(r'_Envio_Full|_Free_Shipping|_Envio_Gratis', path, re.IGNORECASE):
@@ -280,7 +286,7 @@ def _normalizar_api_item(item):
     }
 
 
-def _extraer_polycards(body, min_discount=0):
+def _extraer_polycards(body, min_discount=0, precio_min=0, precio_max=0):
     """
     Extrae productos buscando directamente cada objeto {"id":"POLYCARD",...}
     en cualquier punto del body, sin depender de la estructura del array padre.
@@ -309,9 +315,17 @@ def _extraer_polycards(body, min_discount=0):
             continue
         pseudo = {"card": poly}
         p = _normalizar(pseudo)
-        if p and p["descuento_pct"] >= min_discount and p["id"] not in seen_ids:
-            seen_ids.add(p["id"])
-            productos.append(p)
+        if not p or p["id"] in seen_ids:
+            continue
+        # Filtros
+        if p["descuento_pct"] < min_discount:
+            continue
+        if precio_max > 0 and p["price_discounted"] > precio_max:
+            continue
+        if precio_min > 0 and p["price_discounted"] < precio_min:
+            continue
+        seen_ids.add(p["id"])
+        productos.append(p)
 
     return productos
 
@@ -338,7 +352,7 @@ def _extraer_next_url(body):
         return None
 
 
-def _scrape_listado_playwright(url, pages=3, min_discount=0):
+def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, precio_max=0):
     """
     Renderiza URLs listado.mercadolibre.com.mx con Playwright.
     Captura el cuerpo completo (2-3 MB) que incluye el initialState con polycards.
@@ -407,7 +421,7 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0):
                     print(f"  ⚠️  p{page_num}: sin initialState — deteniendo", flush=True)
                     break
 
-                prods = _extraer_polycards(big_body[0], min_discount)
+                prods = _extraer_polycards(big_body[0], min_discount, precio_min, precio_max)
                 nuevos = sum(1 for p in prods if p['id'] not in captured)
                 for p in prods:
                     captured[p['id']] = p
@@ -430,7 +444,7 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0):
     return result
 
 
-def _scrape_via_api(filtros, pages=3, min_discount=0):
+def _scrape_via_api(filtros, pages=3, min_discount=0, precio_min=0, precio_max=0):
     """
     Usa la API pública de ML (sin key) con paginación real por offset.
     Sirve para listado URLs donde _from= no funciona en containers merch/genéricos.
@@ -452,7 +466,16 @@ def _scrape_via_api(filtros, pages=3, min_discount=0):
 
         items = data.get("results", [])
         total = data.get("paging", {}).get("total", 0)
-        page_prods = [p for i in items if (p := _normalizar_api_item(i)) and p["descuento_pct"] >= min_discount]
+        page_prods = []
+        for i in items:
+            p = _normalizar_api_item(i)
+            if not p or p["descuento_pct"] < min_discount:
+                continue
+            if precio_max > 0 and p["price_discounted"] > precio_max:
+                continue
+            if precio_min > 0 and p["price_discounted"] < precio_min:
+                continue
+            page_prods.append(p)
         print(f"  📄 ML API p{pagina} (offset={offset}) → {len(items)} raw → {len(page_prods)} productos (total disponible: {total})", flush=True)
         resultados.extend(page_prods)
 
@@ -501,17 +524,28 @@ def _convertir_listado_url(url):
     return None
 
 # ── SCRAPER DE URL ───────────────────────────────────────────────────
-def scrape_url(url, min_discount=0, pages=1):
+def scrape_url(url, min_discount=0, pages=1, precio_min=0, precio_max=0):
     """
     Extrae todos los productos de una URL de ML, paginando hasta `pages` páginas.
     Para listado.mercadolibre.com.mx con filtros reconocibles usa la API pública
     (paginación real por offset). Para el resto usa HTML scraping con ?_from=N.
+
+    precio_min/precio_max: filtro de precio (0 = sin límite)
     """
+    # Extraer filtros de precio de la URL si no se especificaron explícitamente
+    if precio_min == 0 and precio_max == 0:
+        m = re.search(r'_PriceRange_(\d+)MXN-(\d+)MXN', url, re.IGNORECASE)
+        if m:
+            precio_min = int(m.group(1))
+            precio_max = int(m.group(2))
+            print(f"  💰 Filtro de precio detectado: ${precio_min}-${precio_max} MXN", flush=True)
+
     # Listado URLs son SPAs — renderizar con Playwright e interceptar XHR
     if "listado.mercadolibre.com.mx" in url:
         # 1. Intentar Playwright primero
         if _PLAYWRIGHT_OK:
-            resultados_pw = _scrape_listado_playwright(url, pages=pages, min_discount=min_discount)
+            resultados_pw = _scrape_listado_playwright(url, pages=pages, min_discount=min_discount,
+                                                       precio_min=precio_min, precio_max=precio_max)
             if resultados_pw:  # Si Playwright funcionó, retornar
                 return resultados_pw
             print(f"  ⚠️  Playwright devolvió 0 productos, intentando fallback...", flush=True)
@@ -520,7 +554,8 @@ def scrape_url(url, min_discount=0, pages=1):
         filtros = _parse_filtros_listado(url)
         if filtros:
             print(f"  🔌 Listado → ML API (filtros: {filtros})", flush=True)
-            resultados_api = _scrape_via_api(filtros, pages=pages, min_discount=min_discount)
+            resultados_api = _scrape_via_api(filtros, pages=pages, min_discount=min_discount,
+                                            precio_min=precio_min, precio_max=precio_max)
             if resultados_api:  # Si API funcionó, retornar
                 return resultados_api
             print(f"  ⚠️  API devolvió 0 productos, intentando HTML scraping...", flush=True)
@@ -548,7 +583,18 @@ def scrape_url(url, min_discount=0, pages=1):
             print(f"  📄 p{pagina} → 0 raw, deteniendo", flush=True)
             break
 
-        page_prods = [p for raw in raw_items if (p := _normalizar(raw)) is not None]
+        page_prods = []
+        for raw in raw_items:
+            p = _normalizar(raw)
+            if p is None:
+                continue
+            # Filtrar por precio si se especificó
+            if precio_max > 0 and p["price_discounted"] > precio_max:
+                continue
+            if precio_min > 0 and p["price_discounted"] < precio_min:
+                continue
+            page_prods.append(p)
+
         print(f"  📄 p{pagina} → {len(raw_items)} raw → {len(page_prods)} productos", flush=True)
         resultados.extend(page_prods)
 
@@ -611,12 +657,12 @@ def scrape(queries=None, urls=None, categorias=None,
         print(f"📦 ML categoría: {cat} → {len(expanded)} URL(s)", flush=True)
         for u in expanded:
             # Las categorías ya usan discovery de containers; 1 página por container
-            resultados.extend(scrape_url(u, pages=1))
+            resultados.extend(scrape_url(u, pages=1, precio_min=precio_min, precio_max=precio_max))
             time.sleep(1.2)
 
     for url in (urls or []):
         print(f"📄 ML URL: {url[:70]}", flush=True)
-        resultados.extend(scrape_url(url, pages=pages))
+        resultados.extend(scrape_url(url, pages=pages, precio_min=precio_min, precio_max=precio_max))
         time.sleep(1.2)
 
     # Si no se especificó nada, descubrir y scrapear todas las fuentes diarias
@@ -624,7 +670,7 @@ def scrape(queries=None, urls=None, categorias=None,
         daily_urls = _descubrir_containers(f"{ML_BASE}/ofertas")
         print(f"📦 ML: scrapeando {len(daily_urls)} fuentes diarias", flush=True)
         for u in daily_urls:
-            resultados.extend(scrape_url(u, pages=1))
+            resultados.extend(scrape_url(u, pages=1, precio_min=precio_min, precio_max=precio_max))
             time.sleep(1.2)
 
     resultados = deduplicar(resultados)
