@@ -1960,15 +1960,52 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
         elif self.path == "/feeds/agregar_manual":
-            # Endpoint para agregar productos manualmente o URLs de categorías
+            # Endpoint para agregar productos manualmente, URLs de categorías o keywords
             try:
                 length = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(length))
                 audiencia_id = body.get("audiencia_id", "")
-                input_value = body.get("asin", "")  # Puede ser ASIN o URL
+                input_value = body.get("asin", "")  # Puede ser ASIN, URL o keyword
+                es_keyword = body.get("es_keyword", False)
 
                 if not audiencia_id or not input_value:
-                    raise ValueError("audiencia_id y asin/url requeridos")
+                    raise ValueError("audiencia_id y asin/url/keyword requeridos")
+
+                # Si es keyword directa
+                if es_keyword:
+                    print(f"🔑 Agregando keyword en '{audiencia_id}': {input_value}", flush=True)
+
+                    perfiles = cargar_perfiles()
+                    perfil = perfiles.get(audiencia_id)
+
+                    if not perfil:
+                        raise ValueError(f"Feed '{audiencia_id}' no encontrado")
+
+                    keywords_actuales = set(perfil.get('keywords', []))
+                    keyword_normalizada = input_value.lower().strip()
+
+                    if keyword_normalizada in keywords_actuales:
+                        raise ValueError("Esta keyword ya está agregada")
+
+                    keywords_actuales.add(keyword_normalizada)
+                    perfil['keywords'] = sorted(list(keywords_actuales))
+                    perfiles[audiencia_id] = perfil
+
+                    # Guardar cambios
+                    perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                    with open(perfiles_path, 'w', encoding='utf-8') as f:
+                        json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                    print(f"  ✅ Keyword agregada: {keyword_normalizada}", flush=True)
+
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True,
+                        "tipo": "keyword",
+                        "mensaje": f"Keyword '{keyword_normalizada}' agregada exitosamente"
+                    }).encode())
+                    return
 
                 # Detectar si es URL de categoría o producto individual
                 if 'amazon' in input_value.lower() and '/dp/' not in input_value and '/gp/product/' not in input_value:

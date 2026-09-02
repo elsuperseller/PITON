@@ -57,11 +57,11 @@
       "Bane",
       "Banpresto",
       "Barbarian",
+      "Barricade",
       "Batalla",
       "Batman",
       "Bears",
       "Behind",
-      "Berserk",
       "Bitty",
       "Blokees",
       "Buffalo",
@@ -218,8 +218,7 @@
       "Wizarding",
       "Wolverine",
       "World",
-      "Zoids",
-      "dc direct"
+      "Zoids"
     ],
     "filtros": {
       "minSavingPercent": 5,

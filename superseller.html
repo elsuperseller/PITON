@@ -3050,9 +3050,10 @@ async function agregarProductoManual() {
     return
   }
 
-  // Extraer ASIN de URL o detectar si es categoría
+  // Extraer ASIN de URL o detectar tipo
   let asin = valor
   let esCategoria = false
+  let esKeyword = false
 
   // Si es URL de Amazon
   if (valor.includes('amazon') || valor.includes('amzn')) {
@@ -3066,14 +3067,23 @@ async function agregarProductoManual() {
       asin = valor
     }
   }
+  // Si no es URL y tampoco es ASIN válido, es una keyword
+  else if (!valor.includes('http') && !/^[A-Z0-9]{10}$/i.test(valor)) {
+    esKeyword = true
+    asin = valor.toLowerCase()
+  }
 
-  // Validar formato ASIN solo si no es categoría
-  if (!esCategoria && !/^[A-Z0-9]{10}$/i.test(asin)) {
+  // Validar formato ASIN solo si no es categoría ni keyword
+  if (!esCategoria && !esKeyword && !/^[A-Z0-9]{10}$/i.test(asin)) {
     alert('ASIN inválido. Debe tener 10 caracteres alfanuméricos')
     return
   }
 
-  const mensaje = esCategoria ? 'Agregando categoría...' : `Agregando producto ${asin}...`
+  const mensaje = esKeyword
+    ? `Agregando keyword: ${asin}...`
+    : esCategoria
+      ? 'Agregando categoría...'
+      : `Agregando producto ${asin}...`
   setStatus(mensaje, "running")
 
   try {
@@ -3082,7 +3092,8 @@ async function agregarProductoManual() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         audiencia_id: currentFeedId,
-        asin: esCategoria ? asin : asin.toUpperCase()
+        asin: asin,
+        es_keyword: esKeyword
       })
     })
 
@@ -3092,7 +3103,12 @@ async function agregarProductoManual() {
       input.value = '' // Limpiar input
       setStatus(`✅ ${data.mensaje}`, "done")
 
-      if (data.tipo === 'categoria') {
+      if (data.tipo === 'keyword') {
+        // Es una keyword
+        setTimeout(() => {
+          alert(`✅ Keyword agregada exitosamente\n\n🔑 El algoritmo ahora buscará productos relacionados con: "${asin}"`)
+        }, 300)
+      } else if (data.tipo === 'categoria') {
         // Es una categoría
         setTimeout(() => {
           alert(`✅ Categoría agregada exitosamente\n\nAparecerá en la próxima generación del feed (mañana o al usar "Refrescar")`)
