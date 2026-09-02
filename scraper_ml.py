@@ -237,8 +237,8 @@ def _parse_filtros_listado(url):
     if m:
         params["discount"] = f"{m.group(1)}-{m.group(2)}"
 
-    # Precio: _PriceRange_0MXN-999MXN_
-    m = re.search(r'_PriceRange_(\d+)MXN-(\d+)MXN', path, re.IGNORECASE)
+    # Precio: _PriceRange_0-999_ o _PriceRange_0MXN-999MXN_
+    m = re.search(r'_PriceRange_(\d+)(?:MXN)?-(\d+)(?:MXN)?', path, re.IGNORECASE)
     if m:
         params["price"] = f"{m.group(1)}-{m.group(2)}"
 
@@ -534,7 +534,8 @@ def scrape_url(url, min_discount=0, pages=1, precio_min=0, precio_max=0):
     """
     # Extraer filtros de precio de la URL si no se especificaron explícitamente
     if precio_min == 0 and precio_max == 0:
-        m = re.search(r'_PriceRange_(\d+)MXN-(\d+)MXN', url, re.IGNORECASE)
+        # Probar ambos formatos: _PriceRange_0-999_ y _PriceRange_0MXN-999MXN_
+        m = re.search(r'_PriceRange_(\d+)(?:MXN)?-(\d+)(?:MXN)?', url, re.IGNORECASE)
         if m:
             precio_min = int(m.group(1))
             precio_max = int(m.group(2))
