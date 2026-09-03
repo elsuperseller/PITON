@@ -1,7 +1,7 @@
 {
   "coleccionistas": {
     "fecha": "2026-09-03",
-    "timestamp": "2026-09-03T09:43:25.696251",
+    "timestamp": "2026-09-03T17:50:49.653681",
     "productos": [
       {
         "asin": "B0F5HWX7XC",
@@ -13,6 +13,18 @@
         "source_channel": "Keyword: Nintendo",
         "source_type": "keyword",
         "keyword_match": "Nintendo",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FHJ8XWWL",
+        "title": "Videotimbre inalámbrico 2K Ring (último modelo): Retinal 2K con video de gran angular, zoom mejorado de hasta 6x, comunicación bidireccional y batería integrada (gris moteado)",
+        "price": 799.0,
+        "discount": 64,
+        "image": "https://m.media-amazon.com/images/I/21lc6l7V1ZL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FHJ8XWWL?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
@@ -49,6 +61,30 @@
         "source_channel": "Keyword: Marvel Legends",
         "source_type": "keyword",
         "keyword_match": "Marvel Legends",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DC1VV77T",
+        "title": "Jurassic World Dinosaurio de Juguete Rebirth Villano 4+ Años",
+        "price": 832.51,
+        "discount": 54,
+        "image": "https://m.media-amazon.com/images/I/518+eI4nWML._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DC1VV77T?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: NECA",
+        "source_type": "keyword",
+        "keyword_match": "NECA",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B094BPD4GD",
+        "title": "SUPER7 Tortugas Ninja Mutantes Adolescentes Wave 5 - Filete de Rayos",
+        "price": 568.39,
+        "discount": 53,
+        "image": "https://m.media-amazon.com/images/I/41F5U2fgk8L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B094BPD4GD?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
@@ -112,6 +148,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DYJW4FBJ",
+        "title": "Funko Pop! TV: Firefly - Malcolm Reynolds - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - TV Fans - Model Figure for Collectors and Display",
+        "price": 148.82,
+        "discount": 50,
+        "image": "https://m.media-amazon.com/images/I/41ii6NSmz9L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DYJW4FBJ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DZHR44J9",
+        "title": "Bose QuietComfort - Auriculares Bluetooth inalámbricos con cancelación Activa de Ruido y micrófono, Graves Profundos, hasta 24 Horas de reproducción, Azul crepúsculo, Color edición Limitada",
+        "price": 3499.0,
+        "discount": 50,
+        "image": "https://m.media-amazon.com/images/I/319BtflWTuL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DZHR44J9?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0BLYXSTSQ",
         "title": "UGREEN 60W Cable USB C 2 Unidades PD Carga Rápida 20V 3A, 1M",
         "price": 223.8,
@@ -124,6 +184,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0CBNP6GRR",
+        "title": "Mattel, Disney Collector Muñeca de Colección Ariel Celebración 35 Aniversario",
+        "price": 701.8,
+        "discount": 50,
+        "image": "https://m.media-amazon.com/images/I/51vuNNbvnRL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CBNP6GRR?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "6072136532",
         "title": "Star coloring Distroller. Hora del coloreo Distrollero",
         "price": 101.0,
@@ -133,6 +205,18 @@
         "source_channel": "Keyword: Comics",
         "source_type": "keyword",
         "keyword_match": "Comics",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0D4278217",
+        "title": "Funko Pop! Animation: The Real Ghostbusters - Ray Stantz",
+        "price": 207.84,
+        "discount": 48,
+        "image": "https://m.media-amazon.com/images/I/41aPVy1JUzL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D4278217?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -160,15 +244,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0GH8MHBKP",
-        "title": "Ninja Licuadora DUO 2 BL660 + Hukën Tetera Eléctrica 1.7L 6 Temperaturas",
-        "price": 2718.88,
+        "asin": "B0CRTYZG5C",
+        "title": "Soundcore by Anker P30i Audífonos Inalámbricos - Negro",
+        "price": 537.98,
         "discount": 46,
-        "image": "https://m.media-amazon.com/images/I/31w3amP4q7L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GH8MHBKP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Ninja",
-        "source_type": "keyword",
-        "keyword_match": "Ninja",
+        "image": "https://m.media-amazon.com/images/I/21KKr6VQU7L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CRTYZG5C?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -196,6 +280,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0D1DZVDPL",
+        "title": "Funko Bitty Pop! 4 Pack: Game of Thrones (Got) - Tyrion + Surprise Figure",
+        "price": 228.89,
+        "discount": 45,
+        "image": "https://m.media-amazon.com/images/I/513CKoKPHYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D1DZVDPL?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "1835881920",
         "title": "Mastering C++ Game Animation Programming: Enhance your skills with advanced game animation techniques in C++, OpenGL, and Vulkan",
         "price": 462.19,
@@ -205,18 +301,6 @@
         "source_channel": "Keyword: Animation",
         "source_type": "keyword",
         "keyword_match": "Animation",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0D98T9NPZ",
-        "title": "Funko Pop! Marvel: Gwenverine",
-        "price": 223.32,
-        "discount": 44,
-        "image": "https://m.media-amazon.com/images/I/41HaU78HnYL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D98T9NPZ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -256,12 +340,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0D19KKMML",
-        "title": "Funko Pop! Icons: Bruce Lee",
-        "price": 226.13,
+        "asin": "B0FNWCQ1CY",
+        "title": "Soundcore by Anker P31i Audífonos Inalámbricos - Azul",
+        "price": 684.98,
         "discount": 43,
-        "image": "https://m.media-amazon.com/images/I/416CTFDHc4L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D19KKMML?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/31OpD7BjuOL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FNWCQ1CY?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -304,6 +388,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FK8VFYXX",
+        "title": "Dragon Ball Sparking Zero para Nintendo Switch",
+        "price": 799.0,
+        "discount": 43,
+        "image": "https://m.media-amazon.com/images/I/51B1AGl-YNL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FK8VFYXX?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Dragon Ball Z",
+        "source_type": "keyword",
+        "keyword_match": "Dragon Ball Z",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DQWNQ9GF",
         "title": "Hallmark Chucky Funko Pop! Adornos de Navidad, Regalos de Cultura Pop",
         "price": 194.5,
@@ -316,27 +412,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0D98WMNL1",
-        "title": "Funko Pop! Rocks: New Jeans - Haerin",
-        "price": 230.44,
+        "asin": "B0FNRTYN81",
+        "title": "ANIME HEROES One Piece Luffy Gear 5 Figura Articulada de Acción de 6.5\" (14.5 cm) Muñeco Coleccionable para Niños",
+        "price": 466.23,
         "discount": 42,
-        "image": "https://m.media-amazon.com/images/I/41yIzKJUkRL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D98WMNL1?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0HHJ7DQV2",
-        "title": "Campana de Metal para Vaca Caballo, y Oveja Mango",
-        "price": 249.77,
-        "discount": 42,
-        "image": "https://m.media-amazon.com/images/I/31yMuldwJaL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0HHJ7DQV2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Adorno",
+        "image": "https://m.media-amazon.com/images/I/414sRMZaf6L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FNRTYN81?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Luffy",
         "source_type": "keyword",
-        "keyword_match": "Adorno",
+        "keyword_match": "Luffy",
         "novedad_score": 1.0
       },
       {
@@ -376,6 +460,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0BKQQGMMB",
+        "title": "Playmobil City Action Quad de Rescate 71040 para Niños",
+        "price": 119.2,
+        "discount": 40,
+        "image": "https://m.media-amazon.com/images/I/511x2cX2VUL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BKQQGMMB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FK8ZVVD8",
+        "title": "Dragon Ball Sparking Zero para Nintendo Switch 2",
+        "price": 832.65,
+        "discount": 40,
+        "image": "https://m.media-amazon.com/images/I/51uzgz9yLiL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FK8ZVVD8?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Dragon Ball Z",
+        "source_type": "keyword",
+        "keyword_match": "Dragon Ball Z",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0GJZ774DN",
         "title": "New Era Gorra One Piece Luffy 9Forty Ajustable para Hombre y Mujer",
         "price": 479.4,
@@ -394,18 +502,6 @@
         "discount": 39,
         "image": "https://m.media-amazon.com/images/I/415OmPyuxOL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B08HH1M7VV?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0D1DBN5Y8",
-        "title": "Funko Pop! Deluxe: Harry Potter 6 - Chocolate Frog",
-        "price": 424.95,
-        "discount": 39,
-        "image": "https://m.media-amazon.com/images/I/418WZaVyB+L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D1DBN5Y8?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -448,15 +544,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0GFP9VFJG",
-        "title": "Teenage Mutant Ninja Turtles TMNT/GI Joe Krang Droid/Destro",
-        "price": 422.97,
+        "asin": "B0FG3TWK4G",
+        "title": "Funko Pop! Football: France - Eduardo Camavinga",
+        "price": 196.38,
         "discount": 38,
-        "image": "https://m.media-amazon.com/images/I/41kHEwa12XL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GFP9VFJG?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "The Geek Chronicles",
-        "source_type": "telegram",
-        "keyword_match": "📱 The Geek Chronicles",
+        "image": "https://m.media-amazon.com/images/I/41BXOylcQ5L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FG3TWK4G?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -472,6 +568,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B08HH8J9DP",
+        "title": "Funko Pop! Rides Deluxe: Star Wars - Zeb in Razor Crest",
+        "price": 446.2,
+        "discount": 38,
+        "image": "https://m.media-amazon.com/images/I/41HMQiAw3ML._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH8J9DP?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DSWFTZTQ",
         "title": "Funko Pop! Animation: Sakamoto Days - Taro - 1 in 6 Chance of Rare Chase",
         "price": 217.97,
@@ -481,6 +589,18 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0G3XSGBPL",
+        "title": "Cars de Disney y Pixar Pista de Juguete Pista de Celebración Rayo Mcqueen 4Y+",
+        "price": 1120.2,
+        "discount": 38,
+        "image": "https://m.media-amazon.com/images/I/41TFVPWSr5L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G3XSGBPL?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
+        "source_type": "keyword",
+        "keyword_match": "Mattel",
         "novedad_score": 1.0
       },
       {
@@ -508,15 +628,27 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0D6CX5V1H",
-        "title": "Funko Pop Animation: Arcane - Champion Viktor",
-        "price": 248.56,
+        "asin": "B0CW6N42TK",
+        "title": "Funko Pop! Bitty Bouquet: Valentines - Chucky and Tiffany",
+        "price": 284.91,
         "discount": 37,
-        "image": "https://m.media-amazon.com/images/I/416R0LkZ7BL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D6CX5V1H?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41cnn8HRxJL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CW6N42TK?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1302967851",
+        "title": "Amazing Spider-Man Epic Collection: Spider-Man No More [New Printing 2]",
+        "price": 539.55,
+        "discount": 37,
+        "image": "https://m.media-amazon.com/images/I/51A76rwUNYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1302967851?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Avengers",
+        "source_type": "keyword",
+        "keyword_match": "Avengers",
         "novedad_score": 1.0
       },
       {
@@ -592,24 +724,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0D19LM2WB",
-        "title": "Funko Pop! Rocks: Queen - Freddie Mercury with Cape",
-        "price": 253.97,
+        "asin": "B0CDK5F3FW",
+        "title": "Funko Pop! Deluxe: Little Mermaid - Ariel - Stained Glass - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Disney Fans - Model Figure for Collectors and Display",
+        "price": 462.08,
         "discount": 36,
-        "image": "https://m.media-amazon.com/images/I/41+2QX258AL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D19LM2WB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B09QPCRS9Q",
-        "title": "Funko Demon Slayer: Kimetsu no Yaiba Pop! Animation Gyomei Himejima - Figura de Vinilo Exclusiva #1091",
-        "price": 317.0,
-        "discount": 36,
-        "image": "https://m.media-amazon.com/images/I/51UdKjOnGHL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B09QPCRS9Q?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/419GYE9h0yL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CDK5F3FW?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -625,18 +745,6 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "1035053861",
-        "title": "Letters from Wonderland: An Interactive Alice Adventure with Letters to Open and a Game!",
-        "price": 208.43,
-        "discount": 36,
-        "image": "https://m.media-amazon.com/images/I/51P4S8AoReL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1035053861?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
-        "source_type": "keyword",
-        "keyword_match": "Advent",
         "novedad_score": 1.0
       },
       {
@@ -661,6 +769,18 @@
         "source_channel": "Keyword: Pikachu",
         "source_type": "keyword",
         "keyword_match": "Pikachu",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1632367114",
+        "title": "Battle Angel Alita Edición Deluxe La Serie Completa Box Set",
+        "price": 2007.37,
+        "discount": 35,
+        "image": "https://m.media-amazon.com/images/I/41S9t8RYxRL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1632367114?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
@@ -724,18 +844,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0GNBCFZJV",
-        "title": "All Creation Waits -- Deluxe Edition: The Advent Mystery of New Beginnings",
-        "price": 485.65,
-        "discount": 34,
-        "image": "https://m.media-amazon.com/images/I/31fYfDYR1EL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GNBCFZJV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
-        "source_type": "keyword",
-        "keyword_match": "Advent",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "0393540839",
         "title": "The Uncanny Muse: Music, Art, and Machines from Automata to AI",
         "price": 366.63,
@@ -748,15 +856,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "1302967851",
-        "title": "Amazing Spider-Man Epic Collection: Spider-Man No More [New Printing 2]",
-        "price": 557.77,
+        "asin": "B0F9B4G2CW",
+        "title": "Sunrise on the Reaping: Collector's Gift Edition (the Hunger Games)",
+        "price": 377.42,
         "discount": 34,
-        "image": "https://m.media-amazon.com/images/I/51A76rwUNYL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1302967851?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Avengers",
+        "image": "https://m.media-amazon.com/images/I/517HMzQOovL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9B4G2CW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
         "source_type": "keyword",
-        "keyword_match": "Avengers",
+        "keyword_match": "Collector",
         "novedad_score": 1.0
       },
       {
@@ -784,6 +892,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0GH8MHBKP",
+        "title": "Ninja Licuadora DUO 2 BL660 + Hukën Tetera Eléctrica 1.7L 6 Temperaturas",
+        "price": 3287.16,
+        "discount": 34,
+        "image": "https://m.media-amazon.com/images/I/31w3amP4q7L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GH8MHBKP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Ninja",
+        "source_type": "keyword",
+        "keyword_match": "Ninja",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FJYHX7V3",
+        "title": "Minions Bob SquishyGlo - Luz nocturna de silicona, con licencia oficial, tacto suave, recargable, con temporizador de apagado automático, para dormitorio y hogar, niños y adultos Paladone",
+        "price": 589.0,
+        "discount": 34,
+        "image": "https://m.media-amazon.com/images/I/41MpisMoRZL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FJYHX7V3?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
+        "source_type": "keyword",
+        "keyword_match": "Paladone",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0GWPNLQ2D",
         "title": "Warners Bra SIN Varilla para Mujer_CA01244-410",
         "price": 386.44,
@@ -808,36 +940,36 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FG4KS34S",
-        "title": "Funko Pop! Animation: Solo Leveling - Baek Yoonho",
-        "price": 213.87,
+        "asin": "B0DSWG9CNM",
+        "title": "Funko Pop! NBA: Timberwolves - Anthony Edwards",
+        "price": 235.66,
         "discount": 33,
-        "image": "https://m.media-amazon.com/images/I/4114V+bT3fL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FG4KS34S?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41LuyQv2EOL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DSWG9CNM?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FF7JJV9S",
-        "title": "Jem and The Holograms Jerrica & Synergy Collectors Edition - Juego de 2 Unidades",
-        "price": 1299.91,
+        "asin": "B096Z2BDZ9",
+        "title": "AITEE - Vitrina acrílica transparente de 5 niveles con fondo de espejo, a prueba de polvo, para montaje en pared o escritorio, vitrina para Funko Pop, minijuguetes, colecciones y rocas",
+        "price": 1607.45,
         "discount": 33,
-        "image": "https://m.media-amazon.com/images/I/41UazSlWGJL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FF7JJV9S?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/51zvVGBxmyL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B096Z2BDZ9?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
-        "asin": "B0GLQVQ89P",
-        "title": "DRIHOSY Album-Card Binder-Organización 400 PCS Cartas/Photocard,Carpeta para Cartas Naipes,Fundas para Carta Protector de Carta,4 Tarjeteros de Bolsillo,Tarjetero para álbum de Coleccionista/Niños(AA)",
+        "asin": "B0GLQY4HXG",
+        "title": "DRIHOSY Album-Card Binder-Organización 400 PCS Cartas/Photocard,Carpeta para Cartas Naipes,Fundas para Carta Protector de Carta,4 Tarjeteros de Bolsillo,Tarjetero para álbum de Coleccionista/Niños(BB)",
         "price": 198.99,
         "discount": 33,
-        "image": "https://m.media-amazon.com/images/I/411uKFoKQ7L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GLQVQ89P?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41SFHOuvjDL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GLQY4HXG?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -880,18 +1012,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0D19B54F2",
-        "title": "Funko Pop! Disney: Moana 2 - Maui",
-        "price": 216.92,
-        "discount": 32,
-        "image": "https://m.media-amazon.com/images/I/417NZCiWjRL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D19B54F2?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0DSWHNGFF",
         "title": "Funko Pop! Animation: Invader Zim - Gir",
         "price": 236.57,
@@ -916,27 +1036,27 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FGFFV89L",
-        "title": "Funko Pop! Games: Baldur's Gate 3 - Jaheira",
-        "price": 217.46,
+        "asin": "1799508471",
+        "title": "Batman & Robin by Grant Morrison: Absolute Edition",
+        "price": 1448.67,
         "discount": 32,
-        "image": "https://m.media-amazon.com/images/I/41ywEShUJIL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FGFFV89L?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "image": "https://m.media-amazon.com/images/I/41-xsZRBsaL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1799508471?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Absolute",
+        "source_type": "keyword",
+        "keyword_match": "Absolute",
         "novedad_score": 1.0
       },
       {
-        "asin": "B0G56LQT6V",
-        "title": "How to Get a Return on Failure: Fail Smarter--Return Stronger",
-        "price": 329.84,
+        "asin": "B0G86Z17Y8",
+        "title": "Magic: The Gathering Secrets of Strixhaven Commander Deck - Witherbloom Pestilence (100-card Box + Accessories) En Ingl?s",
+        "price": 839.95,
         "discount": 32,
-        "image": "https://m.media-amazon.com/images/I/41T+3yYcOZL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G56LQT6V?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advantage",
+        "image": "https://m.media-amazon.com/images/I/41eE0WnDzoL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G86Z17Y8?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Commander",
         "source_type": "keyword",
-        "keyword_match": "Advantage",
+        "keyword_match": "Commander",
         "novedad_score": 1.0
       },
       {
@@ -964,6 +1084,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DYJYNSM2",
+        "title": "Funko Pop! Keychain: Netflix Stranger Things - Robin Buckley",
+        "price": 137.21,
+        "discount": 31,
+        "image": "https://m.media-amazon.com/images/I/31q96BEC0nL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DYJYNSM2?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0CSPQDNBF",
+        "title": "Marvel Legends Beyonder Figura de Colección 6 Pulgadas Secret Wars",
+        "price": 447.0,
+        "discount": 31,
+        "image": "https://m.media-amazon.com/images/I/31EgRMwrY4L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CSPQDNBF?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Fantastics",
+        "source_type": "keyword",
+        "keyword_match": "Fantastics",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0G8W9DWF9",
         "title": "Mattel Doll",
         "price": 304.64,
@@ -978,7 +1122,7 @@
       {
         "asin": "B0G3QKCHBZ",
         "title": "Masters of The Universe Película Playset Set de Juego 2 en 1 de Eternia 6Y+",
-        "price": 1725.27,
+        "price": 1727.27,
         "discount": 31,
         "image": "https://m.media-amazon.com/images/I/51euuKRHAeL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G3QKCHBZ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -988,15 +1132,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0GHTGFBVF",
-        "title": "HNTCSR Peluche Rana Rhenne Rene Juguete,Adorable Premium Peluche Compañero de Juego,Muñeco de Rana Verde Realista,Juguetes adecuados para niños y niñas",
-        "price": 198.55,
+        "asin": "B0DYK7N5LN",
+        "title": "Paladone - Lámpara de escritorio articulada de Sombrero de Paja de One Piece, lámpara flexible de anime con licencia oficial para fans de la cultura pop, para dormitorio, hogar y oficina",
+        "price": 688.0,
         "discount": 31,
-        "image": "https://m.media-amazon.com/images/I/41rxG1jbWmL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GHTGFBVF?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Miku",
+        "image": "https://m.media-amazon.com/images/I/41XfpN-sTdL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DYK7N5LN?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
         "source_type": "keyword",
-        "keyword_match": "Miku",
+        "keyword_match": "Paladone",
         "novedad_score": 1.0
       },
       {
@@ -1024,24 +1168,24 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FK1V58NV",
+        "title": "Motu First Ones Figura de Acción Teela 6+",
+        "price": 174.0,
+        "discount": 30,
+        "image": "https://m.media-amazon.com/images/I/41A503lwpzL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FK1V58NV?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B08HGFCL3R",
         "title": "Funko Pop! Comic Cover: Transformers X MTG - Optimus Prime",
         "price": 393.17,
         "discount": 30,
         "image": "https://m.media-amazon.com/images/I/41G7BIMe-ML._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B08HGFCL3R?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0DJRZ2G4V",
-        "title": "Funko Pop! Movies: Jurassic World: Rebirth - Titanosaurus",
-        "price": 223.81,
-        "discount": 30,
-        "image": "https://m.media-amazon.com/images/I/41kRbbMefeL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DJRZ2G4V?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1060,12 +1204,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DG2FJX38",
-        "title": "Base de Soporte para Muñecas, 10 Piezas Soportes de Exhibición para Figuras de Acción para Modos de 6 Pulgadas Marco de Soporte de Plástico para Series de Muñecas con Forma",
-        "price": 224.98,
+        "asin": "B08HH4KPPV",
+        "title": "Funko Pop! Movies: Lord of The Rings - Faramir",
+        "price": 224.49,
         "discount": 30,
-        "image": "https://m.media-amazon.com/images/I/41CrX1bA5CL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DG2FJX38?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41Xh30kTb3L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH4KPPV?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1081,18 +1225,6 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0DSBH7DHP",
-        "title": "Hello Kitty and Friends: A Supercute Christmas: The Official Advent Calendar: A Holiday Keepsake with Surprises Including Ornaments, Stickers, Puzzles, Magnets, and More!",
-        "price": 380.79,
-        "discount": 30,
-        "image": "https://m.media-amazon.com/images/I/51uhR3KVQmL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DSBH7DHP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
-        "source_type": "keyword",
-        "keyword_match": "Advent",
         "novedad_score": 1.0
       },
       {
@@ -1120,6 +1252,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0GNZ48GRL",
+        "title": "Marvel Figura de Acción Doctor Doom 24 cm",
+        "price": 139.3,
+        "discount": 30,
+        "image": "https://m.media-amazon.com/images/I/31AFxKFyMKL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GNZ48GRL?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Medicom",
+        "source_type": "keyword",
+        "keyword_match": "Medicom",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0G11Y99GX",
         "title": "Banpresto - Naruto Uzumaki, Figura de Colección Grandista, Naruto 72 Series, 22 cm (8.7\"), Figura Oficial de Anime",
         "price": 574.0,
@@ -1144,6 +1288,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0CND1ZKFP",
+        "title": "Funko Pop! Sanrio: HK - Hello Kitty - Figura de Vinilo Coleccionable - Idea de Regalo - Mercancia Oficial - Juguetes para Niños y Adultos - Cartoons Fans - Muñeco para Coleccionistas y Exposición",
+        "price": 249.0,
+        "discount": 29,
+        "image": "https://m.media-amazon.com/images/I/412YQ0AdPEL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CND1ZKFP?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DSWJ67QY",
         "title": "Funko Pop! TV: IT - Welcome To Derry - Pennywise",
         "price": 249.04,
@@ -1156,24 +1312,72 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0CCC4TSSX",
-        "title": "Funko Bitty POP: WWE- Razor Ramon 4PK",
-        "price": 239.53,
+        "asin": "B0DYK1N5G9",
+        "title": "Funko Pop! Town: Stranger Things - Rockin' Robin with The Squawk - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - TV Fans - Figure for Collectors and Display",
+        "price": 531.7,
         "discount": 29,
-        "image": "https://m.media-amazon.com/images/I/51At3p6I60L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CCC4TSSX?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41G0N87GrlL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DYK1N5G9?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DSWGN1RB",
-        "title": "Funko Pop! Animation: Scooby Doo",
-        "price": 249.0,
+        "asin": "B08HH5SBN8",
+        "title": "Funko Pop! Heroes: DC Comics - Batman Ninja",
+        "price": 225.02,
         "discount": 29,
-        "image": "https://m.media-amazon.com/images/I/41wL1859OoL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DSWGN1RB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/417EzIbLbhL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH5SBN8?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DRDBK2HV",
+        "title": "Funko Pop Moment Anime – One Piece Monkey D. Luffy Trains Kung Fu Dugong #1637 | Figura de Vinilo Escénica Coleccionable | Escena Clásica del Anime",
+        "price": 783.0,
+        "discount": 29,
+        "image": "https://m.media-amazon.com/images/I/41qUsCsnIoL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DRDBK2HV?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HH7QJTW",
+        "title": "Funko Pop! TV: Charmed - Phoebe Halliwell",
+        "price": 225.15,
+        "discount": 29,
+        "image": "https://m.media-amazon.com/images/I/41a-5i6qj3L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH7QJTW?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B09HN52KP8",
+        "title": "Funko Pop! Animation: Jujutsu Kaisen - Nobara Kugisaki - Figura de Vinilo Coleccionable - Idea de Regalo - Mercancia Oficial - Juguetes para Niños y Adultos - Anime Fans - Muñeco para Coleccionistas",
+        "price": 293.79,
+        "discount": 29,
+        "image": "https://m.media-amazon.com/images/I/51n0qu10K7L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B09HN52KP8?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F9YTW7HB",
+        "title": "Funko Pop! Disney: Muppet Babies (1984) - Baby Kermit",
+        "price": 225.39,
+        "discount": 29,
+        "image": "https://m.media-amazon.com/images/I/41P-JivxmxL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9YTW7HB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1204,6 +1408,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0G43VLL9L",
+        "title": "Minecraft Vanilla Juguete Steve y Minecart Control Remoto 6Y+",
+        "price": 1071.3,
+        "discount": 29,
+        "image": "https://m.media-amazon.com/images/I/31sqidnM87L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G43VLL9L?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Minecraft",
+        "source_type": "keyword",
+        "keyword_match": "Minecraft",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FQK5H3K4",
         "title": "Banpresto - My Hero Academia - Figura de Izuku Midoriya Grandista",
         "price": 564.0,
@@ -1225,6 +1441,18 @@
         "source_channel": "Keyword: Superman",
         "source_type": "keyword",
         "keyword_match": "Superman",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0CH1XRDTR",
+        "title": "Bowers & Wilkins Px7 S2e - Auriculares sobre la Oreja - Cancelación de Ruido Mejorada y Modo de Transparencia, Llamadas cristalinas, Bluetooth, reproducción de 30 Horas, Azul océano",
+        "price": 4999.5,
+        "discount": 28,
+        "image": "https://m.media-amazon.com/images/I/31fdreuolQL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CH1XRDTR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
@@ -1288,6 +1516,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DP7C9181",
+        "title": "Funko Pop! Animation: Looney Tunes - Taz",
+        "price": 229.74,
+        "discount": 28,
+        "image": "https://m.media-amazon.com/images/I/41qw61zcHuL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DP7C9181?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DSWFJKWF",
         "title": "Funko Pop! Casper (1995) - Casper McFadden 30th (1 in 6 Chase Chance)",
         "price": 228.59,
@@ -1312,15 +1552,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "0822968754",
-        "title": "Earth-Shattering News and Other Catastrophes Considered While Listening to the Genius of Love: Poems",
-        "price": 249.33,
+        "asin": "1302968610",
+        "title": "Thunderbolts: Dark Reign Omnibus Marko Djurdjevic Cover",
+        "price": 1838.49,
         "discount": 28,
-        "image": "https://m.media-amazon.com/images/I/01RmK+J4pJL._SL500_.gif",
-        "link": "https://www.amazon.com.mx/dp/0822968754?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Godzilla",
+        "image": "https://m.media-amazon.com/images/I/51Y0Pzzq0mL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1302968610?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
         "source_type": "keyword",
-        "keyword_match": "Godzilla",
+        "keyword_match": "Deadpool",
         "novedad_score": 1.0
       },
       {
@@ -1372,36 +1612,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0CND1ZKFP",
-        "title": "Funko Pop! Sanrio: HK - Hello Kitty - Figura de Vinilo Coleccionable - Idea de Regalo - Mercancia Oficial - Juguetes para Niños y Adultos - Cartoons Fans - Muñeco para Coleccionistas y Exposición",
-        "price": 255.2,
+        "asin": "B0DJRZCQPT",
+        "title": "Funko Bitty Pop! 4 Pack: Marvel - Venom, Anti-Venom (1 in 6 Chase Chance)",
+        "price": 232.62,
         "discount": 27,
-        "image": "https://m.media-amazon.com/images/I/412YQ0AdPEL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CND1ZKFP?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0F9YW6VS9",
-        "title": "Funko Pop! Television: The Last of Us - Ellie",
-        "price": 232.79,
-        "discount": 27,
-        "image": "https://m.media-amazon.com/images/I/41DbgMmLdEL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F9YW6VS9?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B08HGLKQPJ",
-        "title": "Funko Pop! Game Cover: Demon Slayer - Nezuko",
-        "price": 408.23,
-        "discount": 27,
-        "image": "https://m.media-amazon.com/images/I/41ZNkv-6OiL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B08HGLKQPJ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/51twxroemqL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DJRZCQPT?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1444,15 +1660,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DJS12BK8",
-        "title": "Funko Pop! Movies: Mighty Morphin Power Rangers Movie - Black Ranger",
-        "price": 223.82,
+        "asin": "1419750119",
+        "title": "The Art of Cartoon Saloon: 25 Years: The Official Retrospective of the Award-Winning Irish Animation Studio Behind the Secret of Kells, Wolfwalkers, and Song of the Sea",
+        "price": 741.32,
         "discount": 27,
-        "image": "https://m.media-amazon.com/images/I/41vN4QnsQfL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DJS12BK8?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "image": "https://m.media-amazon.com/images/I/517Oq6zptRL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1419750119?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Animation",
+        "source_type": "keyword",
+        "keyword_match": "Animation",
         "novedad_score": 1.0
       },
       {
@@ -1504,6 +1720,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "0822968754",
+        "title": "Earth-Shattering News and Other Catastrophes Considered While Listening to the Genius of Love: Poems",
+        "price": 249.33,
+        "discount": 27,
+        "image": "https://m.media-amazon.com/images/I/01RmK+J4pJL._SL500_.gif",
+        "link": "https://www.amazon.com.mx/dp/0822968754?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Godzilla",
+        "source_type": "keyword",
+        "keyword_match": "Godzilla",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DPGT2975",
         "title": "Hallmark NFL Dallas Cowboys - Adorno de Navidad para fanáticos de los Deportes",
         "price": 243.17,
@@ -1537,6 +1765,18 @@
         "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
         "source_type": "keyword",
         "keyword_match": "Teenage Mutant Ninja Turtles",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DSWHNMPT",
+        "title": "Funko Pop! Movies: The Land Before Time - Littlefoot",
+        "price": 257.78,
+        "discount": 26,
+        "image": "https://m.media-amazon.com/images/I/41nsR3RIG2L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DSWHNMPT?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -1612,27 +1852,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DYJXFQKD",
-        "title": "Funko Pop! Disney: Zootopia 2 - Nick Wilde - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Disney Fans - Model Figure for Collectors and Display",
-        "price": 235.51,
+        "asin": "1799507971",
+        "title": "Absolute Blackest Night (New Edition)",
+        "price": 1582.05,
         "discount": 26,
-        "image": "https://m.media-amazon.com/images/I/41WrOIvik4L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DYJXFQKD?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0DYKCRFTB",
-        "title": "Funko Pop! Plus: One Piece - Monkey D. Luffy - Egg ARC - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Anime Fans - Model Figure for Collectors and Display",
-        "price": 266.5,
-        "discount": 26,
-        "image": "https://m.media-amazon.com/images/I/410HLDGcjwL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DYKCRFTB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "image": "https://m.media-amazon.com/images/I/51h35+eO8GL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1799507971?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Absolute",
+        "source_type": "keyword",
+        "keyword_match": "Absolute",
         "novedad_score": 1.0
       },
       {
@@ -1645,6 +1873,18 @@
         "source_channel": "Keyword: Blokees",
         "source_type": "keyword",
         "keyword_match": "Blokees",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FPNF1CQW",
+        "title": "Funko Pop! Marvel: Deadpool 2 - Deadpool with Baby Legs",
+        "price": 237.54,
+        "discount": 26,
+        "image": "https://m.media-amazon.com/images/I/41qqz3nvsHL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FPNF1CQW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
         "novedad_score": 1.0
       },
       {
@@ -1681,6 +1921,18 @@
         "source_channel": "Keyword: Jazwares",
         "source_type": "keyword",
         "keyword_match": "Jazwares",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DYKCRFTB",
+        "title": "Funko Pop! Plus: One Piece - Monkey D. Luffy - Egg ARC - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Anime Fans - Model Figure for Collectors and Display",
+        "price": 266.5,
+        "discount": 26,
+        "image": "https://m.media-amazon.com/images/I/410HLDGcjwL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DYKCRFTB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Luffy",
+        "source_type": "keyword",
+        "keyword_match": "Luffy",
         "novedad_score": 1.0
       },
       {
@@ -1732,12 +1984,96 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DK7BJ64R",
+        "title": "schleich Farm World 14887 - Figura de Cabra (7 x 9 x 3 cm)",
+        "price": 163.8,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/41UzawnZqRL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DK7BJ64R?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HH1NQ7F",
+        "title": "Funko Pop! Disney: Goofy Through The Ages - 1963",
+        "price": 239.69,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/41Pqbp+IxFL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH1NQ7F?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0CSVRWYMC",
+        "title": "Funko Pop! Marvel: New Classic - Captain America",
+        "price": 276.0,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/41qW6e4QzuL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CSVRWYMC?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F9YV96NF",
+        "title": "Funko Pop! Movies: Harry Potter and The Deathly Hallows: PT 2 - Griphook - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Harry Potter Fans",
+        "price": 238.14,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/41BaT3JMxFL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9YV96NF?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Wizarding",
+        "source_type": "keyword",
+        "keyword_match": "Wizarding",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DJRYQCQQ",
+        "title": "Funko Pop! TV: Gilmore Girls 25th Anniversary - Sookie St. James",
+        "price": 229.03,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/41AVmBv3EVL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DJRYQCQQ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B07XB241MQ",
         "title": "Funko Pop Animation: Naruto - Naruto Running",
         "price": 238.37,
         "discount": 25,
         "image": "https://m.media-amazon.com/images/I/4168SHlsMuL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B07XB241MQ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0C6MJ52FB",
+        "title": "10000 fundas para tarjetas de intercambio, protectores de plástico transparente para tarjetas de béisbol, MTG Yugioh, tarjetas deportivas estándar",
+        "price": 1078.26,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/51dKJ69lcOL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0C6MJ52FB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B09312D7B8",
+        "title": "Funko Pop! Disney: Ultimate Princess - Mulan - Disney Princesses - Princesas Disney - Figura de Vinilo Coleccionable - Idea de Regalo - Mercancia Oficial - Juguetes para Niños y Adultos",
+        "price": 535.63,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/41mRvbZ8bpL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B09312D7B8?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1765,30 +2101,6 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "1009073788",
-        "title": "200 Problems on Languages, Automata, and Computation",
-        "price": 824.54,
-        "discount": 25,
-        "image": "https://m.media-amazon.com/images/I/41dK7MB7ucL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1009073788?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Automata",
-        "source_type": "keyword",
-        "keyword_match": "Automata",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0G319F2W2",
-        "title": "Blokees Saint Seiya Champion Capricorn Shura",
-        "price": 524.0,
-        "discount": 25,
-        "image": "https://m.media-amazon.com/images/I/31axUQa52EL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G319F2W2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Seiya",
-        "source_type": "keyword",
-        "keyword_match": "Seiya",
         "novedad_score": 1.0
       },
       {
@@ -1852,21 +2164,21 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DYK1KWGM",
-        "title": "Funko Pop! Games: Marvel Rivals - Magik - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Video Games Fans - Model Figure for Collectors",
-        "price": 240.03,
+        "asin": "B0G319F2W2",
+        "title": "Blokees Saint Seiya Champion Capricorn Shura",
+        "price": 524.0,
         "discount": 25,
-        "image": "https://m.media-amazon.com/images/I/41vyOYH6AyL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DYK1KWGM?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Rivals",
+        "image": "https://m.media-amazon.com/images/I/31axUQa52EL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G319F2W2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Seiya",
         "source_type": "keyword",
-        "keyword_match": "Rivals",
+        "keyword_match": "Seiya",
         "novedad_score": 1.0
       },
       {
         "asin": "B0GFD793ZF",
         "title": "Teenage Mutant Ninja Turtles: Ongoing Compendium, Vol. 2",
-        "price": 765.46,
+        "price": 766.32,
         "discount": 25,
         "image": "https://m.media-amazon.com/images/I/51eAh+NazqL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0GFD793ZF?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -1888,15 +2200,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0F9YV96NF",
-        "title": "Funko Pop! Movies: Harry Potter and The Deathly Hallows: PT 2 - Griphook - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Harry Potter Fans",
-        "price": 238.14,
-        "discount": 25,
-        "image": "https://m.media-amazon.com/images/I/41BaT3JMxFL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F9YV96NF?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Wizarding",
-        "source_type": "keyword",
-        "keyword_match": "Wizarding",
+        "asin": "B0DXTS3ZCF",
+        "title": "The Art of Warhammer Video Games",
+        "price": 643.37,
+        "discount": 24,
+        "image": "https://m.media-amazon.com/images/I/61oJFsFaIWL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DXTS3ZCF?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
@@ -1948,6 +2260,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FG3V3MTZ",
+        "title": "Funko Pop! Animation: Naruto Classic - Hiruzen",
+        "price": 242.44,
+        "discount": 24,
+        "image": "https://m.media-amazon.com/images/I/41OOllaKLIL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FG3V3MTZ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Naruto",
+        "source_type": "keyword",
+        "keyword_match": "Naruto",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HH4DSNH",
+        "title": "Funko Pop! Nooks: Nightmare Before Christmas - Jack Skellington's Room",
+        "price": 422.46,
+        "discount": 24,
+        "image": "https://m.media-amazon.com/images/I/41szb2VyQjL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH4DSNH?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FHJB2778",
         "title": "Pop! Your Friendly Neighborhood Spider-Man (2025) - Spider-Man (Oscorp Suit)",
         "price": 378.4,
@@ -1960,12 +2296,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0F9YSRRCM",
-        "title": "Funko Pop! Movies: Harry Potter and The Deathly Hallows: PT 2 - Aberforth Dumbledore - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Harry Potter Fans",
-        "price": 240.93,
+        "asin": "B0DP7CZLVB",
+        "title": "Funko Pop! Sayings: Friends - Joey Tribbiani",
+        "price": 228.28,
         "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/41tmoaBnrqL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F9YSRRCM?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/411sbtKhSvL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DP7CZLVB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1984,15 +2320,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FYCMYWPB",
-        "title": "Curiosity Redefines the Limits: Advantages Gained from Life, the Workplace, and the Boardroom",
-        "price": 390.85,
+        "asin": "B0D98TJRJP",
+        "title": "Funko Pop! Animation: Ed, EDD n Eddy - Double D",
+        "price": 271.13,
         "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/41tI+78zidL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FYCMYWPB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advantage",
-        "source_type": "keyword",
-        "keyword_match": "Advantage",
+        "image": "https://m.media-amazon.com/images/I/41g9TwS8tYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D98TJRJP?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -2008,27 +2344,27 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0G36CTWRM",
-        "title": "Funko Pop! Sanrio: Hello Kitty Sleeping - Amazon Exclusive",
-        "price": 265.59,
+        "asin": "B0H7YL434Z",
+        "title": "One Piece Mochila Common Nation Escolar para Niño, Morral de Diseño Original y Resistente con Estampado de Anime",
+        "price": 834.69,
         "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/41odS8JOHhL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G36CTWRM?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Funko",
+        "image": "https://m.media-amazon.com/images/I/41ZXy-h-cCL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0H7YL434Z?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Luffy",
         "source_type": "keyword",
-        "keyword_match": "Funko",
+        "keyword_match": "Luffy",
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FG3V3MTZ",
-        "title": "Funko Pop! Animation: Naruto Classic - Hiruzen",
-        "price": 242.44,
+        "asin": "B0G43XVZSY",
+        "title": "Mattel Doll",
+        "price": 516.88,
         "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/41OOllaKLIL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FG3V3MTZ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Naruto",
+        "image": "https://m.media-amazon.com/images/I/41b3mS+W7qL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G43XVZSY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
         "source_type": "keyword",
-        "keyword_match": "Naruto",
+        "keyword_match": "Mattel",
         "novedad_score": 1.0
       },
       {
@@ -2056,6 +2392,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FPNFCQ24",
+        "title": "Funko Pop! Movies: Masters of The Universe - Man-At-Arms",
+        "price": 242.88,
+        "discount": 24,
+        "image": "https://m.media-amazon.com/images/I/410PSniaP6L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FPNFCQ24?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Universe",
+        "source_type": "keyword",
+        "keyword_match": "Universe",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FPMX3V7Q",
         "title": "Funko Pop! Nooks: Lord of The Rings - Bilbo",
         "price": 428.33,
@@ -2068,12 +2416,24 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B08HGZ9SHV",
-        "title": "Funko Pop! Games: Fusion - Megaman - 1 in 6 Chance of Rare Chase",
-        "price": 245.97,
+        "asin": "B0F9YRL7KH",
+        "title": "Funko Pop! Nooks: Winnie The Pooh - Honey Tree",
+        "price": 429.1,
         "discount": 23,
-        "image": "https://m.media-amazon.com/images/I/51Ue6mKiesL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B08HGZ9SHV?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41n7yWi2lyL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9YRL7KH?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HH41K1W",
+        "title": "Funko Pop! Star Wars: Mace Windu (Retro)",
+        "price": 244.14,
+        "discount": 23,
+        "image": "https://m.media-amazon.com/images/I/41LjPJrUHOL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH41K1W?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2092,12 +2452,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0F44DR6K7",
-        "title": "Funko Pop! & Buddy: Disney The Princess and The Frog - Louis with Raymond",
-        "price": 245.77,
+        "asin": "B07W59KLW7",
+        "title": "Funko Pop! Rocks: Tupac - Tupac Shakur 158",
+        "price": 245.5,
         "discount": 23,
-        "image": "https://m.media-amazon.com/images/I/417jB1Cwc1L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F44DR6K7?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41c2k9R1btL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B07W59KLW7?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2140,6 +2500,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F9XCWFD7",
+        "title": "Sandalias Crocs Brooklyn Buckle Low, Women",
+        "price": 1160.29,
+        "discount": 23,
+        "image": "https://m.media-amazon.com/images/I/31LvrpPNH4L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9XCWFD7?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Crocs",
+        "source_type": "keyword",
+        "keyword_match": "Crocs",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0BXBHWB7M",
         "title": "McFarlane Figura 7\" Two-Face como Batman (Batman: Reborn)",
         "price": 559.55,
@@ -2176,30 +2548,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0G43XVZSY",
-        "title": "Mattel Doll",
-        "price": 521.63,
-        "discount": 23,
-        "image": "https://m.media-amazon.com/images/I/41b3mS+W7qL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G43XVZSY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Mattel",
-        "source_type": "keyword",
-        "keyword_match": "Mattel",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0D32785LQ",
-        "title": "Tales of Teenage Mutant Ninja Turtles: Mutations Mix and Match Figura de acción básica Metalhead de 4.5 Pulgadas por Playmates Toys",
-        "price": 339.58,
-        "discount": 23,
-        "image": "https://m.media-amazon.com/images/I/51BxqAYLmHL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D32785LQ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Mutant",
-        "source_type": "keyword",
-        "keyword_match": "Mutant",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0DYJY55JM",
         "title": "Funko Pop! Games: Marvel Rivals - Jeff The Land Shark - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Video Games Fans",
         "price": 247.07,
@@ -2209,6 +2557,18 @@
         "source_channel": "Keyword: Rivals",
         "source_type": "keyword",
         "keyword_match": "Rivals",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FM6N1X7W",
+        "title": "Teenage Mutant Ninja Turtles Adventures Compendium, Vol. 2",
+        "price": 1311.18,
+        "discount": 23,
+        "image": "https://m.media-amazon.com/images/I/51gFL+IekBL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FM6N1X7W?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
+        "source_type": "keyword",
+        "keyword_match": "Teenage Mutant Ninja Turtles",
         "novedad_score": 1.0
       },
       {
@@ -2236,6 +2596,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0GLQTNFP4",
+        "title": "Mcfarlane Mortal Kombat: Klassics - Reptile Invisible 7 Pulgadas",
+        "price": 571.03,
+        "discount": 22,
+        "image": "https://m.media-amazon.com/images/I/31ZS-+q2EgL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GLQTNFP4?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mcfarlane",
+        "source_type": "keyword",
+        "keyword_match": "Mcfarlane",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1604382414",
+        "title": "Pokémon Deluxe Character Guide",
+        "price": 800.57,
+        "discount": 22,
+        "image": "https://m.media-amazon.com/images/I/41YAQNf1rBL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1604382414?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B08CNPC5NY",
         "title": "Funko DC Imperial Palace - Harley Quinn - DC Comics- Figura de Vinilo Coleccionable - Idea de Regalo - Mercancia Oficial - Juguetes para Niños y Adultos - Comic Books Fans",
         "price": 273.0,
@@ -2248,12 +2632,24 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0CJ947WZR",
-        "title": "BOHOIDEE - Vitrina de acrílico transparente de 4 niveles para clóset, caja organizadora con 3 divisores ajustables y puerta magnética",
-        "price": 692.64,
+        "asin": "B08HH62VPG",
+        "title": "Funko Pop! Games: Silent Hill - Nurse",
+        "price": 250.01,
         "discount": 22,
-        "image": "https://m.media-amazon.com/images/I/41xhRDAXq7L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CJ947WZR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/415tpOV5YuL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH62VPG?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FGPD9RBJ",
+        "title": "BOHOIDEE - Vitrina transparente extragrande de 6 niveles para figuras, caja organizadora de almacenamiento de acrílico con puerta magnética, escaparate montado en la pared a prueba de polvo para",
+        "price": 1033.57,
+        "discount": 22,
+        "image": "https://m.media-amazon.com/images/I/41R9Rc7Vc+L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FGPD9RBJ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2344,6 +2740,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F9FQ3M9W",
+        "title": "Paladone Bluey - Lámpara de pared LED con sensor automático y brillo ajustable, funciona con pilas para dormitorios de niños, producto oficial",
+        "price": 309.62,
+        "discount": 22,
+        "image": "https://m.media-amazon.com/images/I/41-2YtmN7SL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9FQ3M9W?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
+        "source_type": "keyword",
+        "keyword_match": "Paladone",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "1849769842",
         "title": "Turner and Constable: Rivals and Originals",
         "price": 805.36,
@@ -2404,6 +2812,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FG4K4998",
+        "title": "Funko Pop! Movies: Fast & Furious - Letty Ortiz",
+        "price": 252.59,
+        "discount": 21,
+        "image": "https://m.media-amazon.com/images/I/41pCAO38wiL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FG4K4998?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Funko Pop",
+        "source_type": "keyword",
+        "keyword_match": "Funko Pop",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0F9YTFM2B",
         "title": "Funko Pop! Sanrio: Hello Kitty - K-Pop",
         "price": 252.79,
@@ -2428,30 +2848,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FCZY1658",
-        "title": "Cuisinart Advantage - Juego de cuchillos de cocina de 12 piezas, cuchillos de acero inoxidable con revestimiento antiadherente de calidad profesional con cubiertas, revestimiento de color",
-        "price": 587.56,
-        "discount": 21,
-        "image": "https://m.media-amazon.com/images/I/31USVBcSCpL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FCZY1658?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advantage",
-        "source_type": "keyword",
-        "keyword_match": "Advantage",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "1419750119",
-        "title": "The Art of Cartoon Saloon: 25 Years: The Official Retrospective of the Award-Winning Irish Animation Studio Behind the Secret of Kells, Wolfwalkers, and Song of the Sea",
-        "price": 810.16,
-        "discount": 21,
-        "image": "https://m.media-amazon.com/images/I/517Oq6zptRL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1419750119?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Animation",
-        "source_type": "keyword",
-        "keyword_match": "Animation",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "4756259960",
         "title": "Kusamori Shuichi Animation Artworks",
         "price": 1151.34,
@@ -2461,18 +2857,6 @@
         "source_channel": "Keyword: Animation",
         "source_type": "keyword",
         "keyword_match": "Animation",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0FG4K4998",
-        "title": "Funko Pop! Movies: Fast & Furious - Letty Ortiz",
-        "price": 252.59,
-        "discount": 21,
-        "image": "https://m.media-amazon.com/images/I/41pCAO38wiL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FG4K4998?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Funko Pop",
-        "source_type": "keyword",
-        "keyword_match": "Funko Pop",
         "novedad_score": 1.0
       },
       {
@@ -2548,24 +2932,36 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FM6N1X7W",
-        "title": "Teenage Mutant Ninja Turtles Adventures Compendium, Vol. 2",
-        "price": 1343.28,
-        "discount": 21,
-        "image": "https://m.media-amazon.com/images/I/51gFL+IekBL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FM6N1X7W?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
-        "source_type": "keyword",
-        "keyword_match": "Teenage Mutant Ninja Turtles",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B08HH4SQ1T",
         "title": "Funko Pop! & Buddy: Disney Hunchback of Notre Dame - Esmeralda and Djali",
         "price": 256.15,
         "discount": 20,
         "image": "https://m.media-amazon.com/images/I/41jpVu6ws4L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B08HH4SQ1T?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DGB5V79K",
+        "title": "Funko Pop! Jumbo: Superman 2025 - Superman - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Movies Fans - Model Figure for Collectors and Display",
+        "price": 795.4,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/41+lJqjF9CL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DGB5V79K?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0G2HJNGDY",
+        "title": "MOCIWORLD – Real Madrid – Moneda de edición Especial con Escudo y Estadio Santiago Bernabéu – Coleccionable – Chapado en Oro – Producto Oficial",
+        "price": 426.68,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/41xicYs0kjL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G2HJNGDY?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2644,6 +3040,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F9XBNZCW",
+        "title": "Sandalias Crocs Brooklyn Buckle Low Low, Women",
+        "price": 1113.74,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/31giKgvHrZL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9XBNZCW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Crocs",
+        "source_type": "keyword",
+        "keyword_match": "Crocs",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DPGS33JY",
         "title": "Hallmark NFL Baltimore Ravens - Adornos de Navidad para fanáticos de los Deportes",
         "price": 258.79,
@@ -2689,6 +3097,42 @@
         "source_channel": "Keyword: Marvel Legends",
         "source_type": "keyword",
         "keyword_match": "Marvel Legends",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FX3GGNPN",
+        "title": "Jurassic World Juguete Jurassic World Vehículo y Dinosaurio 4Y+",
+        "price": 794.4,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/41C10BxVC+L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FX3GGNPN?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
+        "source_type": "keyword",
+        "keyword_match": "Mattel",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0G3QFR36W",
+        "title": "Jurassic World Juguete Gigantosaurus 4Y+",
+        "price": 1681.38,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/4159fE-34tL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G3QFR36W?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
+        "source_type": "keyword",
+        "keyword_match": "Mattel",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0D32785LQ",
+        "title": "Tales of Teenage Mutant Ninja Turtles: Mutations Mix and Match Figura de acción básica Metalhead de 4.5 Pulgadas por Playmates Toys",
+        "price": 354.65,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/51BxqAYLmHL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D32785LQ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mutant",
+        "source_type": "keyword",
+        "keyword_match": "Mutant",
         "novedad_score": 1.0
       },
       {
@@ -2793,10 +3237,10 @@
         "price": 283.57,
         "discount": 19,
         "image": "https://m.media-amazon.com/images/I/41TxQy1BYDL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DYL7G7DG?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "link": "https://www.amazon.com.mx/dp/B0DYL7G7DG?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Jujutsu Kaisen",
+        "source_type": "keyword",
+        "keyword_match": "Jujutsu Kaisen",
         "novedad_score": 1.0
       },
       {
@@ -2806,18 +3250,6 @@
         "discount": 19,
         "image": "https://m.media-amazon.com/images/I/414v3ZCjs8L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DSWDQ4C2?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0C2PDDK7L",
-        "title": "Carpeta para Tarjetas, Álbum de Cartas Coleccionables, Carpeta para Cartas Portátil con 4 Bolsillos, Album de Tarjetas de 50 Páginas, Capacidad para 400 Tarjetas, Regalos para Niños, Negro",
-        "price": 233.1,
-        "discount": 19,
-        "image": "https://m.media-amazon.com/images/I/51NFwKwpQtL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0C2PDDK7L?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2836,24 +3268,48 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FH429674",
-        "title": "ASUS TUF Gaming F16 Laptop Gaming/Core 5 210H/RTX 4050/16\" FHD+ 144Hz/16GB RAM-512GB SSD/194 Tops AI/Incluye Mochila/Garantía Oficial México",
-        "price": 20999.0,
+        "asin": "B0BJXF3RSC",
+        "title": "Ultimate Guard Flip 'n' Tray 80+, funda para 80 tarjetas TCG de doble manga + bandeja de dados, color negro, cierre magnético no empotrado y forro interior de microfibra",
+        "price": 575.13,
         "discount": 19,
-        "image": "https://m.media-amazon.com/images/I/41WukcbzyiL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FH429674?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/31AESXsSnsL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BJXF3RSC?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
-        "asin": "B08QZ9YWQB",
-        "title": "AITEE - Vitrina acrílica transparente de 5 niveles, a prueba de polvo, para montaje en pared o escritorio, vitrina para minifiguras Funko Pop, minijuguetes, colecciones y rocas 40 cm de largo x 8.6 cm",
-        "price": 1800.47,
+        "asin": "B0DBLPR47W",
+        "title": "Álbum para Tarjetas Coleccionables, 900 Tarjetas, 9 Bolsillos y Cremallera",
+        "price": 289.52,
         "discount": 19,
-        "image": "https://m.media-amazon.com/images/I/51ju5W1R9FL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B08QZ9YWQB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41sAbzEK4CL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DBLPR47W?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HH67F1N",
+        "title": "Funko Pop! Animation: One Piece - Robin",
+        "price": 258.39,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/41PO5RiAzzL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH67F1N?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FH429674",
+        "title": "ASUS TUF Gaming F16 Laptop Gaming/Core 5 210H/RTX 4050/16\" FHD+ 144Hz/16GB RAM-512GB SSD/194 Tops AI/Incluye Mochila/Garantía Oficial México",
+        "price": 20999.0,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/41WukcbzyiL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FH429674?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2872,6 +3328,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "1951757467",
+        "title": "The Marvel Portfolio of Tyler Kirkham -- X-Men",
+        "price": 835.16,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/51j7w5Rl3pL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1951757467?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B08HH9DZ6W",
         "title": "Funko Pop! TV: Netflix Stranger Things - Steve Harrington",
         "price": 259.39,
@@ -2881,6 +3349,18 @@
         "source_channel": "Keyword: Funko Pop",
         "source_type": "keyword",
         "keyword_match": "Funko Pop",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FS212Q9Z",
+        "title": "Moana Live Action Muñeca Maui 30 Cm, Figura Articulada con Detalles Premium Inspirados En La Película, Juguete Coleccionable Disney, para Niños De 3 Años",
+        "price": 724.11,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/51WJgB7WKcL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FS212Q9Z?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
+        "source_type": "keyword",
+        "keyword_match": "Mattel",
         "novedad_score": 1.0
       },
       {
@@ -3040,6 +3520,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FSFVP979",
+        "title": "Ninja BlendBOSS Licuadora Portátil 1200W Vaso 770ml Verde DB351GN",
+        "price": 2698.11,
+        "discount": 18,
+        "image": "https://m.media-amazon.com/images/I/413PwQVmY0L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FSFVP979?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Ninja",
+        "source_type": "keyword",
+        "keyword_match": "Ninja",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0GX6S54MR",
         "title": "Star Wars: Legion Mandalorian Leaders Expansion – 4 Mandalorian comander & Operative Miniaturas con Mando y Tarjetas de actualización, Edades 14 +, 2 Jugadores, Tiempo de Juego de 3 Horas",
         "price": 915.7,
@@ -3049,18 +3541,6 @@
         "source_channel": "Keyword: Wars",
         "source_type": "keyword",
         "keyword_match": "Wars",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0H1GTYX71",
-        "title": "Álbum para Cartas Coleccionables, 400 Bolsillos, 50 Páginas (B)",
-        "price": 199.0,
-        "discount": 17,
-        "image": "https://m.media-amazon.com/images/I/51MHM0H29lL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0H1GTYX71?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -3088,18 +3568,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DYJY9R7R",
-        "title": "Funko Pop! TV: South Park - Kissing Company Butters Stotch - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - TV Fans - Model Figure for Collectors",
-        "price": 247.83,
-        "discount": 17,
-        "image": "https://m.media-amazon.com/images/I/419C-CHYYVL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DYJY9R7R?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "0197800629",
         "title": "Animation and the Ancient World",
         "price": 1976.52,
@@ -3109,6 +3577,18 @@
         "source_channel": "Keyword: Animation",
         "source_type": "keyword",
         "keyword_match": "Animation",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F1WB5RJQ",
+        "title": "Funko Pop! Bitty Stages: BTS - Dynamite - Suga - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - KPOP Fans",
+        "price": 181.55,
+        "discount": 17,
+        "image": "https://m.media-amazon.com/images/I/41qnFEFcwlL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F1WB5RJQ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
         "novedad_score": 1.0
       },
       {
@@ -3172,6 +3652,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0G6YCVDCM",
+        "title": "Venssu MTG - Caja para cubierta con visualización de comandante, funda para tarjeta Goblin se adapta a 100 tarjetas de doble manga, caja de almacenamiento de tarjetas TCG con 2 divisores y 1 cargador",
+        "price": 420.06,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/51Jkw5grnLL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G6YCVDCM?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HGNQNWG",
+        "title": "Funko Bitty Pop! 4 Pack: My Little Pony - Twilight (1 in 6 Chase Chance)",
+        "price": 226.61,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/51ZUzxMPVYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HGNQNWG?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FQ5T6VMQ",
         "title": "Nixitlo 600 fundas duras para tarjetas para protección para béisbol y fútbol de alta calidad para tarjetas, asegurando la seguridad (600 fundas duras)",
         "price": 674.9,
@@ -3181,18 +3685,6 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "1916729622",
-        "title": "Advent of Ascension: 1",
-        "price": 333.76,
-        "discount": 16,
-        "image": "https://m.media-amazon.com/images/I/51w2J2L71vL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1916729622?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
-        "source_type": "keyword",
-        "keyword_match": "Advent",
         "novedad_score": 1.0
       },
       {
@@ -3217,6 +3709,30 @@
         "source_channel": "Keyword: Buffalo",
         "source_type": "keyword",
         "keyword_match": "Buffalo",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0GJSF3M67",
+        "title": "GALASALA Sandalias Hombre, Huaraches Hombre con Correa Ajustable",
+        "price": 167.99,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/41S2ytJOCUL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GJSF3M67?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Crocs",
+        "source_type": "keyword",
+        "keyword_match": "Crocs",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1302967142",
+        "title": "Deadpool Modern Era Epic Collection: X X Baby",
+        "price": 716.49,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/51T9Z6w7J5L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1302967142?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
         "novedad_score": 1.0
       },
       {
@@ -3250,6 +3766,30 @@
         "discount": 15,
         "image": "https://m.media-amazon.com/images/I/41HoYTC1PML._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B08HH8WD1D?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0C4RPSPH2",
+        "title": "Funko Pop! Animation: Bleach - Byakuya Kuchiki",
+        "price": 234.47,
+        "discount": 15,
+        "image": "https://m.media-amazon.com/images/I/41NzoumTpLL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0C4RPSPH2?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FCFZDB32",
+        "title": "Funko Pop! Animation: Mashle - Lemon",
+        "price": 269.67,
+        "discount": 15,
+        "image": "https://m.media-amazon.com/images/I/41ir0iosohL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FCFZDB32?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -3364,18 +3904,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FKL44V2Y",
-        "title": "TAMASHII NATIONS - Mobile Suit Gundam GQuuuuuuX - GMS-α Red Gundam Gundam Universe Figura de acción",
-        "price": 641.47,
-        "discount": 15,
-        "image": "https://m.media-amazon.com/images/I/41QgKy0tUSL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FKL44V2Y?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Nations",
-        "source_type": "keyword",
-        "keyword_match": "Nations",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0FV96PGCB",
         "title": "ConQuest Journals - Tapete de computadora de mapa de Harry Potter Merauder, de gran tamaño, para oficina en casa, tamaño XXL, para mouse de computadora, superficie de tela de neopreno impermeable",
         "price": 480.0,
@@ -3385,30 +3913,6 @@
         "source_channel": "Keyword: Wizarding",
         "source_type": "keyword",
         "keyword_match": "Wizarding",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0FH7NQBQ9",
-        "title": "Transformers TRA Gen Prime LDR Big Convoy",
-        "price": 1029.15,
-        "discount": 14,
-        "image": "https://m.media-amazon.com/images/I/41HIm010qRL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FH7NQBQ9?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Transformers",
-        "source_type": "keyword",
-        "keyword_match": "Transformers",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0FPNQKTQP",
-        "title": "Funko Pop! Marvel: X-Men '97 - Wolverine",
-        "price": 274.37,
-        "discount": 14,
-        "image": "https://m.media-amazon.com/images/I/414SoR6598L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FPNQKTQP?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -3436,12 +3940,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B086M2CR5D",
-        "title": "Five Star Flex Hybrid NoteBinder 60 Hojas Rayadas 3 Anillos TechLock 1\" Negro 11.5\" x 9.5\"",
-        "price": 286.0,
+        "asin": "B0DGBTDNX1",
+        "title": "Funko Pop! Plus: Lilo & Stitch - Gamer Stitch (MT)",
+        "price": 285.73,
         "discount": 14,
-        "image": "https://m.media-amazon.com/images/I/51X69kv620L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B086M2CR5D?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41n5pPk2alL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DGBTDNX1?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -3496,18 +4000,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "142788448X",
-        "title": "Sword Art Online: The Official Advent Calendar: 25 Days of Surprises",
-        "price": 585.47,
-        "discount": 14,
-        "image": "https://m.media-amazon.com/images/I/51AlL7tOPHL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/142788448X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
-        "source_type": "keyword",
-        "keyword_match": "Advent",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "6076381345",
         "title": "Full Metal Alchemist Lux Edition N.12",
         "price": 282.94,
@@ -3553,18 +4045,6 @@
         "source_channel": "Keyword: Minecraft",
         "source_type": "keyword",
         "keyword_match": "Minecraft",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0DP5K18PJ",
-        "title": "Mutant Hardcore Bcaa Sabor Frambuesa Azul con Electrolitos 30 Porciones",
-        "price": 256.0,
-        "discount": 14,
-        "image": "https://m.media-amazon.com/images/I/41TKi39uycL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DP5K18PJ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Mutant",
-        "source_type": "keyword",
-        "keyword_match": "Mutant",
         "novedad_score": 1.0
       },
       {
@@ -3616,6 +4096,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FH7NQBQ9",
+        "title": "Transformers TRA Gen Prime LDR Big Convoy",
+        "price": 1029.15,
+        "discount": 14,
+        "image": "https://m.media-amazon.com/images/I/41HIm010qRL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FH7NQBQ9?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Transformers",
+        "source_type": "keyword",
+        "keyword_match": "Transformers",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1647226708",
+        "title": "Harry Potter: The Storyboards",
+        "price": 1114.17,
+        "discount": 14,
+        "image": "https://m.media-amazon.com/images/I/51q-JYvwU9L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1647226708?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Wizarding",
+        "source_type": "keyword",
+        "keyword_match": "Wizarding",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B01DNDOPLA",
         "title": "Juego de 5 Figuras de Peanuts, Juguetes para niños a Partir de 3 años, Regalos y Regalos",
         "price": 400.03,
@@ -3628,12 +4132,36 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F947GFQB",
+        "title": "HORI 24-Game-Card Case (Schwarz) Aufbewahrungsbox für Nintendo Switch 2 – Schutzhülle für 24 Spiele – Offiziell Nintendo lizenziert",
+        "price": 396.96,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/31bPep2DNxL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F947GFQB?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0CND11BCR",
         "title": "Funko Pop! Super: The Conjuring – The Crooked Man​",
         "price": 414.26,
         "discount": 13,
         "image": "https://m.media-amazon.com/images/I/41XfOe1KdoL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0CND11BCR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B08HH2FSV6",
+        "title": "Funko Pop! Movies: Jurassic Park Spring - T-Rex",
+        "price": 278.07,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/41SQmMdA7lL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH2FSV6?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -3676,6 +4204,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0BKHCVMMM",
+        "title": "Monopoly Flip Edition: Juego de Mesa Fortnite para Mayores de 13 años, Juego Monopoly Inspirado en el Videojuego Fortnite, Juegos de Mesa para Adolescentes y Adultos, 2-4 Jugadores (inglés)",
+        "price": 522.62,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/51yrOlWAaAL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BKHCVMMM?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Fortnite",
+        "source_type": "keyword",
+        "keyword_match": "Fortnite",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FJDP1KYC",
         "title": "Godzilla: Here There Be Aliens",
         "price": 267.32,
@@ -3685,6 +4225,18 @@
         "source_channel": "Keyword: Kaiju",
         "source_type": "keyword",
         "keyword_match": "Kaiju",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0H2PQG12J",
+        "title": "Ruz Mochila Primaria Infantil y Preescolar | Sanrio | 100% Poliéster Capacidad 23 Litros | Bolso Escolar para Niños con Asa Superior y Compartimentos Amplios | Recomendado desde 3 años",
+        "price": 750.0,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/415ZdJCEorL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0H2PQG12J?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hello Kitty",
+        "source_type": "keyword",
+        "keyword_match": "Hello Kitty",
         "novedad_score": 1.0
       },
       {
@@ -3772,6 +4324,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F846B2MR",
+        "title": "Álbum para Cartas Coleccionables, 9 Bolsillos, 50 Páginas Removibles, Compatible con TCG, Pokémon, Yu-Gi-Oh, Magic, Digimon, 900 Tarjetas (900 Bosillos Rojo)",
+        "price": 349.99,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/51h5BXY8QHL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F846B2MR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F9YQJLQD",
+        "title": "Funko Pop! Sanrio: Hello Kitty - Badtz-Maru KPOP",
+        "price": 281.68,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/41vrLzZ5yVL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9YQJLQD?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0D6D5WFZG",
         "title": "Funko Pop! Vinyl: She-Ra - Hordak",
         "price": 212.75,
@@ -3784,36 +4360,24 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0D19PBTYM",
+        "title": "Funko Pop! Animation: Chainsaw Man (CSM) - Kishibe",
+        "price": 230.6,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/41BlQ75oloL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D19PBTYM?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0GSGSMCK3",
         "title": "NACOOL 200 PCS Clear Card sleeves, 3 x 4 Pulgadas, Top Loader",
         "price": 262.24,
         "discount": 12,
         "image": "https://m.media-amazon.com/images/I/416nM37PdSL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0GSGSMCK3?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0GCS52XFC",
-        "title": "HASTHIP® Álbum de Cartas Coleccionables 240 Piezas,Carpeta para Tarjetas de Intercambio Doble Cara Transparente,Libro Organizador con Cierre Botón a Presión Protector Tarjetas",
-        "price": 175.99,
-        "discount": 12,
-        "image": "https://m.media-amazon.com/images/I/31Jdljn6BPL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GCS52XFC?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0BLT74W1P",
-        "title": "Funko Bitty Pop! Teenage Mutant Ninja Turtles - Leonardo, Michelangelo, April O’Neil Y una Minifigura Misteriosa Sorpresa - 0.9 Inch (2.2 Cm) - Tortugas Ninja Coleccionable - Idea de Regalo",
-        "price": 239.82,
-        "discount": 12,
-        "image": "https://m.media-amazon.com/images/I/51ZdlG8m9FL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0BLT74W1P?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -3868,6 +4432,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0BCM5V2KS",
+        "title": "G.I. Joe Classified Series Edward \"Torpedo\" Leialoha Figura 6 pulgadas Hasbro Original Coleccionable",
+        "price": 544.88,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/41yrS0giA4L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BCM5V2KS?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hasbro",
+        "source_type": "keyword",
+        "keyword_match": "Hasbro",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1951757432",
+        "title": "The Marvel Art of Tyler Kirkham: 7",
+        "price": 1205.16,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/514VoJAh75L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1951757432?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "1839045353",
         "title": "Dance of Death",
         "price": 348.11,
@@ -3889,18 +4477,6 @@
         "source_channel": "Keyword: Wizarding",
         "source_type": "keyword",
         "keyword_match": "Wizarding",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0HF16PQ9X",
-        "title": "Sportisimo Aro de Pilates Profesional 38cm | Pilates Ring Magic Circle | Fibra de Vidrio · Agarres de Espuma Acolchada · Resistencia Firme | Core, Muslos, Brazos, Suelo Pélvico",
-        "price": 227.0,
-        "discount": 12,
-        "image": "https://m.media-amazon.com/images/I/31HvD9JJEoL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0HF16PQ9X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Magic",
-        "source_type": "keyword",
-        "keyword_match": "Magic",
         "novedad_score": 1.0
       },
       {
@@ -3952,18 +4528,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0CDJDJQ1B",
-        "title": "Funko Pop! Football: Barcelona - GAVI",
-        "price": 536.96,
-        "discount": 11,
-        "image": "https://m.media-amazon.com/images/I/41fnk+ZJ-nL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CDJDJQ1B?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0DNRTQ9ZK",
         "title": "Funko Pop! Rocks: BTS - Jimin (Like Crazy)",
         "price": 329.22,
@@ -3982,6 +4546,18 @@
         "discount": 11,
         "image": "https://m.media-amazon.com/images/I/51Iv18rm7yL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0BT48L1XR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DJRZQYZK",
+        "title": "Funko Bitty Pop! 4 Pack: Pokemon - Pikachu, Vaporeon, Caterpie, Cubone",
+        "price": 444.0,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41OffP2D2ML._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DJRZQYZK?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -4009,18 +4585,6 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "1837833354",
-        "title": "Advent: Festive German Bakes to Celebrate the Coming of Christmas",
-        "price": 611.34,
-        "discount": 11,
-        "image": "https://m.media-amazon.com/images/I/51n5fnPMcuL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1837833354?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
-        "source_type": "keyword",
-        "keyword_match": "Advent",
         "novedad_score": 1.0
       },
       {
@@ -4086,7 +4650,7 @@
       {
         "asin": "B0GSXP7XGV",
         "title": "Blokees Transformers Galaxy Series: Transformers Galaxy Version 10 Till All Are One 9 in 1 PDQ 71110D",
-        "price": 1356.21,
+        "price": 1356.62,
         "discount": 11,
         "image": "https://m.media-amazon.com/images/I/513oaOWWj7L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0GSXP7XGV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -4144,6 +4708,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FZLX3LZ8",
+        "title": "Super7 ULTIMATES! Thundercats Slithe - Figura de acción Thundercats de 7 Pulgadas con Accesorios - Coleccionables clásicos de Dibujos Animados y Juguetes Retro",
+        "price": 1606.07,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41xKVOZS8iL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FZLX3LZ8?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Thundercats",
+        "source_type": "keyword",
+        "keyword_match": "Thundercats",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DQWQQTZ4",
         "title": "Hallmark Disney The Haunted Mansion Madame Leota - Adorno navideño para Fans de Disney",
         "price": 167.61,
@@ -4168,15 +4744,27 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0CL1BRRZ4",
-        "title": "Street Fighter II - Figura de acción de Ken de 15 cm, Juguetes para niños y Adultos",
-        "price": 624.0,
+        "asin": "B0DK7W7NYS",
+        "title": "Jazwares - Disfraz oficial de Hello Kitty de Halloween para jóvenes, vestido impreso de alta calidad con diadema (S)",
+        "price": 665.82,
         "discount": 11,
-        "image": "https://m.media-amazon.com/images/I/31f3+WAkwOL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CL1BRRZ4?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Medicom",
+        "image": "https://m.media-amazon.com/images/I/314VTBirU-L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DK7W7NYS?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Jazwares",
         "source_type": "keyword",
-        "keyword_match": "Medicom",
+        "keyword_match": "Jazwares",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DP5K18PJ",
+        "title": "Mutant Hardcore Bcaa Sabor Frambuesa Azul con Electrolitos 30 Porciones",
+        "price": 265.0,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41TKi39uycL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DP5K18PJ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mutant",
+        "source_type": "keyword",
+        "keyword_match": "Mutant",
         "novedad_score": 1.0
       },
       {
@@ -4216,6 +4804,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FK1ZQQPV",
+        "title": "Mattel Brick Shop Masters of The Universe Set de Construcción El Ataque del Coleccionista, 593 Piezas y 12 Figuras, para coleccionistas y Mayores de 13 años",
+        "price": 953.72,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/51v0cVu44HL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FK1ZQQPV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Universe",
+        "source_type": "keyword",
+        "keyword_match": "Universe",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B08HH4RL76",
         "title": "Funko Pop! Disney: Hercules - Panic & Pain 2 Pack",
         "price": 402.6,
@@ -4228,12 +4828,24 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B08HJD761M",
-        "title": "Funko Pop! Netflix KPOP Demon Hunters - Derpy with Sussie",
-        "price": 331.92,
+        "asin": "B0BZWT5FRR",
+        "title": "Bose Nuevo S1 Pro+ Altavoz Bluetooth Todo en uno, Sistema PA inalámbrico, Negro",
+        "price": 14399.0,
         "discount": 10,
-        "image": "https://m.media-amazon.com/images/I/51IoAFwCEiL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B08HJD761M?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/414Znpjt0aL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BZWT5FRR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F9YTRZH6",
+        "title": "Funko Pop! Sanrio: Hello Kitty - Chococat (K-Pop)",
+        "price": 287.1,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/41LdxEqD6dL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9YTRZH6?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -4264,6 +4876,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0CGGJPXTM",
+        "title": "Funko Pop! TV: TMNT Retro - Leonardo - 1 in 6 Chance of Rare Chase",
+        "price": 252.75,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/41NeTnXThoL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CGGJPXTM?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0GHNT2RQS",
+        "title": "Luhi 2PCS Caja de Cartas para Mtg Commander,MTG Deck Box con Escaparate Commander,Con Capacidad para 400 Cartas, Es Impermeable y Portátil,ideal para Guardar Diversos Juegos de Cartas. (Gris)",
+        "price": 268.2,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/41wAlyK6HCL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GHNT2RQS?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0F9YTDT7Z",
         "title": "Funko Pop! Super: Aliens vs. Predator Requiem - Predalien",
         "price": 361.25,
@@ -4276,15 +4912,27 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FCFXMG3R",
-        "title": "Funko Pop! Animation: Demon Slayer - Nezuko (Sumi-Ink Edition)",
-        "price": 287.1,
+        "asin": "B0DG1XKFZ9",
+        "title": "POENVFPO Base de Soporte para Muñecas, 10 Piezas Soportes de Exhibición para Figuras de Acción para Modos de 6 Pulgadas Marco de Soporte de Plástico para Series de Muñecas con Forma",
+        "price": 275.94,
         "discount": 10,
-        "image": "https://m.media-amazon.com/images/I/41qWKI0kJgL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FCFXMG3R?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/417R32qZfVL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DG1XKFZ9?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1919539018",
+        "title": "Behind the Throne: Key people in England during the period of absolute monarchy",
+        "price": 755.19,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/51umsPyhUlL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1919539018?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Absolute",
+        "source_type": "keyword",
+        "keyword_match": "Absolute",
         "novedad_score": 1.0
       },
       {
@@ -4408,6 +5056,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F1YD8ND1",
+        "title": "Linda Lámpara de Llama Chibi, Luces Acogedoras de Anime, Luz Nocturna Retro Recargable, Luz Smoko, Lindos Accesorios de Escritorio, Regalos",
+        "price": 359.1,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/41bVN76QUAL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F1YD8ND1?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
+        "source_type": "keyword",
+        "keyword_match": "Paladone",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DKJR2WLZ",
+        "title": "Luz Nocturna Enchufable con Sensor de Atardecer a Amanece, 2 Paquete",
+        "price": 296.99,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/31QtMlWtP7L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DKJR2WLZ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
+        "source_type": "keyword",
+        "keyword_match": "Paladone",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0GXLSBXSD",
         "title": "SPAWN 100 METALIZADO B",
         "price": 269.1,
@@ -4480,15 +5152,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "9364304276",
-        "title": "Tinga Dojo's Christmas Adventure",
-        "price": 391.69,
+        "asin": "179950798X",
+        "title": "Batman: White Knight: Absolute Edition",
+        "price": 1542.42,
         "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/513sylKQE6L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/9364304276?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advent",
+        "image": "https://m.media-amazon.com/images/I/513P3jLppAL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/179950798X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Batman",
         "source_type": "keyword",
-        "keyword_match": "Advent",
+        "keyword_match": "Batman",
         "novedad_score": 1.0
       },
       {
@@ -4576,15 +5248,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "179950798X",
-        "title": "Batman: White Knight: Absolute Edition",
-        "price": 1542.42,
+        "asin": "B0F9XBMMJT",
+        "title": "Crocs - Zuecos clásicos del Sistema Lego para niños (niño pequeño/niño Grande), Blanco, 13 Little Kid",
+        "price": 1350.71,
         "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/513P3jLppAL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/179950798X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Batman",
+        "image": "https://m.media-amazon.com/images/I/31IKvi0-xzL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9XBMMJT?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Crocs",
         "source_type": "keyword",
-        "keyword_match": "Batman",
+        "keyword_match": "Crocs",
         "novedad_score": 1.0
       },
       {
@@ -4597,18 +5269,6 @@
         "source_channel": "Keyword: Funko Pop",
         "source_type": "keyword",
         "keyword_match": "Funko Pop",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0FZLX3LZ8",
-        "title": "Super7 ULTIMATES! Thundercats Slithe - Figura de acción Thundercats de 7 Pulgadas con Accesorios - Coleccionables clásicos de Dibujos Animados y Juguetes Retro",
-        "price": 1625.56,
-        "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/41xKVOZS8iL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FZLX3LZ8?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Thundercats",
-        "source_type": "keyword",
-        "keyword_match": "Thundercats",
         "novedad_score": 1.0
       },
       {
@@ -4633,6 +5293,18 @@
         "source_channel": "Keyword: Marvel",
         "source_type": "keyword",
         "keyword_match": "Marvel",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FDFYYH1F",
+        "title": "Marvel Legends Abomination Figura de Acción Articulada 15 cm",
+        "price": 1091.06,
+        "discount": 9,
+        "image": "https://m.media-amazon.com/images/I/41XXmWwof0L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FDFYYH1F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Marvel Legends",
+        "source_type": "keyword",
+        "keyword_match": "Marvel Legends",
         "novedad_score": 1.0
       },
       {
@@ -4732,6 +5404,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DLCKN4Q6",
+        "title": "Little People Collector, Figura de Juguete, Set de Superman, 4 Versiones con Empaque Decorativo, para Coleccionistas",
+        "price": 549.0,
+        "discount": 8,
+        "image": "https://m.media-amazon.com/images/I/51D7DWs1olL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DLCKN4Q6?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "1009781294",
         "title": "Game-Theoretic Models of International Crisis Bargaining",
         "price": 713.92,
@@ -4816,15 +5500,39 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0G38Q68F5",
-        "title": "The Magic Lives Within You: A Journey Back to Your Divine Source",
-        "price": 316.4,
-        "discount": 7,
-        "image": "https://m.media-amazon.com/images/I/31b2hzoUhrL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G38Q68F5?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Advantage",
+        "asin": "3961717982",
+        "title": "Masters of Fashion: Louis Vuitton: Creations That Define an Icon",
+        "price": 1413.8,
+        "discount": 8,
+        "image": "https://m.media-amazon.com/images/I/41aTtZ2B3KL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/3961717982?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Masters",
         "source_type": "keyword",
-        "keyword_match": "Advantage",
+        "keyword_match": "Masters",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F9FN5PHM",
+        "title": "Paladone Kuromi GloBuddies - Lámpara LED 3D con licencia oficial de Sanrio, funciona con pilas, regalo para fans de Hello Kitty",
+        "price": 737.33,
+        "discount": 8,
+        "image": "https://m.media-amazon.com/images/I/31sr8cgyF2L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F9FN5PHM?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
+        "source_type": "keyword",
+        "keyword_match": "Paladone",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FL8X13QV",
+        "title": "Masters of The Universe Juego de rol Deluxe Bastón del Caos para Coleccionistas, 5 pies 8 Pulgadas de Alto, Luces ambientales y Efectos de Humo, Arma de la película de Skeletor",
+        "price": 3575.48,
+        "discount": 8,
+        "image": "https://m.media-amazon.com/images/I/21pm5-GK5WL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FL8X13QV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Universe",
+        "source_type": "keyword",
+        "keyword_match": "Universe",
         "novedad_score": 1.0
       },
       {
@@ -4888,21 +5596,9 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FDFYYH1F",
-        "title": "Marvel Legends Abomination Figura de Acción Articulada 15 cm",
-        "price": 1116.47,
-        "discount": 7,
-        "image": "https://m.media-amazon.com/images/I/41XXmWwof0L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FDFYYH1F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Marvel Legends",
-        "source_type": "keyword",
-        "keyword_match": "Marvel Legends",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0FLL6K36M",
         "title": "TMNT - Bandai Namco - Set de Juego - Tortugas Ninja, Playset Tortuga Transformable Refugio Secreto - con Accesorios, Zonas de Batalla y áreas interactivas para Figuras de acción",
-        "price": 1299.0,
+        "price": 1304.39,
         "discount": 7,
         "image": "https://m.media-amazon.com/images/I/51twcYHrilL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FLL6K36M?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -4921,6 +5617,30 @@
         "source_channel": "Keyword: Rivals",
         "source_type": "keyword",
         "keyword_match": "Rivals",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DRN1NB3Q",
+        "title": "Ryder Cup Rivals: The Fiercest Battles for Golf's Holy Grail",
+        "price": 508.6,
+        "discount": 7,
+        "image": "https://m.media-amazon.com/images/I/417oYfotibL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DRN1NB3Q?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Rivals",
+        "source_type": "keyword",
+        "keyword_match": "Rivals",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DQVC9ZHK",
+        "title": "Banpresto Naruto Shippuden Soft Vinyl Gamabunta Figura de Colección Bandai Estatuilla en Escala de 7” Original",
+        "price": 686.41,
+        "discount": 7,
+        "image": "https://m.media-amazon.com/images/I/41PgW9E4G3L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DQVC9ZHK?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Shippuden",
+        "source_type": "keyword",
+        "keyword_match": "Shippuden",
         "novedad_score": 1.0
       },
       {
@@ -5056,6 +5776,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0D7WDVSML",
+        "title": "Record Collector Presents: Paul Weller",
+        "price": 461.85,
+        "discount": 6,
+        "image": "https://m.media-amazon.com/images/I/517ArfsoxlL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D7WDVSML?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FPNNLYKQ",
+        "title": "Funko Pop! Marvel: Deadpool 3 - Deadpool with Claws",
+        "price": 299.0,
+        "discount": 6,
+        "image": "https://m.media-amazon.com/images/I/41BKYf-m-0L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FPNNLYKQ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FNTHJWZR",
         "title": "Bandai Namco Toys & Collectibles - Monsterverse - Kong Skull Island - Figura de Acción Articulada con Hacha - 6 Pulgadas - Ideal para Regalo y Colección",
         "price": 342.77,
@@ -5128,6 +5872,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FPMXRQY6",
+        "title": "Funko Pop! Movies: Jason Universe - Jason",
+        "price": 299.0,
+        "discount": 6,
+        "image": "https://m.media-amazon.com/images/I/41vV5Y0nYKL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FPMXRQY6?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Universe",
+        "source_type": "keyword",
+        "keyword_match": "Universe",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B09B1BYL4X",
+        "title": "Super7 Ultimates: GI Joe - Snake Eyes",
+        "price": 613.18,
+        "discount": 5,
+        "image": "https://m.media-amazon.com/images/I/418xvpJ5IpL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B09B1BYL4X?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0D8WJNXB7",
         "title": "Gamegenic Sidekick Pro 100+ XL - Caja de cubierta de alta calidad con almacenamiento seguro para tarjetas, funda para tarjetas deslizantes con proteccin UV, tarjeta superior, cajn",
         "price": 931.27,
@@ -5161,6 +5929,30 @@
         "source_channel": "Keyword: Crisis",
         "source_type": "keyword",
         "keyword_match": "Crisis",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0F8J23XKT",
+        "title": "Crocs - Zuecos Unisex para niños de Disney Mickey Minnie Mouse (niño pequeño), Mickey, 4 Toddler",
+        "price": 885.99,
+        "discount": 5,
+        "image": "https://m.media-amazon.com/images/I/41dG0XPkc0L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F8J23XKT?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Crocs",
+        "source_type": "keyword",
+        "keyword_match": "Crocs",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0FDK9GYC4",
+        "title": "Marvel La Enciclopedia (Marvel Encyclopedia New Edition)",
+        "price": 737.21,
+        "discount": 5,
+        "image": "https://m.media-amazon.com/images/I/61FwXuIjX+L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FDK9GYC4?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
         "novedad_score": 1.0
       },
       {
@@ -5212,6 +6004,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0FHKQP6V7",
+        "title": "Mattel Games Monos Locos Buzz Lightyear, Juego De Mesa De Equilibrio Inspirado En Toy Story 2026, Diversión Familiar para Niños De 5 Años",
+        "price": 756.91,
+        "discount": 5,
+        "image": "https://m.media-amazon.com/images/I/41E+qOlmzYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FHKQP6V7?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
+        "source_type": "keyword",
+        "keyword_match": "Mattel",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0H2PPXXLP",
         "title": "Ruz Mochila Casual | Naruto | 100% Poliéster Edición Premium Capacidad 27 Litros | Bolso Escolar para Niños con Correas Regulables y Bolsillos Organizadores | Recomendado desde 3 años",
         "price": 972.15,
@@ -5260,24 +6064,48 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0G2N9B5TY",
-        "title": "Transformers TRA Gen Prime VOY Swindle",
-        "price": 1016.0,
+        "asin": "B0GVPLYPVR",
+        "title": "Warhammer 40k: Ultramarines Levantus con Pistola de Escudo de Espada 1:18 Figura de acción",
+        "price": 1097.37,
         "discount": 0,
-        "image": "https://m.media-amazon.com/images/I/41ZHr9RPARL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G2N9B5TY?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41yvIXsN97L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GVPLYPVR?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "The Geek Chronicles",
         "source_type": "telegram",
         "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
-        "asin": "B0BJXMSK7C",
-        "title": "Ultimate Guard Flip 'n' Tray 80+, funda para 80 tarjetas TCG de doble manga + bandeja de dados, blanco, cierre magnético no empotrado y forro interior de microfibra",
-        "price": 785.97,
+        "asin": "B0CBWG6115",
+        "title": "JOYTOY - Figura de Acción Warhammer 40.000, Intercesores de Space Wolves, modelo de colección de 10.67 cm (1/18) para unisex, adultos, regalos de Navidad, cumpleaños, edades de 15 años en adelante",
+        "price": 402.44,
         "discount": 0,
-        "image": "https://m.media-amazon.com/images/I/41JfgE0gPQL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0BJXMSK7C?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41-SPA7YDSL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CBWG6115?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0D8WHQW8N",
+        "title": "Gamegenic Sidekick Pro 100+ XL Convertible – Caja de cubierta de alta calidad con almacenamiento seguro para tarjetas, funda para tarjetas deslizantes con protección UV, tarjeta superior, cajón de",
+        "price": 839.18,
+        "discount": 0,
+        "image": "https://m.media-amazon.com/images/I/21MQtnbomDL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D8WHQW8N?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DSWG9RN6",
+        "title": "Funko Pop! Movies: The Land Before Time - Cera",
+        "price": 248.4,
+        "discount": 0,
+        "image": "https://m.media-amazon.com/images/I/41Pp4BhBymL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DSWG9RN6?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -5308,6 +6136,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0H1HCMR8R",
+        "title": "Álbum para Cartas Coleccionables, 400 Bolsillos, 50 Páginas (F)",
+        "price": 179.1,
+        "discount": 0,
+        "image": "https://m.media-amazon.com/images/I/51foQyRl9+L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0H1HCMR8R?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0H5NQN6HT",
+        "title": "Pop Mart: Labubu The Monsters FIFA Series - Football - Shaped Mini Bag Blind Box",
+        "price": 311.15,
+        "discount": 55,
+        "image": "https://m.media-amazon.com/images/I/41bx77ugqLL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0H5NQN6HT?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Monsters",
+        "source_type": "keyword",
+        "keyword_match": "Monsters",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B09QKNY2DK",
         "title": "Medicom Neon Genesis Evangelion: EVA 02 Ultra Detail Figura",
         "price": 599.99,
@@ -5329,6 +6181,30 @@
         "source_channel": "Keyword: Good Smile",
         "source_type": "keyword",
         "keyword_match": "Good Smile",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0DZXKSBHH",
+        "title": "Paladone Cuaderno Minecraft A5 Espiral 160 Páginas con Separadores",
+        "price": 205.03,
+        "discount": 49,
+        "image": "https://m.media-amazon.com/images/I/51sUzvqyRkL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DZXKSBHH?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Paladone",
+        "source_type": "keyword",
+        "keyword_match": "Paladone",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0F4WK528Z",
+        "title": "Marvel Fantastic Four Epic World of Action Colección Primera Familia",
+        "price": 405.0,
+        "discount": 47,
+        "image": "https://m.media-amazon.com/images/I/41kLwjZITaL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F4WK528Z?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Fantastics",
+        "source_type": "keyword",
+        "keyword_match": "Fantastics",
         "novedad_score": 0.5
       },
       {
@@ -5368,15 +6244,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0BDJ9NRLP",
-        "title": "Hasbro Star Wars The Black Series - Figura de acción Coleccionable de General Hera Syndulla, Star Wars: Ahsoka",
-        "price": 389.6,
+        "asin": "B0CPN8L231",
+        "title": "Little People Collector Figura De Juguete Set De Merlina para Coleccionistas",
+        "price": 359.95,
         "discount": 40,
-        "image": "https://m.media-amazon.com/images/I/31gwGnwfv7L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0BDJ9NRLP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Dc Multiverse",
+        "image": "https://m.media-amazon.com/images/I/51nrXdDxhiL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CPN8L231?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
         "source_type": "keyword",
-        "keyword_match": "Dc Multiverse",
+        "keyword_match": "Collector",
         "novedad_score": 0.5
       },
       {
@@ -5392,18 +6268,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GTC3K3N4",
-        "title": "Paladone Super Mario™ - Taza de cerámica de 350 ml, escena clásica de juego con Mario, Luigi y Yoshi, apta para lavaplatos y microondas, producto oficial de Nintendo®",
-        "price": 277.11,
-        "discount": 40,
-        "image": "https://m.media-amazon.com/images/I/41q-79d43tL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GTC3K3N4?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Paladone",
-        "source_type": "keyword",
-        "keyword_match": "Paladone",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0DX39HQ4Q",
         "title": "NECA Ultimate M3GAN Figura de acción de Escala de 7 Pulgadas",
         "price": 873.0,
@@ -5413,6 +6277,18 @@
         "source_channel": "Keyword: NECA",
         "source_type": "keyword",
         "keyword_match": "NECA",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "1419776614",
+        "title": "Frank Miller's Ronin Rising Collector's Edition",
+        "price": 435.65,
+        "discount": 37,
+        "image": "https://m.media-amazon.com/images/I/51CzINREBAL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1419776614?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
         "novedad_score": 0.5
       },
       {
@@ -5476,18 +6352,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GHPG6MKV",
-        "title": "Buffalo Games - Star Wars: The Force - Rompecabezas de 1000 Piezas, colección de Arte Fino, Rompecabezas Colorido para Adultos, Piezas de Corte de precisión, Hermosas Obras de Arte y Horas de",
-        "price": 359.81,
-        "discount": 34,
-        "image": "https://m.media-amazon.com/images/I/31m0nRWBKgL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GHPG6MKV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Buffalo",
-        "source_type": "keyword",
-        "keyword_match": "Buffalo",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0FX5Y6BTQ",
         "title": "Loungefly Warner Bros.: DC Supergirl - Krypto - Sling Crossbody with Coin Bag - Large Compartment - Great for Kids & Adults - Collectible Bags",
         "price": 854.68,
@@ -5497,18 +6361,6 @@
         "source_channel": "Keyword: Loungefly",
         "source_type": "keyword",
         "keyword_match": "Loungefly",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0GR59R332",
-        "title": "Paladone Super Mario Super Mario - Reloj Despertador de Hongos con luz Nocturna, Reloj Digital, repetición de Llave, 16 cm de Alto, mercancía Oficial de Nintendo",
-        "price": 456.36,
-        "discount": 34,
-        "image": "https://m.media-amazon.com/images/I/417k1IljZHL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GR59R332?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Paladone",
-        "source_type": "keyword",
-        "keyword_match": "Paladone",
         "novedad_score": 0.5
       },
       {
@@ -5586,7 +6438,7 @@
       {
         "asin": "B0DXMVH212",
         "title": "NECA - M3GAN - Figura de acción Vestida de 8 Pulgadas",
-        "price": 1002.98,
+        "price": 1003.0,
         "discount": 33,
         "image": "https://m.media-amazon.com/images/I/41CAByA1l8L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DXMVH212?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -5656,9 +6508,21 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0FK1VVFV9",
+        "title": "Little People Collector Figura de Juguete Masters of The Universe: Guerreros del Mal 8+",
+        "price": 410.92,
+        "discount": 31,
+        "image": "https://m.media-amazon.com/images/I/41vG9T5n4gL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FK1VVFV9?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0FHL1Q91F",
         "title": "Hasbro Marvel Legends The Owl Figura Articulada 15 cm",
-        "price": 485.45,
+        "price": 485.14,
         "discount": 31,
         "image": "https://m.media-amazon.com/images/I/41yaFV1KY4L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FHL1Q91F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -5836,18 +6700,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0FZYZ3K4F",
-        "title": "Hallmark - Adorno de Navidad de Recuerdo, Disney/Pixar Up Carl & Ellie, Regalos para fanáticos de Disney",
-        "price": 389.51,
-        "discount": 28,
-        "image": "https://m.media-amazon.com/images/I/A1Hp5EAzQBL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FZYZ3K4F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Pixar",
-        "source_type": "keyword",
-        "keyword_match": "Pixar",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0GD8DW1TH",
         "title": "Mcfarlane DC Theatrical Vehicles: Batman Return - Batmissile Escala 7 Pulgadas",
         "price": 2093.52,
@@ -5884,18 +6736,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0F8HYQL7C",
-        "title": "Sandalias Crocs Super Mario Core Classic, Kids",
-        "price": 956.44,
-        "discount": 26,
-        "image": "https://m.media-amazon.com/images/I/41c2ulfarLL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F8HYQL7C?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Crocs",
-        "source_type": "keyword",
-        "keyword_match": "Crocs",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0GD8VJZT8",
         "title": "Mcfarlane DC Multiverse: New 52 - Batman 7 Pulgadas",
         "price": 499.0,
@@ -5905,6 +6745,18 @@
         "source_channel": "Keyword: Mcfarlane",
         "source_type": "keyword",
         "keyword_match": "Mcfarlane",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0BDJ9NRLP",
+        "title": "Hasbro Star Wars The Black Series - Figura de acción Coleccionable de General Hera Syndulla, Star Wars: Ahsoka",
+        "price": 479.0,
+        "discount": 26,
+        "image": "https://m.media-amazon.com/images/I/31gwGnwfv7L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BDJ9NRLP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Dc Multiverse",
+        "source_type": "keyword",
+        "keyword_match": "Dc Multiverse",
         "novedad_score": 0.5
       },
       {
@@ -5929,18 +6781,6 @@
         "source_channel": "Keyword: Hasbro",
         "source_type": "keyword",
         "keyword_match": "Hasbro",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0FHJVPXMB",
-        "title": "Spider-Man Legends Retro Cardiac Figura Articulable 15 cm",
-        "price": 515.44,
-        "discount": 26,
-        "image": "https://m.media-amazon.com/images/I/51xtqafkmwL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FHJVPXMB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Marvel Legends",
-        "source_type": "keyword",
-        "keyword_match": "Marvel Legends",
         "novedad_score": 0.5
       },
       {
@@ -6016,18 +6856,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0FK9QFRRJ",
-        "title": "Dragon Ball - Frieza 4th Form, Figura Acción, Dragon Ball Z, 12.7 cm (5\")",
-        "price": 378.41,
-        "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/3160HST+qwL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FK9QFRRJ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Dragon Ball Z",
-        "source_type": "keyword",
-        "keyword_match": "Dragon Ball Z",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0FGPZJHJD",
         "title": "TUBBZ NS5452",
         "price": 549.16,
@@ -6064,6 +6892,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0FK9QFRRJ",
+        "title": "Dragon Ball - Frieza 4th Form, Figura Acción, Dragon Ball Z, 12.7 cm (5\")",
+        "price": 378.41,
+        "discount": 24,
+        "image": "https://m.media-amazon.com/images/I/3160HST+qwL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FK9QFRRJ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Dragon Ball Z",
+        "source_type": "keyword",
+        "keyword_match": "Dragon Ball Z",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0GFPJ24QC",
         "title": "Teenage Mutant Ninja Turtles TMNT/GI Joe Basic AWE",
         "price": 820.46,
@@ -6073,18 +6913,6 @@
         "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
         "source_type": "keyword",
         "keyword_match": "Teenage Mutant Ninja Turtles",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0H7YTTRNG",
-        "title": "Disney - Monsters Inc. Mochila Keepack Escolar Juvenil, Morral Resistente con Diseño Original y Amplios Compartimentos",
-        "price": 685.49,
-        "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/41Efw8PSp8L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0H7YTTRNG?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Pixar",
-        "source_type": "keyword",
-        "keyword_match": "Pixar",
         "novedad_score": 0.5
       },
       {
@@ -6112,6 +6940,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0DJ2CV13S",
+        "title": "TAMASHII Nations - Tekken 8 - Nina Williams, Bandai Spirits S.H.Figuarts Figura de acción",
+        "price": 1533.58,
+        "discount": 23,
+        "image": "https://m.media-amazon.com/images/I/31O+7p6buOL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DJ2CV13S?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Figuarts",
+        "source_type": "keyword",
+        "keyword_match": "Figuarts",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0H7YXY44Z",
         "title": "Motu Mochila Common Nation Escolar para Niño, Morral de Diseño Original y Resistente con Correas Ajustables y Gran Confort",
         "price": 690.51,
@@ -6136,15 +6976,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0DK7M5QVY",
-        "title": "Marvel Legends Series Gamerverse, Wolverine vs. Marvel'S Silver Samurai",
-        "price": 1333.62,
+        "asin": "B0F6BNQMFH",
+        "title": "Teenage Mutant Ninja Turtles: The Last Ronin Box Set",
+        "price": 1243.34,
         "discount": 23,
-        "image": "https://m.media-amazon.com/images/I/41Nzk07ym5L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DK7M5QVY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Wolverine",
+        "image": "https://m.media-amazon.com/images/I/51LbtTz3oqL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F6BNQMFH?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
         "source_type": "keyword",
-        "keyword_match": "Wolverine",
+        "keyword_match": "Teenage Mutant Ninja Turtles",
         "novedad_score": 0.5
       },
       {
@@ -6208,18 +7048,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0FFNXXTKJ",
-        "title": "Nintendo switch 2 Internacional - switch 2 Edition",
-        "price": 9797.0,
-        "discount": 22,
-        "image": "https://m.media-amazon.com/images/I/41wYFEZTXOL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FFNXXTKJ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Nintendo",
-        "source_type": "keyword",
-        "keyword_match": "Nintendo",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0FTFW72FC",
         "title": "Jada Majorette Collection - 1995 Toyota Supra 1:64 Modelo de Coche Fundido a presión con neumáticos de Goma y Vitrina, para coleccionistas y Adultos",
         "price": 225.7,
@@ -6268,18 +7096,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0F6BNQMFH",
-        "title": "Teenage Mutant Ninja Turtles: The Last Ronin Box Set",
-        "price": 1272.48,
-        "discount": 21,
-        "image": "https://m.media-amazon.com/images/I/51LbtTz3oqL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F6BNQMFH?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
-        "source_type": "keyword",
-        "keyword_match": "Teenage Mutant Ninja Turtles",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0CSPQDGNT",
         "title": "Marvel Legends Series - Figura de acción de colección de Wolverine - X-Men Retro - Cómics de Marvel - Secret Wars",
         "price": 515.83,
@@ -6289,6 +7105,18 @@
         "source_channel": "Keyword: Wolverine",
         "source_type": "keyword",
         "keyword_match": "Wolverine",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B08HH76Y88",
+        "title": "Funko Pop! TV: Transformers - Nemesis Prime",
+        "price": 255.53,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/41Teeqq5yWL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH76Y88?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 0.5
       },
       {
@@ -6330,7 +7158,7 @@
       {
         "asin": "B0FHGTS3R8",
         "title": "Marvel Set Legends Series X-Men Kitty Pryde & Colossus",
-        "price": 1195.16,
+        "price": 1197.46,
         "discount": 20,
         "image": "https://m.media-amazon.com/images/I/41f7VvB+wEL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FHGTS3R8?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -6340,15 +7168,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GRHHFK7B",
-        "title": "Paladone Toy Story Woody Icon Light",
-        "price": 419.29,
+        "asin": "B0FFNXXTKJ",
+        "title": "Nintendo switch 2 Internacional - switch 2 Edition",
+        "price": 9999.0,
         "discount": 20,
-        "image": "https://m.media-amazon.com/images/I/31hKtRHsVHL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GRHHFK7B?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Paladone",
+        "image": "https://m.media-amazon.com/images/I/41wYFEZTXOL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FFNXXTKJ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Nintendo",
         "source_type": "keyword",
-        "keyword_match": "Paladone",
+        "keyword_match": "Nintendo",
         "novedad_score": 0.5
       },
       {
@@ -6472,18 +7300,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0CSH49LGX",
-        "title": "Marvel Legends Series, Strange Tales - Figura de acción Coleccionable de Marvel'S Lilith - Inspirada en los cómics",
-        "price": 530.85,
-        "discount": 18,
-        "image": "https://m.media-amazon.com/images/I/4118RXshi4L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CSH49LGX?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Fantastics",
-        "source_type": "keyword",
-        "keyword_match": "Fantastics",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0FHKZBDDT",
         "title": "Marvel Legends Series Hulk 2099 Figura de Acción Articulable 15 cm",
         "price": 986.51,
@@ -6520,15 +7336,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GRHSRRZH",
-        "title": "Paladone Toy Story Alien Icon Light",
-        "price": 415.56,
-        "discount": 18,
-        "image": "https://m.media-amazon.com/images/I/41G5iRZo2QL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GRHSRRZH?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Paladone",
+        "asin": "B0DFLY2M8K",
+        "title": "TAMASHII Nations - One Piece - Sabo - Jefe de Estado Mayor del Ejército Revolucionario, Bandai Spirits S.H.Figuarts Figura de acción",
+        "price": 1567.32,
+        "discount": 17,
+        "image": "https://m.media-amazon.com/images/I/41-9JJEC0KL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DFLY2M8K?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Figuarts",
         "source_type": "keyword",
-        "keyword_match": "Paladone",
+        "keyword_match": "Figuarts",
         "novedad_score": 0.5
       },
       {
@@ -6568,6 +7384,42 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "1799501205",
+        "title": "Crisis on Infinite Earths: Absolute Edition",
+        "price": 1784.17,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/61Yd4EoMiaL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1799501205?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Absolute",
+        "source_type": "keyword",
+        "keyword_match": "Absolute",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0G6NS1GD4",
+        "title": "Igloo DC Super Heroes Superman 16 oz, Lata de Acero Inoxidable Aislado | Edición Especial, impresión Mate 3D Texturizada",
+        "price": 379.99,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/312ztX0g8RL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G6NS1GD4?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0GF9MS6HN",
+        "title": "Jada Cocoa Pebbles Barney Escombros Figura de Acci?n - Escala 1:12",
+        "price": 579.0,
+        "discount": 16,
+        "image": "https://m.media-amazon.com/images/I/41hEDIgaugL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GF9MS6HN?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Jada Toys",
+        "source_type": "keyword",
+        "keyword_match": "Jada Toys",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0DBRZQ8F4",
         "title": "Loungefly Naruto Sakura - Mini mochila para cosplay",
         "price": 1033.36,
@@ -6598,6 +7450,18 @@
         "discount": 15,
         "image": "https://m.media-amazon.com/images/I/51d-YqxncYL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B08HH4QBXY?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0FCYRQ93P",
+        "title": "Vitrina compatible con Labubu de 15.75 pulgadas de altura, caja de exhibición acrílica transparente para muñeca POP MART Labubu, 1 paquete",
+        "price": 400.03,
+        "discount": 15,
+        "image": "https://m.media-amazon.com/images/I/41n9cJoKTxL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FCYRQ93P?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -6652,15 +7516,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0G1TXHCM1",
-        "title": "Marvel Figura de Acción Spider-Man Brand New Day Hulk",
-        "price": 1016.39,
+        "asin": "B0FZYZ3K4F",
+        "title": "Hallmark - Adorno de Navidad de Recuerdo, Disney/Pixar Up Carl & Ellie, Regalos para fanáticos de Disney",
+        "price": 459.96,
         "discount": 15,
-        "image": "https://m.media-amazon.com/images/I/41VpsKjgwOL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G1TXHCM1?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Marvel Legends",
+        "image": "https://m.media-amazon.com/images/I/A1Hp5EAzQBL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FZYZ3K4F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Pixar",
         "source_type": "keyword",
-        "keyword_match": "Marvel Legends",
+        "keyword_match": "Pixar",
         "novedad_score": 0.5
       },
       {
@@ -6678,7 +7542,7 @@
       {
         "asin": "B0G43P8W7G",
         "title": "Disney Princesa Muñeca Manga Blanca Nieves 6Y+",
-        "price": 936.55,
+        "price": 936.94,
         "discount": 15,
         "image": "https://m.media-amazon.com/images/I/41tLZQmuWYL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G43P8W7G?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -6700,18 +7564,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GL9FB2YW",
-        "title": "Lámpara Recargable de Silicón Toy Story Alien SquishyGlo Disney Original",
-        "price": 768.6,
-        "discount": 15,
-        "image": "https://m.media-amazon.com/images/I/41aya8xQ6XL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GL9FB2YW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Paladone",
-        "source_type": "keyword",
-        "keyword_match": "Paladone",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0FRF3XGQ4",
         "title": "Divoom MiniToo Retro - Altavoz de computadora estilo PC, pantalla de píxeles inteligente con caras DIY, Bluetooth y audio USB, alarma/reloj de ruido blanco, regalo para configuración de escritorio",
         "price": 1338.4,
@@ -6724,6 +7576,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0DBKHMX3K",
+        "title": "TAMASHII Nations - Deadpool & Wolverine - Deadpool, Bandai Spirits S.H.Figuarts Figura de acción",
+        "price": 2229.89,
+        "discount": 14,
+        "image": "https://m.media-amazon.com/images/I/31HRiTrfbzL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DBKHMX3K?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Figuarts",
+        "source_type": "keyword",
+        "keyword_match": "Figuarts",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0F63KZSB9",
         "title": "BANPRESTO Figura DE ACCIÓN JUJUTSU Kaisen",
         "price": 567.59,
@@ -6733,6 +7597,18 @@
         "source_channel": "Keyword: Jujutsu Kaisen",
         "source_type": "keyword",
         "keyword_match": "Jujutsu Kaisen",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0G22HNHJZ",
+        "title": "Jazwares Toy_Figure KPOP Demon Hunters - KPDH00050",
+        "price": 429.99,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/41aYnimmbuL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G22HNHJZ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 0.5
       },
       {
@@ -6790,9 +7666,9 @@
         "discount": 12,
         "image": "https://m.media-amazon.com/images/I/41sUEeEYqQL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G43RB3GV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Dc Multiverse",
+        "source_channel": "Keyword: Mattel",
         "source_type": "keyword",
-        "keyword_match": "Dc Multiverse",
+        "keyword_match": "Mattel",
         "novedad_score": 0.5
       },
       {
@@ -6877,18 +7753,6 @@
         "source_channel": "Keyword: Shippuden",
         "source_type": "keyword",
         "keyword_match": "Shippuden",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0FP5CJWM2",
-        "title": "Jada Street Fighter II Dhalsim Player 2 Deluxe Limited Edition Next Level Escala 1:12 de 17 cm, accesorios intercambiables con licencia oficial (9336690314R00)",
-        "price": 1491.57,
-        "discount": 11,
-        "image": "https://m.media-amazon.com/images/I/31gs3zYdWqL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FP5CJWM2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Jada Toys",
-        "source_type": "keyword",
-        "keyword_match": "Jada Toys",
         "novedad_score": 0.5
       },
       {
@@ -7012,30 +7876,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GCQM6W75",
-        "title": "NECA IT: Welcome to Derry - Figura de acción de Escala Ultimate Pennywise de 7 Pulgadas",
-        "price": 1323.0,
-        "discount": 10,
-        "image": "https://m.media-amazon.com/images/I/41lZPnYFzbL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GCQM6W75?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: NECA",
-        "source_type": "keyword",
-        "keyword_match": "NECA",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0DZMS5DGK",
-        "title": "Ultimate Guard Play-Mat Magic: The Gathering Tarkir: Dragonstorm",
-        "price": 388.28,
-        "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/41areEY6p3L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DZMS5DGK?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Commander",
-        "source_type": "keyword",
-        "keyword_match": "Commander",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0DP3SMCS4",
         "title": "TAMASHII Nations Dragon Ball - Son Goku & Bulma FiguartsZERO Figura",
         "price": 3093.09,
@@ -7060,27 +7900,27 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0DBRXH6TK",
-        "title": "Loungefly Disney Cute Stitch Mini Mochila",
-        "price": 1540.94,
-        "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/41COpk1LGJL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DBRXH6TK?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Loungefly",
-        "source_type": "keyword",
-        "keyword_match": "Loungefly",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0G1VVKS87",
         "title": "Banpresto - Luffy Gear 5, Battle Record Collection, One Piece, 13 cm",
-        "price": 584.49,
+        "price": 584.44,
         "discount": 9,
         "image": "https://m.media-amazon.com/images/I/41YogoXQ+dL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G1VVKS87?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
         "source_channel": "Keyword: Nations",
         "source_type": "keyword",
         "keyword_match": "Nations",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0FTTDWFJW",
+        "title": "Mcfarlane Figure with Comic: TMNT Tortugas Ninja - Michelangelo 5 Pulgadas",
+        "price": 528.61,
+        "discount": 9,
+        "image": "https://m.media-amazon.com/images/I/41j0yfaABlL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FTTDWFJW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
+        "source_type": "keyword",
+        "keyword_match": "Teenage Mutant Ninja Turtles",
         "novedad_score": 0.5
       },
       {
@@ -7110,25 +7950,13 @@
       {
         "asin": "B0FH3JNYS5",
         "title": "TMNT Classic 6 Pack Remastered Línea Clásica Inspirada en la Serie de 1988 Donatello, Miguel Ángel, Leonardo, Rafael, Splinter y Shredder 6 Figuras de 4.5\" Originales de Bandai",
-        "price": 1599.44,
+        "price": 1595.24,
         "discount": 8,
         "image": "https://m.media-amazon.com/images/I/518V30p51VL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FH3JNYS5?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
         "source_channel": "Keyword: Mutant",
         "source_type": "keyword",
         "keyword_match": "Mutant",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0FTTDWFJW",
-        "title": "Mcfarlane Figure with Comic: TMNT Tortugas Ninja - Michelangelo 5 Pulgadas",
-        "price": 529.54,
-        "discount": 8,
-        "image": "https://m.media-amazon.com/images/I/41j0yfaABlL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FTTDWFJW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
-        "source_type": "keyword",
-        "keyword_match": "Teenage Mutant Ninja Turtles",
         "novedad_score": 0.5
       },
       {
@@ -7144,15 +7972,27 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0GHPG6MKV",
+        "title": "Buffalo Games - Star Wars: The Force - Rompecabezas de 1000 Piezas, colección de Arte Fino, Rompecabezas Colorido para Adultos, Piezas de Corte de precisión, Hermosas Obras de Arte y Horas de",
+        "price": 516.99,
+        "discount": 6,
+        "image": "https://m.media-amazon.com/images/I/31m0nRWBKgL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GHPG6MKV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Buffalo",
+        "source_type": "keyword",
+        "keyword_match": "Buffalo",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0FDMXKDR1",
         "title": "Dragon Ball Evolve Super Saiyan Rose Goku Black Dragon Ball Super Figura articulada de acción de 5\" muñeco posable para niños",
         "price": 354.56,
         "discount": 6,
         "image": "https://m.media-amazon.com/images/I/311W5Jd5y7L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FDMXKDR1?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Ichibansho",
+        "source_channel": "Keyword: Dragon Ball Super",
         "source_type": "keyword",
-        "keyword_match": "Ichibansho",
+        "keyword_match": "Dragon Ball Super",
         "novedad_score": 0.5
       },
       {
@@ -7216,15 +8056,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0GPF4V494",
-        "title": "Paladone Minecraft Chicken Jockey Icon Light – 12 cm Light‑Up Mini Figure – Fun Bedroom or Desk Lamp for Gamers",
-        "price": 445.06,
+        "asin": "B0CRSXYLZB",
+        "title": "Super7 Thundercats ULTIMATES! Wave 10 - Figura de acción Young Lion-O",
+        "price": 1414.03,
         "discount": 6,
-        "image": "https://m.media-amazon.com/images/I/31Nko6T2X4L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GPF4V494?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Paladone",
+        "image": "https://m.media-amazon.com/images/I/41IF8QqhFvL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CRSXYLZB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Thundercats",
         "source_type": "keyword",
-        "keyword_match": "Paladone",
+        "keyword_match": "Thundercats",
         "novedad_score": 0.5
       },
       {
@@ -7249,30 +8089,6 @@
         "source_channel": "Keyword: Superman",
         "source_type": "keyword",
         "keyword_match": "Superman",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0CRSXYLZB",
-        "title": "Super7 Thundercats ULTIMATES! Wave 10 - Figura de acción Young Lion-O",
-        "price": 1427.37,
-        "discount": 5,
-        "image": "https://m.media-amazon.com/images/I/41IF8QqhFvL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CRSXYLZB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Thundercats",
-        "source_type": "keyword",
-        "keyword_match": "Thundercats",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0F54KLVKL",
-        "title": "Mcfarlane DC Multiverse: Dark Knight Returns - Superman Blanco Y Negro Gold Label 7 Pulgadas",
-        "price": 899.0,
-        "discount": 0,
-        "image": "https://m.media-amazon.com/images/I/31u1T3f1g5L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F54KLVKL?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "The Geek Chronicles",
-        "source_type": "telegram",
-        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 0.5
       },
       {
