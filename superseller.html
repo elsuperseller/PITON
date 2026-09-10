@@ -1806,6 +1806,9 @@ function exportCSV() {
   a.click(); URL.revokeObjectURL(url)
 }
 
+// Variable global para controlar el timeout del botón
+let btnSheetsTimeout = null
+
 async function exportarSheets() {
   const selected = allItems.filter((_, i) => document.getElementById("chk_"+i)?.checked)
   if (!selected.length) { alert("Selecciona al menos un producto"); return }
@@ -1826,8 +1829,17 @@ async function exportarSheets() {
   console.log("✅ Usando feedId:", feedIdToUse)
 
   const btn = document.getElementById("btnSheets")
+
+  // Cancelar timeout anterior si existe
+  if (btnSheetsTimeout) {
+    clearTimeout(btnSheetsTimeout)
+    btnSheetsTimeout = null
+  }
+
+  // Resetear botón al estado inicial
   btn.textContent = "⏳ Enviando…"
   btn.disabled = true
+
   try {
     // SIEMPRE usar el endpoint de feeds con la audiencia activa
     const endpoint = "http://localhost:8765/feeds/export-sheets"
@@ -1841,13 +1853,27 @@ async function exportarSheets() {
     }, 90000)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
+
     btn.textContent = `✅ ${d.rows} filas`
     btn.style.background = "#10b981"
-    setTimeout(() => { btn.textContent = "📊 → Sheets"; btn.style.background = "#1a7f4b"; btn.disabled = false }, 3000)
+
+    btnSheetsTimeout = setTimeout(() => {
+      btn.textContent = "📊 → Sheets"
+      btn.style.background = "#1a7f4b"
+      btn.disabled = false
+      btnSheetsTimeout = null
+    }, 3000)
   } catch(e) {
     btn.textContent = "❌ Error"
     btn.style.background = "#ef4444"
-    setTimeout(() => { btn.textContent = "📊 → Sheets"; btn.style.background = "#1a7f4b"; btn.disabled = false }, 3000)
+
+    btnSheetsTimeout = setTimeout(() => {
+      btn.textContent = "📊 → Sheets"
+      btn.style.background = "#1a7f4b"
+      btn.disabled = false
+      btnSheetsTimeout = null
+    }, 3000)
+
     alert("Error al exportar: " + e.message)
   }
 }
