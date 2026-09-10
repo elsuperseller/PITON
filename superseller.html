@@ -426,6 +426,17 @@ input[type=file] {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+@keyframes pulseDetener {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    transform: scale(1.05);
+  }
+}
+
 /* ── EXPORT BAR ────────────────────────────────────── */
 #exportBar {
   position: fixed; bottom: var(--sb); left: var(--sw); right: 0;
@@ -689,7 +700,7 @@ input[type=file] {
     <select id="audienciaGlobalSelect" onchange="cambiarAudienciaGlobal()" class="audiencia-select">
       <option value="">🎯 Selecciona audiencia...</option>
     </select>
-    <button id="btnDetener" onclick="detenerProceso()" style="display:none;" class="btn btn-danger">⏹ Detener</button>
+    <button id="btnDetener" onclick="detenerProceso()" style="display:none;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
     <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;" class="btn btn-danger">👎 Descartar</button>
     <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar</button>
   </div>
@@ -1624,7 +1635,7 @@ async function buscar() {
   document.getElementById("btnDescartarSeleccionados").style.display = "none"
   document.getElementById("filtro-fuente").style.display = "none"
   document.getElementById("agregar-manual").style.display = "none"
-  currentFeedId = null
+  // NO borrar currentFeedId - mantener la audiencia seleccionada
 
   const filtros = {
     solo_permanentes: document.getElementById("f_solo_perm").checked,
