@@ -1,7 +1,7 @@
 {
   "coleccionistas": {
     "fecha": "2026-09-10",
-    "timestamp": "2026-09-10T12:15:21.199289",
+    "timestamp": "2026-09-10T13:01:21.629198",
     "productos": [
       {
         "asin": "B0F5HWX7XC",
@@ -37,18 +37,6 @@
         "source_channel": "Keyword: Teenage Mutant Ninja Turtles",
         "source_type": "keyword",
         "keyword_match": "Teenage Mutant Ninja Turtles",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0CNSHSC8H",
-        "title": "Winning Moves Games Rack-O Jr USA, Edición Infantil del Juego de Rack-O para 2 a 4 Jugadores, a Partir de 4 años",
-        "price": 181.93,
-        "discount": 54,
-        "image": "https://m.media-amazon.com/images/I/51h1qXy9+hL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CNSHSC8H?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "The Geek Chronicles",
-        "source_type": "telegram",
-        "keyword_match": "📱 The Geek Chronicles",
         "novedad_score": 1.0
       },
       {
@@ -244,6 +232,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DQWNQ9GF",
+        "title": "Hallmark Chucky Funko Pop! Adornos de Navidad, Regalos de Cultura Pop",
+        "price": 199.86,
+        "discount": 42,
+        "image": "https://m.media-amazon.com/images/I/A1cil4yq1tL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DQWNQ9GF?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DBGFXSR6",
         "title": "The Best Of Classical Music Vol. 2",
         "price": 376.91,
@@ -316,6 +316,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DQWY2JWN",
+        "title": "Hallmark Peanuts - Adorno navideño (Jugador de béisbol de Snoopy)",
+        "price": 247.28,
+        "discount": 40,
+        "image": "https://m.media-amazon.com/images/I/A12aVps4c3L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DQWY2JWN?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0CT559B2P",
         "title": "PowerA Protection Case for Nintendo Switch - OLED Model, Nintendo Switch, Nintendo Switch Lite - Peely",
         "price": 360.0,
@@ -376,6 +388,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B07RTQ4VM7",
+        "title": "Afnan Agua de Perfume EDP 9PM para Hombres, 100 ml (Paquete de 1)",
+        "price": 437.7,
+        "discount": 35,
+        "image": "https://m.media-amazon.com/images/I/21gLiPkpiGL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B07RTQ4VM7?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Azzaro",
+        "source_type": "keyword",
+        "keyword_match": "Azzaro",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0G4K4LDPH",
         "title": "Disney Marvel Spiderman - Traje de baño para niños, playera de protección contra erupciones y traje de baño con punto de baño UPF 50+, traje de baño para niños de verano 3M-13Y, Disney Avengers Iron",
         "price": 370.06,
@@ -394,18 +418,6 @@
         "discount": 34,
         "image": "https://m.media-amazon.com/images/I/31wuKwWuUUL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B07WC4P1HV?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Azzaro",
-        "source_type": "keyword",
-        "keyword_match": "Azzaro",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B07RTQ4VM7",
-        "title": "Afnan Agua de Perfume EDP 9PM para Hombres, 100 ml (Paquete de 1)",
-        "price": 447.1,
-        "discount": 34,
-        "image": "https://m.media-amazon.com/images/I/21gLiPkpiGL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B07RTQ4VM7?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
         "source_channel": "Keyword: Azzaro",
         "source_type": "keyword",
         "keyword_match": "Azzaro",
@@ -544,27 +556,15 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0CTJ1TKJB",
-        "title": "AZZARO, The Most Wanted Eau de Toilette Intense, Fragancia para Hombre, Sensual y Atrevida, Aroma Cítrico y Floral, 100 ML",
-        "price": 760.0,
-        "discount": 32,
-        "image": "https://m.media-amazon.com/images/I/31BkHyjUuoL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0CTJ1TKJB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Azzaro",
-        "source_type": "keyword",
-        "keyword_match": "Azzaro",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0G1TW2D3W",
         "title": "Star Wars SW BL Hermes",
         "price": 475.71,
         "discount": 32,
         "image": "https://m.media-amazon.com/images/I/41-Ek68du9L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G1TW2D3W?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: DC Multiverse",
+        "source_channel": "Keyword: Dc Multiverse",
         "source_type": "keyword",
-        "keyword_match": "DC Multiverse",
+        "keyword_match": "Dc Multiverse",
         "novedad_score": 1.0
       },
       {
@@ -654,7 +654,7 @@
       {
         "asin": "B0G3QKCHBZ",
         "title": "Masters of The Universe Película Playset Set de Juego 2 en 1 de Eternia 6Y+",
-        "price": 1720.86,
+        "price": 1726.87,
         "discount": 31,
         "image": "https://m.media-amazon.com/images/I/51euuKRHAeL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G3QKCHBZ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -786,7 +786,7 @@
       {
         "asin": "B0FR7JTZT5",
         "title": "Magic The Gathering: TMNT Teenage Mutant Ninja Turtles - Draft Night En Ingles",
-        "price": 1945.59,
+        "price": 1945.64,
         "discount": 29,
         "image": "https://m.media-amazon.com/images/I/41a8R4vRCyL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FR7JTZT5?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -988,6 +988,30 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F67PYYQY",
+        "title": "Crayola - Juego de 7 crayones para tina + borrador, kit de coloración lavable y borrador de fácil limpieza, rojo luciérnaga, azul cielo y más favoritos, genial para niños creativos",
+        "price": 298.86,
+        "discount": 27,
+        "image": "https://m.media-amazon.com/images/I/41uTGkch8nL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F67PYYQY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Crayola",
+        "source_type": "keyword",
+        "keyword_match": "Crayola",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DQWN5FW8",
+        "title": "Hallmark - Adornos de Navidad de Alicia en el País de Las Maravillas, Regalos para Fans de Disney",
+        "price": 196.46,
+        "discount": 27,
+        "image": "https://m.media-amazon.com/images/I/A1oRFFUySDL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DQWN5FW8?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0CKC2LG5V",
         "title": "Star Wars The Black Series - Darth Vader Una Nueva Esperanza - Figura Coleccionable Inspirada en la Saga, de 15 cm, Gran opción para coleccionar, +4 años",
         "price": 513.73,
@@ -1122,7 +1146,7 @@
       {
         "asin": "B0DBRXKSHP",
         "title": "Loungefly Disney Cute Stitch Cherry Blossom Mini Mochila",
-        "price": 1263.05,
+        "price": 1265.05,
         "discount": 25,
         "image": "https://m.media-amazon.com/images/I/411k3UirS3L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DBRXKSHP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -1240,18 +1264,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0F67PYYQY",
-        "title": "Crayola - Juego de 7 crayones para tina + borrador, kit de coloración lavable y borrador de fácil limpieza, rojo luciérnaga, azul cielo y más favoritos, genial para niños creativos",
-        "price": 317.61,
-        "discount": 23,
-        "image": "https://m.media-amazon.com/images/I/41uTGkch8nL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F67PYYQY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Crayola",
-        "source_type": "keyword",
-        "keyword_match": "Crayola",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0FPNMVB3X",
         "title": "Funko Pop! Deluxe: Deadpool - Deadpool on Bridge",
         "price": 555.1,
@@ -1312,6 +1324,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0GFTB73LZ",
+        "title": "Star Wars The Black Series Gaming Greats Trooper de purga y Trooper de patrulla, paquete de colección premium de Star Wars Jedi: Survivor, figuras de acción coleccionables de 15 cm de 2 piezas",
+        "price": 1191.32,
+        "discount": 22,
+        "image": "https://m.media-amazon.com/images/I/410cpSdOvQL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GFTB73LZ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FVT2XKRS",
         "title": "UGREEN 45W Cargador Tipo C GAN Portátil con Cable, 3 Puertos USB C y USB A",
         "price": 468.98,
@@ -1357,6 +1381,18 @@
         "source_channel": "Keyword: Funko Pop",
         "source_type": "keyword",
         "keyword_match": "Funko Pop",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DPGT2975",
+        "title": "Hallmark NFL Dallas Cowboys - Adorno de Navidad para fanáticos de los Deportes",
+        "price": 260.84,
+        "discount": 22,
+        "image": "https://m.media-amazon.com/images/I/A1vXSb6VbQL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DPGT2975?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
         "novedad_score": 1.0
       },
       {
@@ -1444,6 +1480,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "142342574X",
+        "title": "B.B. King: Master Bluesman",
+        "price": 512.53,
+        "discount": 21,
+        "image": "https://m.media-amazon.com/images/I/51jOJCIz+nL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/142342574X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Beeman",
+        "source_type": "keyword",
+        "keyword_match": "Beeman",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0HG93SD77",
         "title": "Limpiador a Vapor Portátil de 2500 W, Ideal para Cocinas y Baños",
         "price": 869.9,
@@ -1525,6 +1573,18 @@
         "source_channel": "Keyword: Aceite",
         "source_type": "keyword",
         "keyword_match": "Aceite",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0GWTP1F16",
+        "title": "Purificador de Aire Básico con 4 Velocidades, Modo Automático y Sueño, Temporizador, Luz Apagable, Filtro de Aire para Hogar y Oficina",
+        "price": 1599.99,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/41oynrSjEEL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GWTP1F16?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Aire",
+        "source_type": "keyword",
+        "keyword_match": "Aire",
         "novedad_score": 1.0
       },
       {
@@ -1660,18 +1720,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DK61455X",
-        "title": "Loungefly Toei Mini mochila de una pieza",
-        "price": 1029.88,
-        "discount": 20,
-        "image": "https://m.media-amazon.com/images/I/51dAGpJbvwL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DK61455X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Loungefly",
-        "source_type": "keyword",
-        "keyword_match": "Loungefly",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0FHKQP6V7",
         "title": "Mattel Games Monos Locos Buzz Lightyear, Juego De Mesa De Equilibrio Inspirado En Toy Story 2026, Diversión Familiar para Niños De 5 Años",
         "price": 639.84,
@@ -1729,6 +1777,18 @@
         "source_channel": "Keyword: Deadpool",
         "source_type": "keyword",
         "keyword_match": "Deadpool",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DK61455X",
+        "title": "Loungefly Toei Mini mochila de una pieza",
+        "price": 1031.34,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/51dAGpJbvwL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DK61455X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Loungefly",
+        "source_type": "keyword",
+        "keyword_match": "Loungefly",
         "novedad_score": 1.0
       },
       {
@@ -1924,6 +1984,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0CST8MJ6H",
+        "title": "Hallmark Halo Master Chief - Adorno navideño",
+        "price": 273.76,
+        "discount": 17,
+        "image": "https://m.media-amazon.com/images/I/A1FbfZP5zML._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CST8MJ6H?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FH7LJ6SP",
         "title": "Star Wars Figura de Acción Black Series The Mandalorian & Grogu Coronel Ward",
         "price": 608.15,
@@ -2020,12 +2092,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0D1GBH5XK",
-        "title": "Douk Audio - Preamplificador de audio de ecualizador equilibrado de 7 bandas con entrada y salida XLR RCA para estéreo doméstico, amplificador, altavoz de computadora (T7), SUC-T7",
-        "price": 2145.59,
+        "asin": "B0CNX2M7GW",
+        "title": "Douk Audio T9 - Preamplificador de tocadiscos estéreo con salida de auriculares y control de graves agudos para reproductor de grabación MM/MC, audio de alta fidelidad para el hogar, amplificador,",
+        "price": 3001.74,
         "discount": 16,
-        "image": "https://m.media-amazon.com/images/I/31xji8EOXrL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0D1GBH5XK?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/41Mz8ilhzVL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CNX2M7GW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
         "source_channel": "Keyword: Dapri",
         "source_type": "keyword",
         "keyword_match": "Dapri",
@@ -2116,6 +2188,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0GZ35YN9J",
+        "title": "Purificador de Aire Aromaterapia Filtro HEPA Air Purifier Hasta 1226 ft²",
+        "price": 1709.99,
+        "discount": 15,
+        "image": "https://m.media-amazon.com/images/I/41aLgbeo3SL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GZ35YN9J?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Aire",
+        "source_type": "keyword",
+        "keyword_match": "Aire",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FPW3B7BB",
         "title": "RWDKDTX Alacenas para Cocina Despensa, Credenza Bufetera Comedor, Beige",
         "price": 1623.6,
@@ -2149,18 +2233,6 @@
         "source_channel": "Keyword: Apple",
         "source_type": "keyword",
         "keyword_match": "Apple",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "188879979X",
-        "title": "Plagues & Poxes: The Impact of Human History on Epidemic Disease",
-        "price": 667.85,
-        "discount": 15,
-        "image": "https://m.media-amazon.com/images/I/51hMYa6enOL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/188879979X?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Assistrust",
-        "source_type": "keyword",
-        "keyword_match": "Assistrust",
         "novedad_score": 1.0
       },
       {
@@ -2464,18 +2536,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0FKS9L7Q3",
-        "title": "Crocs Jibbitz - Paquetes de dijes para zapatos deportivos y exteriores, FIFA 26, 5-Pack",
-        "price": 477.81,
-        "discount": 13,
-        "image": "https://m.media-amazon.com/images/I/41m3ZHp-xAL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FKS9L7Q3?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Crocs",
-        "source_type": "keyword",
-        "keyword_match": "Crocs",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0F66DXJNM",
         "title": "The Legend of Zelda: Tears of the Kingdom - Nintendo Switch 2 Edition for Nintendo Switch 2",
         "price": 1399.0,
@@ -2610,7 +2670,7 @@
       {
         "asin": "B0DMNHCQYN",
         "title": "Bandai Hobby - Yu-Gi-Oh! - Kit de Modelo Figure-Rise Standard Amplified del Dios Egipcio Obelisk el Atormentador",
-        "price": 1807.25,
+        "price": 1807.08,
         "discount": 12,
         "image": "https://m.media-amazon.com/images/I/41ZV+McemCL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DMNHCQYN?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -2692,6 +2752,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "1302961179",
+        "title": "Deadpool & X-Force Omnibus Ken Lashley/Greg Capullo Cover [New Printing]",
+        "price": 1512.92,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/51qq+3XBCRL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1302961179?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Deadpool",
+        "source_type": "keyword",
+        "keyword_match": "Deadpool",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FWCZH816",
         "title": "Pop Usopp One Piece Funko Original 2107",
         "price": 796.0,
@@ -2761,6 +2833,18 @@
         "source_channel": "Keyword: Aceite",
         "source_type": "keyword",
         "keyword_match": "Aceite",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0GZ37YW11",
+        "title": "Purificador de Aire Aromaterapia con Alexa Air Purifier Filtro de Aire HEPA",
+        "price": 1799.99,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/41t-XaSohbL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GZ37YW11?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Aire",
+        "source_type": "keyword",
+        "keyword_match": "Aire",
         "novedad_score": 1.0
       },
       {
@@ -3076,18 +3160,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "1302961179",
-        "title": "Deadpool & X-Force Omnibus Ken Lashley/Greg Capullo Cover [New Printing]",
-        "price": 1541.33,
-        "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/51qq+3XBCRL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/1302961179?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Deadpool",
-        "source_type": "keyword",
-        "keyword_match": "Deadpool",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0G36DYL88",
         "title": "Funko Pop! Animation: Netflix Netflix KPOP Demon Hunters - Zoey",
         "price": 289.0,
@@ -3169,6 +3241,18 @@
         "source_channel": "Keyword: Calvin",
         "source_type": "keyword",
         "keyword_match": "Calvin",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0CMG9CWHX",
+        "title": "Polly Pocket Set de Colección Addams Family Collector Compact para niñas de 4 años en adelante",
+        "price": 699.99,
+        "discount": 8,
+        "image": "https://m.media-amazon.com/images/I/51-l4m-0jYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CMG9CWHX?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
         "novedad_score": 1.0
       },
       {
@@ -3354,7 +3438,7 @@
       {
         "asin": "B0BSJ27QTZ",
         "title": "AZZARO, Wanted Eau de Parfum, Perfume de Hombre, Intenso y Seductor, Aroma Amaderado, Aromático y Especiado, 100 ML",
-        "price": 825.0,
+        "price": 830.0,
         "discount": 6,
         "image": "https://m.media-amazon.com/images/I/31eOw3OH95L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0BSJ27QTZ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -3630,7 +3714,7 @@
       {
         "asin": "B0HHNVBHQ5",
         "title": "Control Inalámbrico DualSense: Grand Theft Auto VI Black",
-        "price": 1699.0,
+        "price": 3999.99,
         "discount": 0,
         "image": "https://m.media-amazon.com/images/I/31u2x0VNwmL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0HHNVBHQ5?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
@@ -3652,6 +3736,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B08HGY2HP6",
+        "title": "Funko Pop! Animation: Disney - Ariel/Tiana/Belle/Rapunzel/Moana, 5-Pack",
+        "price": 899.0,
+        "discount": 0,
+        "image": "https://m.media-amazon.com/images/I/51gB0ZjIwaL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HGY2HP6?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "The Geek Chronicles",
+        "source_type": "telegram",
+        "keyword_match": "📱 The Geek Chronicles",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0H1T9HQ48",
         "title": "Call Of The Elder Gods - Miskatonic Ed - Playstation 5",
         "price": 824.2,
@@ -3664,12 +3760,12 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0G1ZDJS2Q",
-        "title": "Toy_Figure - KAZ0106 - Cifras de acción de Anime Total",
-        "price": 547.64,
+        "asin": "B0HJ6W2J5W",
+        "title": "The Legend of Zelda™: Ocarina of Time",
+        "price": 1749.0,
         "discount": 0,
-        "image": "https://m.media-amazon.com/images/I/41pT7N1fTaL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G1ZDJS2Q?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "image": "https://m.media-amazon.com/images/I/51lFtwNk7-L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0HJ6W2J5W?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "The Geek Chronicles",
         "source_type": "telegram",
         "keyword_match": "📱 The Geek Chronicles",
@@ -3832,6 +3928,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0FHL1Q91F",
+        "title": "Hasbro Marvel Legends The Owl Figura Articulada 15 cm",
+        "price": 441.61,
+        "discount": 37,
+        "image": "https://m.media-amazon.com/images/I/41yaFV1KY4L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FHL1Q91F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Marvel Legends",
+        "source_type": "keyword",
+        "keyword_match": "Marvel Legends",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0DX39HQ4Q",
         "title": "NECA Ultimate M3GAN Figura de acción de Escala de 7 Pulgadas",
         "price": 902.0,
@@ -3856,6 +3964,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0DQWLHXPG",
+        "title": "Hallmark - Adorno navideño de Dr. Seuss Grinch (MAX in Antlers)",
+        "price": 189.95,
+        "discount": 35,
+        "image": "https://m.media-amazon.com/images/I/A10OtO1Q3tL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DQWLHXPG?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0FMS9LCMX",
         "title": "Figura Ichibansho - Diosa de la Victoria: Nikke - Rapi: Estatua Coleccionable de Capucha roja",
         "price": 1648.67,
@@ -3868,18 +3988,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0FHL1Q91F",
-        "title": "Hasbro Marvel Legends The Owl Figura Articulada 15 cm",
-        "price": 453.21,
-        "discount": 35,
-        "image": "https://m.media-amazon.com/images/I/41yaFV1KY4L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FHL1Q91F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Marvel Legends",
-        "source_type": "keyword",
-        "keyword_match": "Marvel Legends",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0GTC4L8Z9",
         "title": "Blokees Saint Seiya Champion Class EX: Pegasus Seiya New Bronze Cloth Golden Anniversary Edition 75016",
         "price": 662.03,
@@ -3889,6 +3997,18 @@
         "source_channel": "Keyword: Seiya",
         "source_type": "keyword",
         "keyword_match": "Seiya",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0DQWHQ2KQ",
+        "title": "Hallmark - Adornos de Navidad de Marvel Miles Morales, Regalos de superhéroes",
+        "price": 227.87,
+        "discount": 34,
+        "image": "https://m.media-amazon.com/images/I/A1P1YM4CiaL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DQWHQ2KQ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
         "novedad_score": 0.5
       },
       {
@@ -3925,18 +4045,6 @@
         "source_channel": "Keyword: NECA",
         "source_type": "keyword",
         "keyword_match": "NECA",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0DK7P5MS2",
-        "title": "Marvel Legends Logan Figura X-Men '97 15 cm",
-        "price": 466.02,
-        "discount": 33,
-        "image": "https://m.media-amazon.com/images/I/41nzbNeazHL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DK7P5MS2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Wolverine",
-        "source_type": "keyword",
-        "keyword_match": "Wolverine",
         "novedad_score": 0.5
       },
       {
@@ -4228,15 +4336,27 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0DK7P5MS2",
+        "title": "Marvel Legends Logan Figura X-Men '97 15 cm",
+        "price": 508.04,
+        "discount": 27,
+        "image": "https://m.media-amazon.com/images/I/41nzbNeazHL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DK7P5MS2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Wolverine",
+        "source_type": "keyword",
+        "keyword_match": "Wolverine",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0BDJ9NRLP",
         "title": "Hasbro Star Wars The Black Series - Figura de acción Coleccionable de General Hera Syndulla, Star Wars: Ahsoka",
         "price": 479.0,
         "discount": 26,
         "image": "https://m.media-amazon.com/images/I/31gwGnwfv7L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0BDJ9NRLP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: DC Multiverse",
+        "source_channel": "Keyword: Dc Multiverse",
         "source_type": "keyword",
-        "keyword_match": "DC Multiverse",
+        "keyword_match": "Dc Multiverse",
         "novedad_score": 0.5
       },
       {
@@ -4261,18 +4381,6 @@
         "source_channel": "Keyword: NECA",
         "source_type": "keyword",
         "keyword_match": "NECA",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0G319F2W2",
-        "title": "Blokees Saint Seiya Champion Capricorn Shura",
-        "price": 524.0,
-        "discount": 25,
-        "image": "https://m.media-amazon.com/images/I/31axUQa52EL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G319F2W2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Seiya",
-        "source_type": "keyword",
-        "keyword_match": "Seiya",
         "novedad_score": 0.5
       },
       {
@@ -4348,6 +4456,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0G319F2W2",
+        "title": "Blokees Saint Seiya Champion Capricorn Shura",
+        "price": 524.0,
+        "discount": 25,
+        "image": "https://m.media-amazon.com/images/I/31axUQa52EL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G319F2W2?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Seiya",
+        "source_type": "keyword",
+        "keyword_match": "Seiya",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0FNS52QND",
         "title": "Naruto Shippuden Edo Tensei (Impure World Reencarnation) 1 Paquete de Mini Figura Coleccionable en una Exclusiva cápsula de ataúd",
         "price": 370.06,
@@ -4402,9 +4522,9 @@
         "discount": 23,
         "image": "https://m.media-amazon.com/images/I/41MGMS3zsxL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0BXBHWB7M?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: DC Multiverse",
+        "source_channel": "Keyword: Dc Multiverse",
         "source_type": "keyword",
-        "keyword_match": "DC Multiverse",
+        "keyword_match": "Dc Multiverse",
         "novedad_score": 0.5
       },
       {
@@ -4489,18 +4609,6 @@
         "source_channel": "Keyword: Theatrical",
         "source_type": "keyword",
         "keyword_match": "Theatrical",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0G36FVK2B",
-        "title": "Mcfarlane DC Theatrical Deluxe: Supergirl - Supergirl con Krypto Movie 2026 7 Pulgadas",
-        "price": 699.0,
-        "discount": 22,
-        "image": "https://m.media-amazon.com/images/I/31WlWjGnhML._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G36FVK2B?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Mcfarlane",
-        "source_type": "keyword",
-        "keyword_match": "Mcfarlane",
         "novedad_score": 0.5
       },
       {
@@ -4606,9 +4714,9 @@
         "discount": 20,
         "image": "https://m.media-amazon.com/images/I/5144KgvBuLL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DK7L2CDB?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: DC Multiverse",
+        "source_channel": "Keyword: Dc Multiverse",
         "source_type": "keyword",
-        "keyword_match": "DC Multiverse",
+        "keyword_match": "Dc Multiverse",
         "novedad_score": 0.5
       },
       {
@@ -4693,6 +4801,18 @@
         "source_channel": "Keyword: Hasbro",
         "source_type": "keyword",
         "keyword_match": "Hasbro",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0CXB2ZLGS",
+        "title": "Hallmark - Ornamento navideño de Recuerdo, Disney y Pixar Up Musical, Regalos para Fans de Disney",
+        "price": 459.96,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/A1JmpOXEjML._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CXB2ZLGS?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
         "novedad_score": 0.5
       },
       {
@@ -4852,6 +4972,30 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0FZYZ3K4F",
+        "title": "Hallmark - Adorno de Navidad de Recuerdo, Disney/Pixar Up Carl & Ellie, Regalos para fanáticos de Disney",
+        "price": 459.96,
+        "discount": 15,
+        "image": "https://m.media-amazon.com/images/I/A1Hp5EAzQBL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FZYZ3K4F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0DZY7YKKP",
+        "title": "Tarjeta Pop Up Divertida de Feliz Cumpleaños, Dulce Caja de Regalo 3D de Cumpleaños para Adultos y Niños con Sobres, Tarjetas de Celebración Plegables Únicas Hechas a Mano",
+        "price": 169.99,
+        "discount": 15,
+        "image": "https://m.media-amazon.com/images/I/51iGV5EWW2L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DZY7YKKP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hallmark",
+        "source_type": "keyword",
+        "keyword_match": "Hallmark",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0DK7N7NRD",
         "title": "Kotobukiya Zoids RMZ-004 Hellcat Guylos Color Kit de Modelo de Plástico",
         "price": 559.97,
@@ -4990,9 +5134,9 @@
         "discount": 12,
         "image": "https://m.media-amazon.com/images/I/31u1T3f1g5L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0F54KLVKL?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: DC Multiverse",
+        "source_channel": "Keyword: Dc Multiverse",
         "source_type": "keyword",
-        "keyword_match": "DC Multiverse",
+        "keyword_match": "Dc Multiverse",
         "novedad_score": 0.5
       },
       {
@@ -5038,9 +5182,9 @@
         "discount": 11,
         "image": "https://m.media-amazon.com/images/I/31ms2NdzhyL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FDN9G6D1?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Dragon Ball Z",
+        "source_channel": "Keyword: Ichibansho",
         "source_type": "keyword",
-        "keyword_match": "Dragon Ball Z",
+        "keyword_match": "Ichibansho",
         "novedad_score": 0.5
       },
       {
@@ -5056,6 +5200,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0G43P8W7G",
+        "title": "Disney Princesa Muñeca Manga Blanca Nieves 6Y+",
+        "price": 972.66,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41tLZQmuWYL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0G43P8W7G?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Mattel",
+        "source_type": "keyword",
+        "keyword_match": "Mattel",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0DVLZZLM7",
         "title": "Banpresto - Sasori, Figura de Colección, Naruto Shippuden, 14 cm (5.5\")",
         "price": 513.27,
@@ -5065,18 +5221,6 @@
         "source_channel": "Keyword: Shippuden",
         "source_type": "keyword",
         "keyword_match": "Shippuden",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0G43P8W7G",
-        "title": "Disney Princesa Muñeca Manga Blanca Nieves 6Y+",
-        "price": 972.83,
-        "discount": 11,
-        "image": "https://m.media-amazon.com/images/I/41tLZQmuWYL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G43P8W7G?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Mattel",
-        "source_type": "keyword",
-        "keyword_match": "Mattel",
         "novedad_score": 0.5
       },
       {

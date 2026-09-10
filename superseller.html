@@ -1662,7 +1662,8 @@ async function buscar() {
     const r = await fetch("http://localhost:8765/buscar", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ categorias: cats, paginas: parseInt(document.getElementById("paginas").value) || 3, filtros, sortBy: document.getElementById("sortBy").value })
+      body: JSON.stringify({ categorias: cats, paginas: parseInt(document.getElementById("paginas").value) || 3, filtros, sortBy: document.getElementById("sortBy").value }),
+      signal: _abortController.signal
     })
     const data = await r.json()
     if (!data.ok) throw new Error(data.error)
@@ -1671,7 +1672,11 @@ async function buscar() {
     setStatus(`✅ ${allItems.length} productos encontrados`, "done")
     mostrarResumen(cats, window._ultimosFiltros || filtros, allItems.length)
   } catch(e) {
-    setStatus(`❌ Error: ${e.message} — ¿El servidor está corriendo?`, "error")
+    if (e.name === 'AbortError') {
+      setStatus("⏹ Búsqueda cancelada por el usuario", "")
+    } else {
+      setStatus(`❌ Error: ${e.message} — ¿El servidor está corriendo?`, "error")
+    }
   }
   mostrarBtnDetener(false)
   document.getElementById("btnBuscar").disabled = false
@@ -3023,22 +3028,8 @@ async function cargarFeedDesdeSidebar(refresh = false) {
     // Guardar el feed actual para exportación y actualizar indicador
     currentFeedId = audienciaId
 
-    // Obtener info de la audiencia para actualizar indicador
-    const resAudiencias = await fetch("http://localhost:8765/feeds/listar")
-    const dataAudiencias = await resAudiencias.json()
-    if (dataAudiencias.ok && dataAudiencias.audiencias) {
-      const audiencia = dataAudiencias.audiencias.find(a => a.id === audienciaId)
-      if (audiencia) {
-        document.getElementById("audienciaActivaIcono").textContent = audiencia.icono || "📊"
-        document.getElementById("audienciaActivaNombre").textContent = audiencia.nombre
-        document.getElementById("audienciaActiva").style.display = "block"
-        localStorage.setItem("audienciaActiva", JSON.stringify({
-          id: audienciaId,
-          nombre: audiencia.nombre,
-          icono: audiencia.icono || "📊"
-        }))
-      }
-    }
+    // Ya no necesitamos actualizar elementos visuales obsoletos
+    // La audiencia ya está seleccionada en el dropdown
 
     // Convertir productos del feed al formato de la app
     allItems = data.productos.map(p => ({
@@ -3094,14 +3085,14 @@ async function cargarFeed(refresh = false) {
 
     // Actualizar audiencia activa
     currentFeedId = audienciaId
+    window.currentFeedId = audienciaId
+
+    // Guardar en localStorage
     const resAudiencias = await fetch("http://localhost:8765/feeds/listar")
     const dataAudiencias = await resAudiencias.json()
     if (dataAudiencias.ok && dataAudiencias.audiencias) {
       const audiencia = dataAudiencias.audiencias.find(a => a.id === audienciaId)
       if (audiencia) {
-        document.getElementById("audienciaActivaIcono").textContent = audiencia.icono || "📊"
-        document.getElementById("audienciaActivaNombre").textContent = audiencia.nombre
-        document.getElementById("audienciaActiva").style.display = "block"
         localStorage.setItem("audienciaActiva", JSON.stringify({
           id: audienciaId,
           nombre: audiencia.nombre,
