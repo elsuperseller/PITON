@@ -8,36 +8,80 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:       #f0f3f7;
+  /* ── Colores Base Mejorados ── */
+  --bg:       #f8f9fb;
   --surface:  #ffffff;
-  --panel:    #f7f9fc;
-  --panel-h:  #eef2f7;
+  --panel:    #f4f6f9;
+  --panel-h:  #ebf0f5;
   --inp-bg:   #ffffff;
-  --border:   #cdd5e0;
-  --border-l: #e2e8f2;
+  --border:   #d1d9e3;
+  --border-l: #e5eaf1;
 
-  --red:      #e94560;
-  --red-d:    #c73652;
-  --red-a:    rgba(233,69,96,.10);
+  /* ── Paleta Principal ── */
+  --primary:    #e94560;
+  --primary-d:  #c73652;
+  --primary-l:  #ff5b76;
+  --primary-a:  rgba(233,69,96,.08);
+  --primary-hover: rgba(233,69,96,.12);
 
-  --t1: #1a2738;
-  --t2: #3d5268;
-  --t3: #6b7e92;
-  --t4: #9fb2c3;
+  /* Aliases para compatibilidad */
+  --red:      var(--primary);
+  --red-d:    var(--primary-d);
+  --red-a:    var(--primary-a);
 
-  --green:  #059669;
-  --amber:  #d97706;
-  --ruby:   #dc2626;
+  /* ── Tipografía ── */
+  --t1: #0f1419;
+  --t2: #3a4556;
+  --t3: #6e7b8a;
+  --t4: #a0aab5;
 
-  --amz-c:  #e47911;
-  --ml-c:   #2968d4;
+  /* ── Estados ── */
+  --success:  #10b981;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
 
-  --r:  7px;
-  --rl: 11px;
-  --sw: 308px;
-  --hh: 56px;
-  --sb: 36px;
-  --eb: 46px;
+  --warning:  #f59e0b;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  --error:    #ef4444;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+
+  --info:     #3b82f6;
+  --info-bg:  #eff6ff;
+  --info-border: #bfdbfe;
+
+  /* Aliases para compatibilidad */
+  --green:  var(--success);
+  --amber:  var(--warning);
+  --ruby:   var(--error);
+
+  /* ── Marcas ── */
+  --amz-c:  #ff9900;
+  --amz-c-dark: #e47911;
+  --ml-c:   #2d3fec;
+  --ml-c-light: #4f62ff;
+
+  /* ── Dimensiones ── */
+  --r:  8px;
+  --rl: 12px;
+  --sw: 320px;
+  --hh: 60px;
+  --sb: 40px;
+  --eb: 48px;
+
+  /* ── Sombras Mejoradas ── */
+  --shadow-sm:  0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow:     0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  /* ── Transiciones ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
@@ -50,63 +94,165 @@ body {
 
 /* ── TOPBAR ────────────────────────────────────────── */
 .topbar {
-  position: fixed; top: 0; left: 0; right: 0;
-  height: var(--hh); z-index: 200;
-  background: #ffffff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--hh);
+  z-index: 200;
+  background: var(--surface);
   border-bottom: 1px solid var(--border-l);
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  box-shadow: 0 1px 12px rgba(0,0,0,.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .brand { display: flex; align-items: center; gap: 11px; }
 
 .brand-badge {
-  width: 32px; height: 32px; border-radius: 7px;
-  background: linear-gradient(135deg, #e94560 0%, #a02040 100%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 900; color: #fff; letter-spacing: -.5px;
-  box-shadow: 0 0 14px rgba(233,69,96,.35);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -.5px;
+  box-shadow: 0 2px 6px rgba(233,69,96,.2);
   flex-shrink: 0;
 }
 
 .brand-text h1 {
-  font-size: 14px; font-weight: 700; color: var(--t1);
-  letter-spacing: .3px;
-}
-.brand-text p {
-  font-size: 10px; color: var(--t3); margin-top: 1px;
-  letter-spacing: .6px; text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: .1px;
+  line-height: 1.2;
+  margin: 0;
 }
 
-.topbar-actions { display: flex; gap: 7px; align-items: center; }
+.brand-text p {
+  font-size: 10px;
+  color: var(--t3);
+  margin: 2px 0 0 0;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* ── SELECTOR DE AUDIENCIA ─────────────────────── */
+.audiencia-select {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1);
+  background: var(--surface);
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.audiencia-select:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.audiencia-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-a), var(--shadow);
+}
 
 /* ── BUTTONS ───────────────────────────────────────── */
 .btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 7px 13px; border-radius: var(--r); border: none;
-  cursor: pointer; font-size: 12px; font-weight: 600;
-  letter-spacing: .2px; transition: all .15s; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: var(--r);
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .05px;
+  transition: var(--transition-base);
+  white-space: nowrap;
   font-family: inherit;
+  position: relative;
+  overflow: hidden;
 }
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,.15);
+  opacity: 0;
+  transition: var(--transition-fast);
+}
+
+.btn:hover::before {
+  opacity: 1;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
 .btn-primary {
-  background: linear-gradient(135deg, #e94560, #c73652);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
   color: #fff;
-  box-shadow: 0 2px 10px rgba(233,69,96,.28);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(233,69,96,.1);
 }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(233,69,96,.4); }
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(233,69,96,.15);
+}
+
 .btn-ghost {
-  background: transparent; color: var(--t2);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--t2);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
-.btn-ghost:hover { background: var(--panel); color: var(--t1); }
+.btn-ghost:hover {
+  background: var(--panel);
+  color: var(--t1);
+  border-color: var(--t4);
+}
+
 .btn-danger {
-  background: #fff1f2; color: #be123c;
-  border: 1px solid #fecdd3;
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1.5px solid var(--error-border);
 }
-.btn-danger:hover { background: #ffe4e6; }
-.btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+.btn-danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
 
 .btn-xs {
   padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border);
@@ -332,50 +478,120 @@ input[type=file] {
 /* ── PRODUCT GRID ──────────────────────────────────── */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
-  gap: 13px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+  padding: 4px;
 }
 
 .product-card {
-  background: var(--panel); border: 1px solid var(--border-l);
-  border-radius: var(--rl); overflow: hidden;
-  transition: border-color .2s, box-shadow .2s, transform .15s;
+  background: var(--surface);
+  border: 1px solid var(--border-l);
+  border-radius: var(--rl);
+  overflow: hidden;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  position: relative;
 }
+
 .product-card:hover {
-  border-color: rgba(233,69,96,.35);
-  box-shadow: 0 6px 24px rgba(0,0,0,.55);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+.product-card.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-a), var(--shadow-md);
   transform: translateY(-2px);
 }
-.product-card.selected {
-  border-color: var(--red);
-  box-shadow: 0 0 0 2px rgba(233,69,96,.18);
-}
+
 .product-card img {
-  width: 100%; height: 148px; object-fit: contain;
-  background: #fff; padding: 10px;
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+  padding: 16px;
+  transition: var(--transition-base);
 }
-.product-info { padding: 11px; }
+
+.product-card:hover img {
+  transform: scale(1.02);
+}
+
+.product-info {
+  padding: 14px;
+  background: var(--surface);
+}
+
 .product-title {
-  font-size: 11px; color: var(--t2); line-height: 1.45; margin-bottom: 8px;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 12px;
+  color: var(--t2);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-weight: 500;
+  min-height: 54px;
 }
-.product-prices { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; }
-.price-disc { font-size: 15px; font-weight: 700; color: var(--t1); }
-.price-orig { font-size: 11px; color: var(--t4); text-decoration: line-through; }
+
+.product-prices {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.price-disc {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -.3px;
+}
+
+.price-orig {
+  font-size: 12px;
+  color: var(--t4);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
 .discount-badge {
-  display: inline-flex; align-items: center;
-  background: rgba(16,185,129,.1); color: var(--green);
-  font-size: 10px; font-weight: 700; padding: 2px 6px;
-  border-radius: 4px; border: 1px solid rgba(16,185,129,.18);
+  display: inline-flex;
+  align-items: center;
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--success-border);
+  box-shadow: var(--shadow-sm);
 }
+
 .vigencia-badge {
-  display: inline-block; font-size: 10px; padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(14,165,233,.08); color: #6898b8;
-  border: 1px solid rgba(14,165,233,.12);
+  display: inline-block;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid var(--info-border);
+  font-weight: 600;
 }
-.vigencia-badge.relampago { background: rgba(245,158,11,.08); color: var(--amber); border-color: rgba(245,158,11,.18); }
-.vigencia-badge.permanente { background: rgba(65,95,122,.1); color: var(--t3); border-color: var(--border-l); }
+
+.vigencia-badge.relampago {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+
+.vigencia-badge.permanente {
+  background: var(--panel);
+  color: var(--t3);
+  border-color: var(--border);
+}
 
 .btn-ver {
   display: block; width: 100%; margin-top: 9px; padding: 7px;
@@ -469,9 +685,13 @@ input[type=file] {
     </div>
   </div>
   <div class="topbar-actions">
+    <!-- Selector de Audiencia Compacto -->
+    <select id="audienciaGlobalSelect" onchange="cambiarAudienciaGlobal()" class="audiencia-select">
+      <option value="">🎯 Selecciona audiencia...</option>
+    </select>
     <button id="btnDetener" onclick="detenerProceso()" style="display:none;" class="btn btn-danger">⏹ Detener</button>
-    <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;background:#dc2626;color:#fff;border:none;" class="btn">👎 Descartar Seleccionados</button>
-    <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar Ofertas</button>
+    <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;" class="btn btn-danger">👎 Descartar</button>
+    <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar</button>
   </div>
 </header>
 
@@ -488,7 +708,7 @@ input[type=file] {
     </div>
 
     <!-- Categorías -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">📦</span>Categorías <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
@@ -521,7 +741,7 @@ input[type=file] {
     </div>
 
     <!-- Búsqueda directa -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">🔎</span>Búsqueda por Keyword / ASIN <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
@@ -549,7 +769,7 @@ input[type=file] {
     </div>
 
     <!-- Feeds por Audiencia -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">📊</span>Feeds por Audiencia <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
@@ -571,7 +791,7 @@ input[type=file] {
     </div>
 
     <!-- Precio y búsqueda -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">💰</span>Filtros de Precio <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
@@ -667,7 +887,7 @@ input[type=file] {
     </div>
 
     <!-- Amazon Deals — páginas scrapeadas con Playwright -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">🔥</span>Deals Automáticos <span class="plat-pill pill-amz">AMZ</span></span>
         <span class="chev">▼</span>
@@ -738,7 +958,7 @@ input[type=file] {
     </div>
 
     <!-- ML Ofertas -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">🛒</span>Ofertas del Día <span class="plat-pill pill-ml">ML</span></span>
         <span class="chev">▼</span>
@@ -751,7 +971,7 @@ input[type=file] {
     </div>
 
     <!-- ML URLs custom -->
-    <div class="sec open">
+    <div class="sec">
       <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
         <span><span class="ico">🔗</span>Buscar por URL <span class="plat-pill pill-ml">ML</span></span>
         <span class="chev">▼</span>
@@ -1589,19 +1809,30 @@ function exportCSV() {
 async function exportarSheets() {
   const selected = allItems.filter((_, i) => document.getElementById("chk_"+i)?.checked)
   if (!selected.length) { alert("Selecciona al menos un producto"); return }
+
+  // Debug: mostrar valor actual
+  console.log("🔍 exportarSheets - currentFeedId:", currentFeedId)
+  console.log("🔍 exportarSheets - window.currentFeedId:", window.currentFeedId)
+  console.log("🔍 exportarSheets - select value:", document.getElementById("audienciaGlobalSelect")?.value)
+
+  // Validar que haya una audiencia seleccionada
+  if (!currentFeedId && !window.currentFeedId) {
+    alert("⚠️ Debes seleccionar una audiencia antes de exportar a Sheets.\n\nUsa el selector de 'Audiencia Activa' en la barra superior.\n\nDebug: currentFeedId = " + currentFeedId)
+    return
+  }
+
+  // Usar window.currentFeedId si currentFeedId es null
+  const feedIdToUse = currentFeedId || window.currentFeedId
+  console.log("✅ Usando feedId:", feedIdToUse)
+
   const btn = document.getElementById("btnSheets")
   btn.textContent = "⏳ Enviando…"
   btn.disabled = true
   try {
-    // Determinar qué endpoint usar según el contexto
-    let endpoint = "http://localhost:8765/exportar-sheets"
-    let payload = { items: selected }
-
-    // Si estamos viendo un feed con sheets_export_url configurado, usar endpoint específico
-    if (currentFeedId === "coleccionistas") {
-      endpoint = "http://localhost:8765/feeds/export-sheets"
-      payload = { feed_id: currentFeedId, items: selected }
-    }
+    // SIEMPRE usar el endpoint de feeds con la audiencia activa
+    const endpoint = "http://localhost:8765/feeds/export-sheets"
+    const payload = { feed_id: feedIdToUse, items: selected }
+    console.log("📤 Payload:", payload)
 
     const r = await fetchConTimeout(endpoint, {
       method: "POST",
@@ -2752,8 +2983,25 @@ async function cargarFeedDesdeSidebar(refresh = false) {
 
     if (!data.ok) throw new Error(data.error)
 
-    // Guardar el feed actual para exportación
+    // Guardar el feed actual para exportación y actualizar indicador
     currentFeedId = audienciaId
+
+    // Obtener info de la audiencia para actualizar indicador
+    const resAudiencias = await fetch("http://localhost:8765/feeds/listar")
+    const dataAudiencias = await resAudiencias.json()
+    if (dataAudiencias.ok && dataAudiencias.audiencias) {
+      const audiencia = dataAudiencias.audiencias.find(a => a.id === audienciaId)
+      if (audiencia) {
+        document.getElementById("audienciaActivaIcono").textContent = audiencia.icono || "📊"
+        document.getElementById("audienciaActivaNombre").textContent = audiencia.nombre
+        document.getElementById("audienciaActiva").style.display = "block"
+        localStorage.setItem("audienciaActiva", JSON.stringify({
+          id: audienciaId,
+          nombre: audiencia.nombre,
+          icono: audiencia.icono || "📊"
+        }))
+      }
+    }
 
     // Convertir productos del feed al formato de la app
     allItems = data.productos.map(p => ({
@@ -2806,6 +3054,24 @@ async function cargarFeed(refresh = false) {
     const data = await res.json()
 
     if (!data.ok) throw new Error(data.error)
+
+    // Actualizar audiencia activa
+    currentFeedId = audienciaId
+    const resAudiencias = await fetch("http://localhost:8765/feeds/listar")
+    const dataAudiencias = await resAudiencias.json()
+    if (dataAudiencias.ok && dataAudiencias.audiencias) {
+      const audiencia = dataAudiencias.audiencias.find(a => a.id === audienciaId)
+      if (audiencia) {
+        document.getElementById("audienciaActivaIcono").textContent = audiencia.icono || "📊"
+        document.getElementById("audienciaActivaNombre").textContent = audiencia.nombre
+        document.getElementById("audienciaActiva").style.display = "block"
+        localStorage.setItem("audienciaActiva", JSON.stringify({
+          id: audienciaId,
+          nombre: audiencia.nombre,
+          icono: audiencia.icono || "📊"
+        }))
+      }
+    }
 
     // Convertir productos del feed al formato de la app
     allItems = data.productos.map(p => ({
@@ -3147,8 +3413,97 @@ window.addEventListener('error', function(e) {
   }
 }, true);
 
+// ==================== SELECTOR DE AUDIENCIA GLOBAL ====================
+
+async function cargarAudienciasEnSelect() {
+  try {
+    const res = await fetch("http://localhost:8765/feeds/listar")
+    const data = await res.json()
+
+    const select = document.getElementById("audienciaGlobalSelect")
+    select.innerHTML = '<option value="">⚠️ Selecciona una audiencia...</option>'
+
+    if (data.ok && data.audiencias && data.audiencias.length > 0) {
+      data.audiencias.forEach(audiencia => {
+        const option = document.createElement("option")
+        option.value = audiencia.id
+        option.textContent = `${audiencia.icono || "📊"} ${audiencia.nombre}`
+        option.dataset.icono = audiencia.icono || "📊"
+        option.dataset.nombre = audiencia.nombre
+        select.appendChild(option)
+      })
+
+      // Restaurar audiencia guardada
+      const guardada = localStorage.getItem("audienciaActiva")
+      if (guardada) {
+        try {
+          const { id } = JSON.parse(guardada)
+          const optionToSelect = Array.from(select.options).find(opt => opt.value === id)
+          if (optionToSelect) {
+            select.value = id
+            currentFeedId = id
+            window.currentFeedId = id
+            console.log(`📌 Audiencia restaurada: ${id}`)
+            console.log(`📌 currentFeedId: ${currentFeedId}`)
+            console.log(`📌 window.currentFeedId: ${window.currentFeedId}`)
+          }
+        } catch(e) {
+          console.error("Error restaurando audiencia:", e)
+        }
+      }
+    }
+  } catch(e) {
+    console.error("Error cargando audiencias en select:", e)
+  }
+}
+
+function cambiarAudienciaGlobal() {
+  const select = document.getElementById("audienciaGlobalSelect")
+  const audienciaId = select.value
+
+  if (!audienciaId) {
+    currentFeedId = null
+    window.currentFeedId = null
+    localStorage.removeItem("audienciaActiva")
+    setStatus("⚠️ Ninguna audiencia seleccionada", "error")
+    return
+  }
+
+  const selectedOption = select.options[select.selectedIndex]
+  const icono = selectedOption.dataset.icono || "📊"
+  const nombre = selectedOption.dataset.nombre || audienciaId
+
+  // Actualizar audiencia activa global (en ambos lugares)
+  currentFeedId = audienciaId
+  window.currentFeedId = audienciaId
+
+  // Guardar en localStorage
+  localStorage.setItem("audienciaActiva", JSON.stringify({
+    id: audienciaId,
+    nombre: nombre,
+    icono: icono
+  }))
+
+  // Notificar al usuario
+  setStatus(`✅ Audiencia activa: ${icono} ${nombre}`, "done")
+  console.log(`✅ Audiencia cambiada a: ${audienciaId} (${nombre})`)
+  console.log(`✅ currentFeedId: ${currentFeedId}`)
+  console.log(`✅ window.currentFeedId: ${window.currentFeedId}`)
+
+  // Resaltar visualmente el cambio
+  select.style.borderColor = "var(--red)"
+  select.style.background = "var(--red-a)"
+  setTimeout(() => {
+    select.style.borderColor = "var(--border)"
+    select.style.background = "var(--surface)"
+  }, 800)
+}
+
 // Forzar mostrar elementos de feed si están cargados
 window.addEventListener('DOMContentLoaded', function() {
+  // Cargar audiencias en el selector global
+  cargarAudienciasEnSelect()
+
   setTimeout(function() {
     // Si hay un feed cargado (currentFeedId definido), asegurar que los elementos estén visibles
     if (window.currentFeedId && window.allItems && window.allItems.length > 0) {
