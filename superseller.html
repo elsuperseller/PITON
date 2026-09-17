@@ -1659,10 +1659,23 @@ async function buscar() {
     _abortController = new AbortController()
     setStatus(`Buscando en ${Object.keys(cats).length} categorías...`, "running")
     window._ultimosFiltros = filtros
+    // Incluir feed_id si hay audiencia seleccionada
+    const feedId = currentFeedId || window.currentFeedId
+    const payload = {
+      categorias: cats,
+      paginas: parseInt(document.getElementById("paginas").value) || 3,
+      filtros,
+      sortBy: document.getElementById("sortBy").value
+    }
+    if (feedId) {
+      payload.feed_id = feedId
+      console.log(`🎯 Búsqueda con audiencia: ${feedId}`)
+    }
+
     const r = await fetch("http://localhost:8765/buscar", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ categorias: cats, paginas: parseInt(document.getElementById("paginas").value) || 3, filtros, sortBy: document.getElementById("sortBy").value }),
+      body: JSON.stringify(payload),
       signal: _abortController.signal
     })
     const data = await r.json()

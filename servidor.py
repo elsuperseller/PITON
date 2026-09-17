@@ -102,33 +102,62 @@ def parsear_item(item):
                      item.get("images",{}).get("primary",{}).get("medium",{}).get("url",""))
         asin = re.search(r'/dp/([A-Z0-9]{10})', link)
         asin = asin.group(1) if asin else ""
+
         listings = item.get("offersV2",{}).get("listings",[])
-        if not listings: return None
+        if not listings:
+            # Intento alternativo: buscar precio en otros lugares
+            # Algunos productos tienen precio pero no listings completo
+            offers = item.get("offers", {})
+            if offers and offers.get("listings"):
+                listings = offers.get("listings", [])
+
+        if not listings:
+            return None  # Definitivamente sin precio/oferta
+
         lst = next((l for l in listings if l.get("isBuyBoxWinner")), listings[0])
         deal = lst.get("dealDetails") or {}
         tipo = lst.get("type","")
         pi = lst.get("price",{})
+
         pd_ = pi.get("money",{}).get("amount")
-        if not pd_: return None
+        if not pd_:
+            # Intento alternativo: price.displayAmount puede tener el valor como string
+            display_price = pi.get("displayAmount", "")
+            if display_price:
+                # Extraer número de string como "$1,234.56"
+                price_match = re.search(r'[\d,]+\.?\d*', display_price.replace(',', ''))
+                if price_match:
+                    pd_ = float(price_match.group())
+
+        if not pd_:
+            return None  # Sin precio definitivamente
+
         pd_ = float(pd_)
+
+        # Calcular precio original y descuento
         sb = pi.get("savingBasis",{})
         sv = pi.get("savings",{})
+
         if sb and sb.get("money",{}).get("amount"):
             po = float(sb["money"]["amount"])
         elif sv and sv.get("money",{}).get("amount"):
             po = round(pd_ + float(sv["money"]["amount"]), 2)
         else:
-            po = pd_
+            po = pd_  # Sin descuento aparente
+
         desc = round((po - pd_) / po * 100) if po > pd_ else 0
+
         end = deal.get("endTime","")
         start = deal.get("startTime","")
         badge = deal.get("badge","")
         acc = deal.get("accessType","ALL")
         vigencia = "relámpago" if tipo == "LIGHTNING_DEAL" else "permanente" if not end else "oferta"
+
         # EAN para detección cross-platform
         ext  = item.get("itemInfo", {}).get("externalIds", {})
         eans = ext.get("eans", {}).get("displayValues", [])
         ean  = eans[0] if eans else ""
+
         return {
             "asin": asin, "link": link, "title": title, "img": img,
             "price_original": po, "price_discounted": pd_, "descuento_pct": desc,
@@ -136,7 +165,10 @@ def parsear_item(item):
             "start_time": start, "end_time": end, "pct_claimed": deal.get("percentageClaimed"),
             "ean": ean,
         }
-    except: return None
+    except Exception as e:
+        # Log para debugging
+        # print(f"  ⚠️  Error parseando item: {e}", flush=True)
+        return None
 
 CATS = {
     "Electrónicos":                     "Electronics",
@@ -922,8 +954,11 @@ class Handler(BaseHTTPRequestHandler):
                 pags = int(body.get("paginas", 3))
                 filtros = body.get("filtros", {})
                 sort_by = body.get("sortBy", "NewestArrivals")
+                feed_id = body.get("feed_id", "")  # Obtener feed_id si viene
+
                 # Log para ver qué llega del HTML
-                print(f"📋 Categorías recibidas ({len(cats)}):", flush=True)
+                log_prefix = f"[{feed_id}] " if feed_id else ""
+                print(f"📋 {log_prefix}Categorías recibidas ({len(cats)}):", flush=True)
                 for k, v in list(cats.items())[:5]:
                     print(f"   {k}: {v}", flush=True)
                 desc_min = int(filtros.get("descuento_min", 15))
@@ -966,6 +1001,12 @@ class Handler(BaseHTTPRequestHandler):
                     if p["asin"] not in vistos:
                         vistos.add(p["asin"])
                         unicos.append(p)
+
+                # Aplicar novedad_score si hay feed_id seleccionado
+                if feed_id:
+                    print(f"  🎯 Aplicando novedad_score del feed '{feed_id}'", flush=True)
+                    unicos = aplicar_novedad_score_feed(unicos, feed_id)
+                    print(f"  ✅ Novedad_score aplicado: {len(unicos)} productos procesados", flush=True)
 
                 self.send_response(200)
                 self._cors()
