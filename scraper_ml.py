@@ -92,11 +92,17 @@ def _extraer_items_de_html(html):
     Extrae el array 'items' del JSON embebido en cualquier página ML.
     Funciona en páginas de ofertas, categorías y búsqueda (cualquier página).
     """
+    # Buscar todos los scripts que contengan "items":[
     for script in re.findall(r'<script[^>]*>(.*?)</script>', html, re.S):
-        # Buscar cualquier posición inicial, no solo 1 (para páginas 2, 3…)
-        if '"items":[{"position":' not in script:
+        if '"items":[' not in script:
             continue
-        idx   = script.find('"items":[')
+
+        # Buscar el array de items más grande (el que probablemente contiene los productos)
+        # Puede tener {"position":, {"id":"POLYCARD", o cualquier otro formato
+        idx = script.find('"items":[')
+        if idx < 0:
+            continue
+
         start = script.find('[', idx)
         depth, end = 0, start
         for i, c in enumerate(script[start:]):
@@ -107,9 +113,15 @@ def _extraer_items_de_html(html):
                     end = start + i + 1
                     break
         try:
-            return json.loads(script[start:end])
+            items = json.loads(script[start:end])
+            # Validar que sea un array válido con al menos un elemento
+            if isinstance(items, list) and len(items) > 0:
+                # Verificar si contiene datos de productos (card, polycard, metadata, etc.)
+                first = items[0] if items else {}
+                if any(k in first for k in ['card', 'polycard', 'metadata', 'position', 'id']):
+                    return items
         except Exception:
-            return []
+            continue
     return []
 
 # ── NORMALIZADOR ────────────────────────────────────────────────────
