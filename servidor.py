@@ -159,7 +159,7 @@ def parsear_item(item):
         ean  = eans[0] if eans else ""
 
         return {
-            "asin": asin, "link": link, "title": title, "img": img,
+            "asin": asin, "source": "amazon", "link": link, "title": title, "img": img,
             "price_original": po, "price_discounted": pd_, "descuento_pct": desc,
             "vigencia": vigencia, "tipo": tipo, "badge": badge, "access_type": acc,
             "start_time": start, "end_time": end, "pct_claimed": deal.get("percentageClaimed"),
@@ -871,8 +871,15 @@ def _procesar_urls_completo(job_id, urls, pages, min_discount, feed_id=""):
                 unicos = aplicar_novedad_score_feed(unicos, feed_id)
                 print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
             else:
+                total_antes = len(unicos)
                 unicos = _hv.aplicar_scores(unicos)
-                print(f"  📚 Historial global aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+                ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
+                print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
+                filtrados = total_antes - len(unicos)
+                if filtrados > 0:
+                    print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
         job["status"] = "completed"
         job["resultados"] = {"ok": True, "items": unicos, "total": len(unicos), "asins": len(all_asins)}
@@ -1003,10 +1010,21 @@ class Handler(BaseHTTPRequestHandler):
                         unicos.append(p)
 
                 # Aplicar novedad_score si hay feed_id seleccionado
-                if feed_id:
-                    print(f"  🎯 Aplicando novedad_score del feed '{feed_id}'", flush=True)
-                    unicos = aplicar_novedad_score_feed(unicos, feed_id)
-                    print(f"  ✅ Novedad_score aplicado: {len(unicos)} productos procesados", flush=True)
+                if _HV_OK:
+                    total_antes = len(unicos)
+                    if feed_id:
+                        print(f"  🎯 Aplicando novedad_score del feed '{feed_id}'", flush=True)
+                        unicos = aplicar_novedad_score_feed(unicos, feed_id)
+                        print(f"  ✅ Novedad_score aplicado: {len(unicos)} productos procesados", flush=True)
+                    else:
+                        unicos = _hv.aplicar_scores(unicos)
+                        ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                    unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
+                    filtrados = total_antes - len(unicos)
+                    if filtrados > 0:
+                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200)
                 self._cors()
@@ -1222,12 +1240,19 @@ class Handler(BaseHTTPRequestHandler):
                 )
 
                 if _HV_OK:
+                    total_antes = len(items)
                     if feed_id:
                         items = aplicar_novedad_score_feed(items, feed_id)
                         print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
                     else:
                         items = _hv.aplicar_scores(items)
-                        print(f"  📚 Historial global aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+                        ya_vistos = sum(1 for i in items if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                    items = [p for p in items if p.get('novedad_score', 1.0) >= 0.1]
+                    filtrados = total_antes - len(items)
+                    if filtrados > 0:
+                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1257,12 +1282,19 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"📦 {log_prefix}/procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
 
                 if _HV_OK:
+                    total_antes = len(items)
                     if feed_id:
                         items = aplicar_novedad_score_feed(items, feed_id)
                         print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
                     else:
                         items = _hv.aplicar_scores(items)
-                        print(f"  📚 Historial global aplicado: {sum(1 for i in items if i.get('novedad_score',1)<1.0)} ya vistos de {len(items)}", flush=True)
+                        ya_vistos = sum(1 for i in items if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                    items = [p for p in items if p.get('novedad_score', 1.0) >= 0.1]
+                    filtrados = total_antes - len(items)
+                    if filtrados > 0:
+                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1463,7 +1495,14 @@ class Handler(BaseHTTPRequestHandler):
                         print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos de {len(unicos)}", flush=True)
                     else:
                         unicos = _hv.aplicar_scores(unicos)
-                        print(f"  📚 Historial global aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos de {len(unicos)}", flush=True)
+                        total_antes = len(unicos)
+                        ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                        # Filtrar automáticamente productos con novedad_score < 0.1 (publicados hace <3 días)
+                        unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
+                        filtrados = total_antes - len(unicos)
+                        if filtrados > 0:
+                            print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 print(f"  → {len(unicos)} productos", flush=True)
                 self.send_response(200); self._cors()
@@ -1628,12 +1667,19 @@ class Handler(BaseHTTPRequestHandler):
                         unicos.append(p)
 
                 if _HV_OK:
+                    total_antes = len(unicos)
                     if feed_id:
                         unicos = aplicar_novedad_score_feed(unicos, feed_id)
                         print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
                     else:
                         unicos = _hv.aplicar_scores(unicos)
-                        print(f"  📚 Historial global aplicado: {sum(1 for i in unicos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+                        ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                    unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
+                    filtrados = total_antes - len(unicos)
+                    if filtrados > 0:
+                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 print(f"  → {len(unicos)} productos con descuento", flush=True)
                 self.send_response(200); self._cors()
