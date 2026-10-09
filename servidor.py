@@ -971,6 +971,7 @@ class Handler(BaseHTTPRequestHandler):
                 desc_min = int(filtros.get("descuento_min", 15))
                 pmin = float(filtros.get("precio_min", 0))
                 pmax = float(filtros.get("precio_max", 0))
+                badge_filter = filtros.get("badge", "").strip().lower()
 
                 # Si hay filtro de precio, buscar más páginas porque la API no filtra por precio
                 if pmin > 0 or pmax > 0:
@@ -1008,6 +1009,13 @@ class Handler(BaseHTTPRequestHandler):
                     if p["asin"] not in vistos:
                         vistos.add(p["asin"])
                         unicos.append(p)
+
+                # Filtrar por badge si se especificó
+                if badge_filter:
+                    total_antes_badge = len(unicos)
+                    unicos = [p for p in unicos if p.get('badge', '').lower().find(badge_filter) >= 0]
+                    filtrados_badge = total_antes_badge - len(unicos)
+                    print(f"  🏷️  Filtro badge '{badge_filter}': {len(unicos)} productos (filtrados {filtrados_badge})", flush=True)
 
                 # Aplicar novedad_score si hay feed_id seleccionado
                 if _HV_OK:
@@ -1104,13 +1112,20 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"  → {len(resultados)} producto(s) encontrado(s)", flush=True)
 
                 if _HV_OK:
+                    total_antes = len(resultados)
                     # Usar historial del feed si feed_id está disponible
                     if feed_id:
                         resultados = aplicar_novedad_score_feed(resultados, feed_id)
                         print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
                     else:
                         resultados = _hv.aplicar_scores(resultados)
-                        print(f"  📚 Historial global aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+                        ya_vistos = sum(1 for i in resultados if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                    resultados = [p for p in resultados if p.get('novedad_score', 1.0) >= 0.1]
+                    filtrados = total_antes - len(resultados)
+                    if filtrados > 0:
+                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200)
                 self._cors()
@@ -1195,12 +1210,19 @@ class Handler(BaseHTTPRequestHandler):
                 print(f"  → {len(resultados)} productos con datos de API", flush=True)
 
                 if _HV_OK:
+                    total_antes = len(resultados)
                     if feed_id:
                         resultados = aplicar_novedad_score_feed(resultados, feed_id)
                         print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
                     else:
                         resultados = _hv.aplicar_scores(resultados)
-                        print(f"  📚 Historial global aplicado: {sum(1 for i in resultados if i.get('novedad_score',1)<1.0)} ya vistos de {len(resultados)}", flush=True)
+                        ya_vistos = sum(1 for i in resultados if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
+                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
+                    resultados = [p for p in resultados if p.get('novedad_score', 1.0) >= 0.1]
+                    filtrados = total_antes - len(resultados)
+                    if filtrados > 0:
+                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1751,15 +1773,16 @@ class Handler(BaseHTTPRequestHandler):
                 if not items:
                     raise ValueError("Sin items para exportar")
                 print(f"📊 /exportar-sheets → {len(items)} items", flush=True)
+                # Marcar como publicados en historial ANTES de exportar
+                # Así si falla la exportación, al menos ya están marcados
+                if _HV_OK:
+                    n = _hv.marcar_varios(items)
+                    print(f"  📚 {n} items marcados en historial", flush=True)
                 r = requests.post(SHEETS_URL, data=json.dumps(items),
                                   headers={"Content-Type": "application/json"},
                                   allow_redirects=True, timeout=120)
                 r.raise_for_status()
                 resp_data = r.json()
-                # Marcar como publicados en historial
-                if _HV_OK:
-                    n = _hv.marcar_varios(items)
-                    print(f"  📚 {n} items marcados en historial", flush=True)
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": True, "rows": resp_data.get("rows", len(items))}).encode())
@@ -1809,6 +1832,13 @@ class Handler(BaseHTTPRequestHandler):
                 if not items:
                     raise ValueError("Todos los productos seleccionados fueron descartados previamente")
 
+                # Marcar SOLO en historial del feed ANTES de exportar
+                # Así si falla la exportación, al menos ya están marcados
+                items_con_asin = [item for item in items if item.get('asin')]
+                if items_con_asin:
+                    n = marcar_asins_vistos(feed_id, items_con_asin)
+                    print(f"  📚 {n} productos marcados en historial del feed '{feed_id}' (con títulos)", flush=True)
+
                 print(f"  📤 Exportando {len(items)} productos a Google Sheets...", flush=True)
 
                 # Enviar a Google Apps Script
@@ -1819,13 +1849,6 @@ class Handler(BaseHTTPRequestHandler):
                 resp_data = r.json()
 
                 print(f"  ✅ Exportado a Google Sheets: {resp_data.get('rows', len(items))} productos", flush=True)
-
-                # Marcar SOLO en historial del feed (NO en el core de Superseller)
-                # Pasar items completos para guardar títulos
-                items_con_asin = [item for item in items if item.get('asin')]
-                if items_con_asin:
-                    n = marcar_asins_vistos(feed_id, items_con_asin)
-                    print(f"  📚 {n} productos marcados en historial del feed '{feed_id}' (con títulos)", flush=True)
 
                 # Aprender keywords INTELIGENTES de productos publicados
                 # SOLO núcleo: personajes, franquicias, marcas (NO tipos de producto)

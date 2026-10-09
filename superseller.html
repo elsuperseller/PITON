@@ -1652,6 +1652,7 @@ async function buscar() {
     descuento_min:    parseInt(document.getElementById("descMin").value) || 0,
     precio_min:       parseFloat(document.getElementById("precioMin").value) || 0,
     precio_max:       parseFloat(document.getElementById("precioMax").value) || 0,
+    badge:            document.getElementById("f_badge_activo").checked ? document.getElementById("f_badge_texto").value.trim() : "",
   }
 
   try {
@@ -1711,13 +1712,9 @@ function renderResults(items) {
       }
     }, 500)
   }
-  const filtroBadge  = document.getElementById("f_badge_activo").checked
-  const badgeTexto   = document.getElementById("f_badge_texto").value.trim().toLowerCase()
+  // El filtro de badge ahora se aplica en el servidor
   const filtroInicio = document.getElementById("f_con_inicio").checked
 
-  if (filtroBadge && badgeTexto) {
-    items = items.filter(p => p.badge && p.badge.toLowerCase().includes(badgeTexto))
-  }
   if (filtroInicio) {
     items = items.filter(p => p.start_time && p.start_time !== "")
   }
