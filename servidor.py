@@ -798,9 +798,14 @@ def _procesar_urls_completo(job_id, urls, pages, min_discount, feed_id=""):
                        "Content-Type": "application/json",
                        "x-marketplace": "www.amazon.com.mx"}
 
+        # CRÍTICO: pedir TODOS los recursos necesarios para parsear_item()
         _RECURSOS = ["itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
-                     "offersV2.listings.price", "offersV2.listings.dealDetails",
-                     "offersV2.listings.isBuyBoxWinner"]
+                     "offersV2.listings.price",  # Incluye savings, savingBasis automáticamente
+                     "offersV2.listings.dealDetails",
+                     "offersV2.listings.isBuyBoxWinner",
+                     "offersV2.listings.type",
+                     "offersV2.listings.availability",
+                     "browseNodeInfo.browseNodes"]
         _stats = {"ok": 0, "no200": 0, "empty": 0, "no_listing": 0, "err": 0}
 
         def _enriquecer_batch(batch):
@@ -1788,11 +1793,25 @@ class Handler(BaseHTTPRequestHandler):
                             else:
                                 return []
                         items_api = r.json().get("itemsResult", {}).get("items", [])
+
+                        # Logging: ¿qué pasó con este batch?
+                        asins_batch = len(batch)
+                        asins_devueltos = len(items_api)
+                        parseados = 0
+                        con_descuento = 0
+
                         out = []
                         for item in items_api:
                             p = parsear_item(item)
-                            if p and p["descuento_pct"] >= min_discount:
-                                out.append(p)
+                            if p:
+                                parseados += 1
+                                if p["descuento_pct"] >= min_discount:
+                                    con_descuento += 1
+                                    out.append(p)
+
+                        if asins_devueltos < asins_batch or parseados < asins_devueltos or con_descuento < parseados:
+                            print(f"     Batch {batch[0][:7]}...: pedidos={asins_batch} devueltos={asins_devueltos} parseados={parseados} ≥{min_discount}%={con_descuento}", flush=True)
+
                         return out
                     except Exception as e:
                         print(f"  ❌ batch: {e}", flush=True)
@@ -1804,6 +1823,9 @@ class Handler(BaseHTTPRequestHandler):
                 with ThreadPoolExecutor(max_workers=5) as pool:
                     for res in pool.map(_enriquecer_batch_deals, batches):
                         resultados.extend(res)
+
+                # Diagnosticar: ¿por qué tan pocos resultados?
+                print(f"  ✅ {len(resultados)} productos después de parsear y filtrar descuento ≥{min_discount}%", flush=True)
 
                 # dedup por ASIN
                 seen, unicos = set(), []
