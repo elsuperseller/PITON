@@ -122,6 +122,11 @@ def parsear_item(item):
         lst = next((l for l in listings if l.get("isBuyBoxWinner")), listings[0])
         deal = lst.get("dealDetails") or {}
         tipo = lst.get("type","")
+
+        # FILTRO GLOBAL: descartar ofertas lightning/relámpago en TODOS los módulos
+        if tipo == "LIGHTNING_DEAL":
+            return None
+
         pi = lst.get("price",{})
 
         pd_ = pi.get("money",{}).get("amount")
