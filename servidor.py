@@ -68,7 +68,6 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         "itemCount": 15,  # Aumentado de 10 a 15 (15×2 páginas = 30 productos/keyword)
         "itemPage": pagina,
         "sortBy": sort_by,
-        "keywords": keywords,
         "minSavingPercent": min_saving,
         "condition": "New",
         "availability": "Available",
@@ -86,8 +85,10 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
     # La API rechaza cuando ambos están presentes
     if browse_node_id:
         body["browseNodeId"] = str(browse_node_id)
+        # NO incluir keywords cuando hay browseNodeId - limita demasiado los resultados
     else:
         body["searchIndex"] = search_index
+        body["keywords"] = keywords  # Solo usar keywords cuando NO hay browseNodeId
     if precio_min > 0:
         body["minPrice"] = int(precio_min * 100)
     if precio_max > 0:
@@ -978,6 +979,7 @@ SUBCATS_POR_CAT = {
     "Juguetes y Juegos": [
         {"nombre": "Figuras de Acción",     "id": "11337634011", "searchIndex": "ToysAndGames"},
         {"nombre": "Muñecas y Accesorios",  "id": "11337428011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Muñecos, Figuras y Sets de Juego", "id": "11337429011", "searchIndex": "ToysAndGames"},
         {"nombre": "Coleccionables",        "id": "20940159011", "searchIndex": "ToysAndGames"},
         {"nombre": "Juegos y Accesorios para Juegos", "id": "11337420011", "searchIndex": "ToysAndGames"},
         {"nombre": "Juguetes Educativos",   "id": "11337424011", "searchIndex": "ToysAndGames"},
