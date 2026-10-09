@@ -281,7 +281,34 @@ def main():
     print(f"\n📦 Total ofertas únicas: {len(ofertas_unicas)}")
 
     # Enriquecer con API
-    productos = enriquecer_ofertas_con_api(ofertas_unicas)
+    productos_raw = enriquecer_ofertas_con_api(ofertas_unicas)
+
+    # ========== FILTROS PERSONALIZADOS ==========
+    productos = []
+    for p in productos_raw:
+        # FILTRO 1: Descuento mínimo
+        if p.get('descuento_pct', 0) < 20:  # ⚙️ Cambiar aquí: descuento mínimo
+            continue
+
+        # FILTRO 2: Precio máximo
+        if p.get('price_discounted', 999999) > 2000:  # ⚙️ Cambiar aquí: precio máx
+            continue
+
+        # FILTRO 3: Palabras clave en título
+        titulo_lower = p.get('title', '').lower()
+        palabras_excluir = ['usado', 'refurbished', 'renewed']  # ⚙️ Agregar palabras
+        if any(palabra in titulo_lower for palabra in palabras_excluir):
+            continue
+
+        # FILTRO 4: Solo ciertas categorías (opcional)
+        # browse_nodes = p.get('browse_nodes', [])
+        # if not any('Juguetes' in node for node in browse_nodes):
+        #     continue
+
+        productos.append(p)
+
+    print(f"\n🔍 Después de filtros personalizados: {len(productos)} productos")
+    # ============================================
 
     # Guardar resultado
     output_path = os.path.join(BASE_DIR, args.output)
