@@ -65,7 +65,6 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
     body = {
         "partnerTag": CREDS["partner_tag"],
         "marketplace": "www.amazon.com.mx",
-        "searchIndex": search_index,
         "itemCount": 15,  # Aumentado de 10 a 15 (15×2 páginas = 30 productos/keyword)
         "itemPage": pagina,
         "sortBy": sort_by,
@@ -83,8 +82,12 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
             "browseNodeInfo.browseNodes"
         ]
     }
+    # Solo usar searchIndex si NO hay browseNodeId
+    # La API rechaza cuando ambos están presentes
     if browse_node_id:
         body["browseNodeId"] = str(browse_node_id)
+    else:
+        body["searchIndex"] = search_index
     if precio_min > 0:
         body["minPrice"] = int(precio_min * 100)
     if precio_max > 0:
@@ -937,6 +940,67 @@ def enriquecer_asins(asins, minSavingPercent=1):
 
 # ==================== FIN FEEDS ====================
 
+# Mapeo de subcategorías con browseNodeIds oficiales
+# Actualizado 2026-10-08 usando GetBrowseNodes API
+SUBCATS_POR_CAT = {
+    "Electrónicos": [
+        {"nombre": "Equipos de Audio y Hi-Fi", "id": "9687565011", "searchIndex": "Electronics"},
+        {"nombre": "Cámaras y Fotografía",    "id": "9687605011", "searchIndex": "Electronics"},
+        {"nombre": "Celulares y Accesorios", "id": "9687422011", "searchIndex": "Electronics"},
+        {"nombre": "Computadoras, Componentes y Accesorios",  "id": "9687880011", "searchIndex": "Electronics"},
+        {"nombre": "Televisión y Vídeo",             "id": "9687925011", "searchIndex": "Electronics"},
+        {"nombre": "Audio y Video Portátil",      "id": "9687392011", "searchIndex": "Electronics"},
+        {"nombre": "Tabletas",                 "id": "10189676011", "searchIndex": "Electronics"},
+        {"nombre": "Tecnología para Vestir","id": "15144312011", "searchIndex": "Electronics"},
+        {"nombre": "Audífonos, auriculares y accesorios","id": "24035342011", "searchIndex": "Electronics"},
+    ],
+    "Hogar y Cocina": [
+        {"nombre": "Cocina",   "id": "9721682011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Muebles",            "id": "9757251011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Decoración del Hogar",         "id": "9757037011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Climatización y Calefacción",  "id": "9725442011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Iluminación",        "id": "9939347011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Blancos para el Hogar",       "id": "9757431011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Baño",       "id": "9756950011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Almacenamiento y Organización",       "id": "9756857011", "searchIndex": "HomeAndKitchen"},
+        {"nombre": "Aspiración, Limpieza y Planchado",       "id": "9725297011", "searchIndex": "HomeAndKitchen"},
+    ],
+    "Deportes y Aire Libre": [
+        {"nombre": "Atletismo",      "id": "9784025011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Deportes Acuáticos",       "id": "9785900011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Campismo y Senderismo",   "id": "9783688011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Ciclismo",                 "id": "9784530011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Correr",           "id": "9790484011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Fútbol",     "id": "9786709011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Basquetbol",     "id": "9784119011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Gimnasia",     "id": "9789894011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Golf",     "id": "9789827011", "searchIndex": "SportsAndOutdoors"},
+        {"nombre": "Tenis",     "id": "9789598011", "searchIndex": "SportsAndOutdoors"},
+    ],
+    "Juguetes y Juegos": [
+        {"nombre": "Figuras de Acción",     "id": "11337634011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Muñecas y Accesorios",  "id": "11337428011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Coleccionables",        "id": "20940159011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Juegos y Accesorios para Juegos", "id": "11337420011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Juguetes Educativos",   "id": "11337424011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Juegos de Construcción", "id": "11337421011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Vehículos de Juguete",  "id": "11337433011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Aire Libre y Deportes", "id": "11337412011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Peluches",              "id": "11337430011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Rompecabezas",          "id": "11337431011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Radiocontrol",          "id": "11337504011", "searchIndex": "ToysAndGames"},
+        {"nombre": "Juguetes Electrónicos", "id": "11337425011", "searchIndex": "ToysAndGames"},
+    ],
+}
+
+def _resolver_categoria(cat_principal, subcat_nombre):
+    """Resuelve una subcategoría a su searchIndex y browseNodeId"""
+    subs = SUBCATS_POR_CAT.get(cat_principal, [])
+    for sub in subs:
+        if sub["nombre"] == subcat_nombre:
+            return sub["searchIndex"], sub["id"]
+    return "All", None
+
 class Handler(BaseHTTPRequestHandler):
     def _cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -953,11 +1017,30 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 length = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(length))
-                cats = body.get("categorias", {})
-                pags = int(body.get("paginas", 3))
+                cats_raw = body.get("categorias", {})
+                pags = int(body.get("pages", body.get("paginas", 3)))
                 filtros = body.get("filtros", {})
-                sort_by = body.get("sortBy", "NewestArrivals")
+                sort_by = body.get("sort", body.get("sortBy", "NewestArrivals"))
                 feed_id = body.get("feed_id", "")  # Obtener feed_id si viene
+
+                # Normalizar categorías: soportar tanto dict como list
+                if isinstance(cats_raw, list):
+                    # Formato: ["Cat__Subcat", "Cat2__Subcat2"]
+                    # Necesitamos mapear a searchIndex y nodeId
+                    cats = {}
+                    for cat_full in cats_raw:
+                        if "__" in cat_full:
+                            cat_principal = cat_full.split("__")[0]
+                            subcat_nombre = cat_full.split("__")[1]
+                            search_index, node_id = _resolver_categoria(cat_principal, subcat_nombre)
+                            cats[cat_full] = {
+                                "searchIndex": search_index,
+                                "nodeId": node_id
+                            }
+                        else:
+                            cats[cat_full] = {"searchIndex": "All", "nodeId": None}
+                else:
+                    cats = cats_raw
 
                 # Log para ver qué llega del HTML
                 log_prefix = f"[{feed_id}] " if feed_id else ""
@@ -982,10 +1065,14 @@ class Handler(BaseHTTPRequestHandler):
                     else:
                         cat_index = cat_val
                         browse_nid = None
+
+                    # Si hay browseNodeId, no usar searchIndex (la API lo rechaza)
+                    search_idx_param = None if browse_nid else cat_index
+
                     for pag in range(1, pags + 1):
                         try:
-                            print(f"  → Buscando: {cat_index} | nodeId: {browse_nid} | pag: {pag}", flush=True)
-                            items = buscar(cat_index, pag, sort_by=sort_by, browse_node_id=browse_nid,
+                            print(f"  → Buscando: nodeId={browse_nid} searchIdx={search_idx_param} | pag: {pag}", flush=True)
+                            items = buscar(search_idx_param or "All", pag, sort_by=sort_by, browse_node_id=browse_nid,
                                          min_saving=max(1, desc_min), precio_min=pmin, precio_max=pmax)
                             print(f"     API devolvió {len(items)} items", flush=True)
                             for item in items:
@@ -993,13 +1080,8 @@ class Handler(BaseHTTPRequestHandler):
                                 if p and p["descuento_pct"] >= desc_min:
                                     if pmin > 0 and p["price_discounted"] < pmin: continue
                                     if pmax > 0 and p["price_discounted"] > pmax: continue
-                                    # Verificar browseNodes si se especificó un nodeId
-                                    if browse_nid:
-                                        browse_nodes = item.get("browseNodeInfo", {}).get("browseNodes", [])
-                                        node_ids = [str(bn.get("id", "")) for bn in browse_nodes]
-                                        if browse_nid not in node_ids:
-                                            print(f"     🚫 Producto {p['asin']} no pertenece al nodeId {browse_nid}, filtrado", flush=True)
-                                            continue
+                                    # Confiar en que la API devuelve productos correctos cuando se especifica browseNodeId
+                                    # Amazon busca en el nodo Y sus hijos, así que puede devolver nodos diferentes
                                     resultados.append(p)
                             if not items:
                                 print(f"     ⚠️  Sin items, deteniendo paginación para esta categoría", flush=True)
