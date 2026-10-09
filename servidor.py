@@ -389,10 +389,12 @@ def aplicar_novedad_score_feed(items, feed_id):
     """
     Aplica novedad_score a items basándose en el historial del feed específico.
     1.0  — nunca visto
-    0.8  — publicado hace >14 días
-    0.5  — publicado hace 7-14 días
-    0.2  — publicado hace 3-7 días
-    0.0  — publicado hace <3 días o bloqueado
+    0.8  — publicado hace ≥21 días
+    0.6  — publicado hace 14-21 días
+    0.3  — publicado hace 7-14 días
+    0.0  — publicado hace <7 días o bloqueado
+
+    Actualizado 2026-10-08: Umbrales unificados con historial global (7 días mínimo)
     """
     from datetime import datetime, timezone
 
@@ -423,19 +425,15 @@ def aplicar_novedad_score_feed(items, feed_id):
                     ultima_fecha = ultima_fecha.replace(tzinfo=timezone.utc)
                 dias = (now - ultima_fecha).days
 
-                # Scoring de novedad
-                if dias >= 14:
-                    score = 0.8
-                elif dias >= 7:
-                    score = 0.5
-                elif dias >= 3:
-                    score = 0.2
-                else:
-                    score = 0.0
+                # Scoring de novedad - UNIFICADO CON HISTORIAL GLOBAL
+                if   dias >= 21: score = 0.8
+                elif dias >= 14: score = 0.6
+                elif dias >= 7:  score = 0.3
+                else:            score = 0.0
 
                 producto['novedad_score'] = score
             except:
-                producto['novedad_score'] = 0.5
+                producto['novedad_score'] = 0.3  # Default a 7-14 días
         else:
             producto['novedad_score'] = 1.0
 
