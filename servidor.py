@@ -84,7 +84,7 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         ]
     }
     if browse_node_id:
-        body["browseNodeId"] = browse_node_id
+        body["browseNodeId"] = str(browse_node_id)
     if precio_min > 0:
         body["minPrice"] = int(precio_min * 100)
     if precio_max > 0:
@@ -875,11 +875,7 @@ def _procesar_urls_completo(job_id, urls, pages, min_discount, feed_id=""):
                 unicos = _hv.aplicar_scores(unicos)
                 ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
                 print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
-                filtrados = total_antes - len(unicos)
-                if filtrados > 0:
-                    print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
+                # Score aplicado - mostrar todos los productos
 
         job["status"] = "completed"
         job["resultados"] = {"ok": True, "items": unicos, "total": len(unicos), "asins": len(all_asins)}
@@ -991,15 +987,26 @@ class Handler(BaseHTTPRequestHandler):
                             print(f"  → Buscando: {cat_index} | nodeId: {browse_nid} | pag: {pag}", flush=True)
                             items = buscar(cat_index, pag, sort_by=sort_by, browse_node_id=browse_nid,
                                          min_saving=max(1, desc_min), precio_min=pmin, precio_max=pmax)
+                            print(f"     API devolvió {len(items)} items", flush=True)
                             for item in items:
                                 p = parsear_item(item)
                                 if p and p["descuento_pct"] >= desc_min:
                                     if pmin > 0 and p["price_discounted"] < pmin: continue
                                     if pmax > 0 and p["price_discounted"] > pmax: continue
+                                    # Verificar browseNodes si se especificó un nodeId
+                                    if browse_nid:
+                                        browse_nodes = item.get("browseNodeInfo", {}).get("browseNodes", [])
+                                        node_ids = [str(bn.get("id", "")) for bn in browse_nodes]
+                                        if browse_nid not in node_ids:
+                                            print(f"     🚫 Producto {p['asin']} no pertenece al nodeId {browse_nid}, filtrado", flush=True)
+                                            continue
                                     resultados.append(p)
-                            if not items: break
+                            if not items:
+                                print(f"     ⚠️  Sin items, deteniendo paginación para esta categoría", flush=True)
+                                break
                             time.sleep(1.2)
                         except Exception as e:
+                            print(f"     ❌ Error: {e}", flush=True)
                             if "429" in str(e): time.sleep(10)
                             break
 
@@ -1017,6 +1024,28 @@ class Handler(BaseHTTPRequestHandler):
                     filtrados_badge = total_antes_badge - len(unicos)
                     print(f"  🏷️  Filtro badge '{badge_filter}': {len(unicos)} productos (filtrados {filtrados_badge})", flush=True)
 
+                # Filtrar por Tendencia y Prime
+                if filtros.get("trending"):
+                    tpct = int(filtros.get("tpct", 50))
+                    total_antes = len(unicos)
+                    unicos = [p for p in unicos if p.get('pct_claimed') and p.get('pct_claimed') >= tpct]
+                    print(f"  🔥 Tendencia ≥{tpct}%: {len(unicos)} productos (filtrados {total_antes - len(unicos)})", flush=True)
+
+                if filtros.get("prime_e"):
+                    total_antes = len(unicos)
+                    unicos = [p for p in unicos if p.get('access_type') == 'PRIME_EARLY_ACCESS']
+                    print(f"  ⚡ Prime Early Access: {len(unicos)} productos (filtrados {total_antes - len(unicos)})", flush=True)
+
+                if filtros.get("prime_x"):
+                    total_antes = len(unicos)
+                    unicos = [p for p in unicos if p.get('access_type') == 'PRIME_EXCLUSIVE']
+                    print(f"  🔒 Prime Exclusive: {len(unicos)} productos (filtrados {total_antes - len(unicos)})", flush=True)
+
+                if filtros.get("scarce"):
+                    total_antes = len(unicos)
+                    unicos = [p for p in unicos if p.get('availability', {}).get('message', '').lower().find('quedan') >= 0]
+                    print(f"  ⚠️  Poco inventario: {len(unicos)} productos (filtrados {total_antes - len(unicos)})", flush=True)
+
                 # Aplicar novedad_score si hay feed_id seleccionado
                 if _HV_OK:
                     total_antes = len(unicos)
@@ -1028,11 +1057,7 @@ class Handler(BaseHTTPRequestHandler):
                         unicos = _hv.aplicar_scores(unicos)
                         ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                    unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
-                    filtrados = total_antes - len(unicos)
-                    if filtrados > 0:
-                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
+                    # Score aplicado - mostrar todos los productos
 
                 self.send_response(200)
                 self._cors()
@@ -1121,11 +1146,6 @@ class Handler(BaseHTTPRequestHandler):
                         resultados = _hv.aplicar_scores(resultados)
                         ya_vistos = sum(1 for i in resultados if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                    resultados = [p for p in resultados if p.get('novedad_score', 1.0) >= 0.1]
-                    filtrados = total_antes - len(resultados)
-                    if filtrados > 0:
-                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200)
                 self._cors()
@@ -1218,11 +1238,6 @@ class Handler(BaseHTTPRequestHandler):
                         resultados = _hv.aplicar_scores(resultados)
                         ya_vistos = sum(1 for i in resultados if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                    resultados = [p for p in resultados if p.get('novedad_score', 1.0) >= 0.1]
-                    filtrados = total_antes - len(resultados)
-                    if filtrados > 0:
-                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1270,11 +1285,6 @@ class Handler(BaseHTTPRequestHandler):
                         items = _hv.aplicar_scores(items)
                         ya_vistos = sum(1 for i in items if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                    items = [p for p in items if p.get('novedad_score', 1.0) >= 0.1]
-                    filtrados = total_antes - len(items)
-                    if filtrados > 0:
-                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1312,11 +1322,6 @@ class Handler(BaseHTTPRequestHandler):
                         items = _hv.aplicar_scores(items)
                         ya_vistos = sum(1 for i in items if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                    items = [p for p in items if p.get('novedad_score', 1.0) >= 0.1]
-                    filtrados = total_antes - len(items)
-                    if filtrados > 0:
-                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -1520,11 +1525,6 @@ class Handler(BaseHTTPRequestHandler):
                         total_antes = len(unicos)
                         ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                        # Filtrar automáticamente productos con novedad_score < 0.1 (publicados hace <3 días)
-                        unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
-                        filtrados = total_antes - len(unicos)
-                        if filtrados > 0:
-                            print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
 
                 print(f"  → {len(unicos)} productos", flush=True)
                 self.send_response(200); self._cors()
@@ -1697,11 +1697,7 @@ class Handler(BaseHTTPRequestHandler):
                         unicos = _hv.aplicar_scores(unicos)
                         ya_vistos = sum(1 for i in unicos if i.get('novedad_score',1)<1.0)
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
-                    # Filtrar automáticamente productos repetidos (publicados hace <3 días)
-                    unicos = [p for p in unicos if p.get('novedad_score', 1.0) >= 0.1]
-                    filtrados = total_antes - len(unicos)
-                    if filtrados > 0:
-                        print(f"  🚫 Filtrados {filtrados} productos repetidos (publicados hace <3 días)", flush=True)
+                    # Score aplicado - mostrar todos los productos
 
                 print(f"  → {len(unicos)} productos con descuento", flush=True)
                 self.send_response(200); self._cors()
@@ -2506,41 +2502,56 @@ class Handler(BaseHTTPRequestHandler):
 
         SUBCATS_POR_CAT = {
             "Electrónicos": [
-                {"nombre": "Audio y Hi-Fi",           "id": "9482558011", "searchIndex": "Electronics"},
-                {"nombre": "Cámaras y Fotografía",    "id": "9482561011", "searchIndex": "Electronics"},
-                {"nombre": "Celulares y Smartphones", "id": "9482563011", "searchIndex": "Electronics"},
-                {"nombre": "Computadoras y Laptops",  "id": "9482565011", "searchIndex": "Electronics"},
-                {"nombre": "Televisores",             "id": "9482567011", "searchIndex": "Electronics"},
-                {"nombre": "Accesorios para PC",      "id": "9482571011", "searchIndex": "Electronics"},
-                {"nombre": "Tablets",                 "id": "9482573011", "searchIndex": "Electronics"},
-                {"nombre": "Wearables y Smartwatches","id": "9482577011", "searchIndex": "Electronics"},
+                # IDs actualizados el 2026-10-08 usando GetBrowseNodes API
+                {"nombre": "Equipos de Audio y Hi-Fi", "id": "9687565011", "searchIndex": "Electronics"},
+                {"nombre": "Cámaras y Fotografía",    "id": "9687605011", "searchIndex": "Electronics"},
+                {"nombre": "Celulares y Accesorios", "id": "9687422011", "searchIndex": "Electronics"},
+                {"nombre": "Computadoras, Componentes y Accesorios",  "id": "9687880011", "searchIndex": "Electronics"},
+                {"nombre": "Televisión y Vídeo",             "id": "9687925011", "searchIndex": "Electronics"},
+                {"nombre": "Audio y Video Portátil",      "id": "9687392011", "searchIndex": "Electronics"},
+                {"nombre": "Tabletas",                 "id": "10189676011", "searchIndex": "Electronics"},
+                {"nombre": "Tecnología para Vestir","id": "15144312011", "searchIndex": "Electronics"},
+                {"nombre": "Audífonos, auriculares y accesorios","id": "24035342011", "searchIndex": "Electronics"},
             ],
             "Hogar y Cocina": [
-                {"nombre": "Cocina y Comedor",   "id": "9482610011", "searchIndex": "HomeAndKitchen"},
-                {"nombre": "Muebles",            "id": "9482612011", "searchIndex": "HomeAndKitchen"},
-                {"nombre": "Decoración",         "id": "9482614011", "searchIndex": "HomeAndKitchen"},
-                {"nombre": "Electrodomésticos",  "id": "9482616011", "searchIndex": "HomeAndKitchen"},
-                {"nombre": "Jardinería",         "id": "9482618011", "searchIndex": "HomeAndKitchen"},
-                {"nombre": "Iluminación",        "id": "9482620011", "searchIndex": "HomeAndKitchen"},
-                {"nombre": "Ropa de Cama",       "id": "9482624011", "searchIndex": "HomeAndKitchen"},
+                # IDs actualizados el 2026-10-08 usando GetBrowseNodes API
+                {"nombre": "Cocina",   "id": "9721682011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Muebles",            "id": "9757251011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Decoración del Hogar",         "id": "9757037011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Climatización y Calefacción",  "id": "9725442011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Iluminación",        "id": "9939347011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Blancos para el Hogar",       "id": "9757431011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Baño",       "id": "9756950011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Almacenamiento y Organización",       "id": "9756857011", "searchIndex": "HomeAndKitchen"},
+                {"nombre": "Aspiración, Limpieza y Planchado",       "id": "9725297011", "searchIndex": "HomeAndKitchen"},
             ],
             "Deportes y Aire Libre": [
-                {"nombre": "Ejercicio y Fitness",      "id": "9482640011", "searchIndex": "SportsAndOutdoors"},
-                {"nombre": "Deportes Acuáticos",       "id": "9482642011", "searchIndex": "SportsAndOutdoors"},
-                {"nombre": "Deportes al Aire Libre",   "id": "9482644011", "searchIndex": "SportsAndOutdoors"},
-                {"nombre": "Ciclismo",                 "id": "9482646011", "searchIndex": "SportsAndOutdoors"},
-                {"nombre": "Ropa Deportiva",           "id": "9482648011", "searchIndex": "SportsAndOutdoors"},
-                {"nombre": "Camping y Senderismo",     "id": "9482652011", "searchIndex": "SportsAndOutdoors"},
+                # IDs actualizados el 2026-10-08 usando GetBrowseNodes API
+                {"nombre": "Atletismo",      "id": "9784025011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Deportes Acuáticos",       "id": "9785900011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Campismo y Senderismo",   "id": "9783688011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Ciclismo",                 "id": "9784530011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Correr",           "id": "9790484011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Fútbol",     "id": "9786709011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Basquetbol",     "id": "9784119011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Gimnasia",     "id": "9789894011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Golf",     "id": "9789827011", "searchIndex": "SportsAndOutdoors"},
+                {"nombre": "Tenis",     "id": "9789598011", "searchIndex": "SportsAndOutdoors"},
             ],
             "Juguetes y Juegos": [
-                {"nombre": "Juegos de Mesa",        "id": "9482660011", "searchIndex": "ToysAndGames"},
-                {"nombre": "Figuras de Acción",     "id": "9482662011", "searchIndex": "ToysAndGames"},
-                {"nombre": "Juguetes Educativos",   "id": "9482664011", "searchIndex": "ToysAndGames"},
-                {"nombre": "Muñecas y Accesorios",  "id": "9482666011", "searchIndex": "ToysAndGames"},
-                {"nombre": "LEGO y Construcción",   "id": "9482668011", "searchIndex": "ToysAndGames"},
-                {"nombre": "Vehículos de Juguete",  "id": "9482670011", "searchIndex": "ToysAndGames"},
-                {"nombre": "Juegos al Aire Libre",  "id": "9482672011", "searchIndex": "ToysAndGames"},
-                {"nombre": "Coleccionables",        "id": "9482676011", "searchIndex": "ToysAndGames"},
+                # IDs actualizados el 2026-10-08 usando GetBrowseNodes API
+                {"nombre": "Figuras de Acción",     "id": "11337634011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Muñecas y Accesorios",  "id": "11337428011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Coleccionables",        "id": "20940159011", "searchIndex": "ToysAndGames"},  # Juguetes Coleccionables
+                {"nombre": "Juegos y Accesorios para Juegos", "id": "11337420011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Juguetes Educativos",   "id": "11337424011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Juegos de Construcción", "id": "11337421011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Vehículos de Juguete",  "id": "11337433011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Aire Libre y Deportes", "id": "11337412011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Peluches",              "id": "11337430011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Rompecabezas",          "id": "11337431011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Radiocontrol",          "id": "11337504011", "searchIndex": "ToysAndGames"},
+                {"nombre": "Juguetes Electrónicos", "id": "11337425011", "searchIndex": "ToysAndGames"},
             ],
             "Belleza": [
                 {"nombre": "Cuidado del Cabello",   "id": "9482690011", "searchIndex": "HealthPersonalCare"},

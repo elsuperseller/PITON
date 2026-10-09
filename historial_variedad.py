@@ -45,10 +45,10 @@ def _guardar(data):
 def score_novedad(item_id, historial=None):
     """
     1.0  — nunca visto
-    0.8  — publicado hace >14 días
-    0.5  — publicado hace 7-14 días
-    0.2  — publicado hace 3-7 días
-    0.0  — publicado hace <3 días
+    0.8  — publicado hace ≥21 días
+    0.6  — publicado hace 14-21 días
+    0.3  — publicado hace 7-14 días
+    0.0  — publicado hace <7 días
     Penalización extra: -0.15 por publicación adicional (máx -0.3)
     """
     if historial is None:
@@ -61,9 +61,9 @@ def score_novedad(item_id, historial=None):
         ultimo = ultimo.replace(tzinfo=timezone.utc)
     dias  = (datetime.now(timezone.utc) - ultimo).days
     veces = entry.get("times_published", 1)
-    if   dias >= 14: base = 0.8
-    elif dias >= 7:  base = 0.5
-    elif dias >= 3:  base = 0.2
+    if   dias >= 21: base = 0.8
+    elif dias >= 14: base = 0.6
+    elif dias >= 7:  base = 0.3
     else:            base = 0.0
     penalizacion = min(0.3, max(0, veces - 1) * 0.15)
     return round(max(0.0, base - penalizacion), 2)

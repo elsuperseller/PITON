@@ -1,0 +1,29 @@
+{
+  "name": "Juguetes y Juegos",
+  "id": "11260442011",
+  "children": [
+    {
+      "name": "Arborist Merchandising Root",
+      "id": "119645984011",
+      "children": [
+        {
+          "name": "Self Service",
+          "id": "11260447011",
+          "children": []
+        }
+      ]
+    },
+    null,
+    {
+      "name": "Specialty Stores",
+      "id": "11260445011",
+      "children": [
+        {
+          "name": "Custom Stores",
+          "id": "11260446011",
+          "children": []
+        }
+      ]
+    }
+  ]
+}
