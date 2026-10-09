@@ -75,7 +75,8 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         "currencyOfPreference": "MXN",
         "resources": [
             "itemInfo.title", "itemInfo.externalIds", "images.primary.medium",
-            "offersV2.listings.price", "offersV2.listings.dealDetails",
+            "offersV2.listings.price",  # Incluye money, savings, savingBasis automáticamente
+            "offersV2.listings.dealDetails",
             "offersV2.listings.isBuyBoxWinner", "offersV2.listings.type",
             "offersV2.listings.availability",
             "browseNodeInfo.browseNodes"
@@ -138,18 +139,29 @@ def parsear_item(item):
 
         pd_ = float(pd_)
 
-        # Calcular precio original y descuento
-        sb = pi.get("savingBasis",{})
-        sv = pi.get("savings",{})
+        # DESCUENTO: Usar savings.percentage de la API (documentación oficial)
+        # savings = (savingBasis - price) / savingBasis × 100
+        sv = pi.get("savings", {})
+        sb = pi.get("savingBasis", {})
 
-        if sb and sb.get("money",{}).get("amount"):
-            po = float(sb["money"]["amount"])
-        elif sv and sv.get("money",{}).get("amount"):
-            po = round(pd_ + float(sv["money"]["amount"]), 2)
+        if sv and sv.get("percentage") is not None:
+            # Caso ideal: Amazon ya calculó el descuento
+            desc = int(sv["percentage"])
+
+            # Precio original desde savingBasis
+            if sb and sb.get("money", {}).get("amount"):
+                po = float(sb["money"]["amount"])
+            elif sv.get("money", {}).get("amount"):
+                # Calcular hacia atrás desde savings.money
+                po = round(pd_ + float(sv["money"]["amount"]), 2)
+            else:
+                po = pd_
         else:
-            po = pd_  # Sin descuento aparente
-
-        desc = round((po - pd_) / po * 100) if po > pd_ else 0
+            # NO hay savings: producto sin descuento
+            # Según doc: "at least one offer" puede tener descuento pero buybox no
+            # Devolver con desc=0 y dejar que el filtro manual lo descarte
+            desc = 0
+            po = pd_
 
         end = deal.get("endTime","")
         start = deal.get("startTime","")
@@ -1052,23 +1064,28 @@ class Handler(BaseHTTPRequestHandler):
                 pmax = float(filtros.get("precio_max", 0))
                 badge_filter = filtros.get("badge", "").strip().lower()
 
-                # Ampliar páginas porque la API NO respeta minSavingPercent correctamente
-                # Necesitamos compensar el filtrado manual
+                # SOBRE-PAGINAR porque minSavingPercent filtra por "cualquier oferta del producto"
+                # pero offersV2 solo devuelve buybox. Mitigación según documentación oficial.
                 pags_api = pags
+
+                # Estrategia: pedir minSaving más alto a la API para mejorar tasa de aciertos
+                api_min_saving = desc_min
                 if desc_min >= 40:
-                    pags_api = pags * 4  # 40%+ descuento es raro, buscar 4x más
+                    pags_api = pags * 4
+                    api_min_saving = min(50, desc_min + 10)  # +10% para filtro más estricto
                 elif desc_min >= 25:
-                    pags_api = pags * 3  # 25%+ descuento, buscar 3x más
+                    pags_api = pags * 3
+                    api_min_saving = min(35, desc_min + 10)
                 elif desc_min >= 15:
-                    pags_api = pags * 2  # 15%+ descuento, buscar 2x más
+                    pags_api = pags * 2
+                    api_min_saving = min(25, desc_min + 10)
 
                 if pags_api > pags:
-                    print(f"  🔍 Ampliando búsqueda: {pags} → {pags_api} páginas (desc≥{desc_min}% requiere más búsqueda)", flush=True)
+                    print(f"  🔍 Sobre-paginación: {pags} → {pags_api} páginas (desc≥{desc_min}%, API filtra ≥{api_min_saving}%)", flush=True)
 
-                # Si hay filtro de precio también, ampliar más
                 if pmin > 0 or pmax > 0:
                     pags_api = int(pags_api * 1.5)
-                    print(f"  💰 Filtro precio activo (${pmin}-${pmax}), ampliando a {pags_api} páginas", flush=True)
+                    print(f"  💰 Filtro precio: ampliando a {pags_api} páginas", flush=True)
 
                 resultados = []
                 for nombre, cat_val in cats.items():
@@ -1084,9 +1101,9 @@ class Handler(BaseHTTPRequestHandler):
 
                     for pag in range(1, pags_api + 1):
                         try:
-                            print(f"  → Buscando: nodeId={browse_nid} searchIdx={search_idx_param} | pag: {pag} | minSaving: {desc_min}%", flush=True)
+                            print(f"  → Buscando: nodeId={browse_nid} | pag: {pag} | API minSaving: {api_min_saving}%", flush=True)
                             items = buscar(search_idx_param or "All", pag, sort_by=sort_by, browse_node_id=browse_nid,
-                                         min_saving=desc_min, precio_min=pmin, precio_max=pmax)
+                                         min_saving=api_min_saving, precio_min=pmin, precio_max=pmax)
 
                             # La API de Amazon NO respeta minSavingPercent correctamente
                             # Devuelve productos con descuentos menores, así que debemos filtrar manualmente
