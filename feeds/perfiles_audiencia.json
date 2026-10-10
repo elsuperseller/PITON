@@ -157,7 +157,6 @@
       "Mujer",
       "Negro",
       "Ninja",
-      "Nitrilo",
       "Niveles",
       "Odyssey",
       "One Piece",
@@ -211,6 +210,7 @@
       "Unisex",
       "Ventilador",
       "Vidrio",
+      "Zapatillas",
       "Zapato",
       "Zapatos"
     ],
@@ -407,7 +407,6 @@
       "Midea",
       "Militar",
       "Minecraft",
-      "Mochila",
       "Monster",
       "Monsters",
       "Multiverse",
@@ -461,7 +460,8 @@
       "Universe",
       "Wars",
       "Wheels",
-      "Wolverine"
+      "Wolverine",
+      "World"
     ],
     "filtros": {
       "minSavingPercent": 5,
