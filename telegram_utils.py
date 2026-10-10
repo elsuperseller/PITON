@@ -38,11 +38,11 @@ def resolver_enlace_corto(short_url):
         print(f"      ⚠️  Error resolviendo {short_url}: {e}", flush=True)
         return short_url
 
-def scrape_telegram_ultimos_dias(channel_url, dias=2):
+def scrape_telegram_ultimos_dias(channel_url, dias=5):
     """
     Scrape de canal público de Telegram.
     Filtra solo mensajes de los últimos N días.
-    Retorna lista de ASINs únicos.
+    Retorna diccionario con ASINs y metadata (timestamp).
     """
     print(f"  📡 Scrapeando Telegram (últimos {dias} días): {channel_url.split('/')[-1]}", flush=True)
 
@@ -60,7 +60,7 @@ def scrape_telegram_ultimos_dias(channel_url, dias=2):
         now = datetime.now(timezone.utc)
         fecha_limite = now - timedelta(days=dias)
 
-        asins_encontrados = set()
+        asins_metadata = {}  # {asin: timestamp}
 
         for msg in mensajes:
             try:
@@ -90,33 +90,42 @@ def scrape_telegram_ultimos_dias(channel_url, dias=2):
 
                         asin = extraer_asin_de_url(href)
                         if asin:
-                            asins_encontrados.add(asin)
+                            # Guardar solo el timestamp más reciente para cada ASIN
+                            if asin not in asins_metadata or timestamp > asins_metadata[asin]:
+                                asins_metadata[asin] = timestamp_str
 
             except Exception as e:
                 continue
 
-        print(f"    ✅ {len(asins_encontrados)} ASINs únicos de Telegram", flush=True)
-        return list(asins_encontrados)
+        print(f"    ✅ {len(asins_metadata)} ASINs únicos de Telegram", flush=True)
+        return asins_metadata  # Retorna dict {asin: timestamp}
 
     except Exception as e:
         print(f"    ⚠️  Error scrapeando Telegram: {e}", flush=True)
-        return []
+        return {}
 
 def obtener_asins_de_telegram(perfil):
     """
     Obtiene ASINs de todos los canales de Telegram configurados en un perfil.
+    Retorna dict {asin: timestamp} con el timestamp más reciente para cada ASIN.
     """
     telegram_sources = perfil.get('telegram_sources', [])
     if not telegram_sources:
-        return []
+        return {}
 
-    todos_asins = []
+    todos_asins_metadata = {}
     for source in telegram_sources:
         url = source.get('url')
-        dias = source.get('dias_historico', 2)
+        dias = source.get('dias_historico', 5)  # Por defecto 5 días
         if url:
-            asins = scrape_telegram_ultimos_dias(url, dias)
-            todos_asins.extend(asins)
+            asins_metadata = scrape_telegram_ultimos_dias(url, dias)
+            # Merge manteniendo el timestamp más reciente
+            for asin, timestamp in asins_metadata.items():
+                if asin not in todos_asins_metadata:
+                    todos_asins_metadata[asin] = timestamp
+                else:
+                    # Comparar timestamps y quedarse con el más reciente
+                    if timestamp > todos_asins_metadata[asin]:
+                        todos_asins_metadata[asin] = timestamp
 
-    # Deduplicar
-    return list(set(todos_asins))
+    return todos_asins_metadata  # {asin: timestamp}

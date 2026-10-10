@@ -702,7 +702,9 @@ input[type=file] {
     </select>
     <button id="btnDetener" onclick="detenerProceso()" style="display:none;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
     <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;" class="btn btn-danger">👎 Descartar</button>
+    <button class="btn" style="background:#22c55e;color:white;" onclick="buscarSoloTelegram()">📱 Telegram</button>
     <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar</button>
+    <button class="btn" style="background:#6366f1;color:white;" onclick="abrirConfiguracion()">⚙️ Config</button>
   </div>
 </header>
 
@@ -1190,6 +1192,168 @@ input[type=file] {
   </div>
 </div>
 
+<!-- ── MODAL CONFIGURACIÓN ─────────────────────────────────── -->
+<div id="configModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:var(--rl);width:90%;max-width:700px;max-height:85vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);display:flex;flex-direction:column;">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-l);background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:28px;">⚙️</span>
+        <div>
+          <h3 style="font-size:18px;font-weight:700;color:white;margin:0;">Configuración</h3>
+          <p style="font-size:12px;color:rgba(255,255,255,0.8);margin:4px 0 0 0;">Ajusta parámetros de Telegram y búsquedas</p>
+        </div>
+      </div>
+      <button onclick="cerrarConfiguracion()" style="background:rgba(255,255,255,0.2);border:none;font-size:28px;cursor:pointer;color:white;line-height:1;width:36px;height:36px;border-radius:50%;transition:all 0.2s;">×</button>
+    </div>
+
+    <!-- Content -->
+    <div style="flex:1;overflow-y:auto;padding:24px;">
+
+      <!-- Sección Búsquedas Amazon -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">🔍</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Búsquedas de Amazon</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
+              Páginas por defecto
+            </label>
+            <p style="font-size:11px;color:var(--t3);margin-bottom:12px;">
+              Número de páginas que se buscarán por categoría
+            </p>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="number" id="configPaginasDefault" min="1" max="20" value="3"
+                     style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
+              <span style="font-size:13px;color:var(--t2);">páginas</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
+              Descuento mínimo por defecto
+            </label>
+            <p style="font-size:11px;color:var(--t3);margin-bottom:12px;">
+              Descuento mínimo para filtrar productos
+            </p>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="number" id="configDescuentoMin" min="0" max="100" value="15"
+                     style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
+              <span style="font-size:13px;color:var(--t2);">%</span>
+            </div>
+          </div>
+
+          <button onclick="guardarConfigBusquedas()" class="btn btn-primary" style="font-size:12px;padding:8px 16px;">
+            💾 Guardar configuración de búsquedas
+          </button>
+        </div>
+      </div>
+
+      <!-- Sección Telegram -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">📱</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Canales de Telegram</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
+            Días de histórico a extraer
+          </label>
+          <p style="font-size:11px;color:var(--t3);margin-bottom:12px;line-height:1.5;">
+            Número de días hacia atrás que se extraerán del canal de Telegram cuando uses el botón "📱 Telegram"
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="number" id="configTelegramDias" min="1" max="30" value="5"
+                   style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
+            <span style="font-size:13px;color:var(--t2);">días</span>
+            <button onclick="guardarConfigTelegram()" class="btn btn-primary" style="margin-left:auto;font-size:12px;padding:8px 16px;">
+              💾 Guardar
+            </button>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border-left:3px solid #667eea;">
+            <div style="font-size:11px;color:var(--t3);line-height:1.6;">
+              <strong style="color:var(--t2);">Recomendado:</strong><br>
+              • 1-3 días: Ofertas muy recientes<br>
+              • 5-7 días: Balance entre novedad y cantidad<br>
+              • 10-30 días: Máxima cobertura histórica
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Historial -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">📚</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Historial y Novedad</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
+            Días mínimos entre publicaciones
+          </label>
+          <p style="font-size:11px;color:var(--t3);margin-bottom:12px;">
+            Un producto se marca como "ya visto" si fue publicado hace menos de X días
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="number" id="configNovedadDias" min="1" max="30" value="7"
+                   style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
+            <span style="font-size:13px;color:var(--t2);">días</span>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border-left:3px solid #f59e0b;">
+            <div style="font-size:11px;color:var(--t3);line-height:1.6;">
+              <strong style="color:var(--t2);">Nota:</strong> Actualmente configurado en 7 días en el servidor
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Audiencias -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">🎯</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Audiencias Configuradas</h4>
+        </div>
+
+        <div id="configAudienciasList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Sección Exportación -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">📊</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Exportación a Sheets</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <p style="font-size:12px;color:var(--t3);margin-bottom:12px;line-height:1.6;">
+            Las URLs de Google Sheets se configuran por audiencia en el archivo <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px;">perfiles_audiencia.json</code>
+          </p>
+          <div style="padding:10px;background:var(--bg);border-radius:6px;border-left:3px solid #22c55e;">
+            <div style="font-size:11px;color:var(--t3);line-height:1.6;">
+              <strong style="color:var(--t2);">✅ Configurado:</strong> Exportación automática habilitada para todas las audiencias
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:16px 24px;border-top:1px solid var(--border-l);background:var(--panel-h);display:flex;justify-content:flex-end;gap:10px;">
+      <button onclick="cerrarConfiguracion()" class="btn btn-ghost" style="font-size:13px;padding:10px 20px;">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 const CATS = {
   "Electrónicos":                     "Electronics",
@@ -1622,6 +1786,67 @@ let allItems = []
 let currentFeedId = null // Para tracking de qué feed está cargado actualmente
 let descartadosEnSesion = new Set() // ASINs descartados en esta sesión (no volver a mostrar)
 
+async function buscarSoloTelegram() {
+  const feedId = currentFeedId || window.currentFeedId
+
+  if (!feedId) {
+    alert("⚠️ Selecciona una audiencia primero")
+    return
+  }
+
+  setStatus("📱 Ejecutando feed - solo Telegram...", "running")
+  document.getElementById("results").style.display = "none"
+  document.getElementById("exportBar").style.display = "none"
+
+  try {
+    // Usar el endpoint de feeds normal pero solo ejecutar Telegram
+    const res = await fetch("http://localhost:8765/feeds/buscar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        audiencia_id: feedId,
+        solo_telegram: true,  // Flag para ejecutar SOLO Telegram
+        dias: 5  // Últimos 5 días
+      })
+    })
+
+    const data = await res.json()
+
+    if (!data.ok) {
+      setStatus(`❌ Error: ${data.error || 'Error desconocido'}`, "error")
+      return
+    }
+
+    const productos = data.productos || data.items || []
+
+    if (productos.length === 0) {
+      setStatus("⚠️ No se encontraron ofertas en el canal de Telegram", "error")
+      return
+    }
+
+    // Normalizar productos (agregar campos faltantes)
+    allItems = productos.map(p => ({
+      ...p,
+      vigencia: p.vigencia || 'permanente',
+      tipo: p.tipo || '',
+      badge: p.badge || '',
+      start_time: p.start_time || '',
+      end_time: p.end_time || '',
+      access_type: p.access_type || 'ALL',
+      source_type: p.source_type || 'telegram',
+      source_channel: p.source_channel || 'Telegram'
+    }))
+    renderResults(allItems)
+    setStatus(`✅ ${productos.length} ofertas del canal de Telegram`, "done")
+
+    console.log(`📱 Telegram: ${productos.length} productos`)
+
+  } catch (e) {
+    console.error("Error:", e)
+    setStatus(`❌ Error: ${e.message}`, "error")
+  }
+}
+
 async function buscar() {
   const subcats = getSelectedSubcats()
   const maincats = getSelectedCats()
@@ -1746,7 +1971,8 @@ function renderResults(items) {
           <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||p.vigencia.includes('relámpago')?'relampago':p.vigencia==='permanente'?'permanente':''}">${getPromoLabel(p)}</span>
           ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
           ${p.badge && p.badge.includes('🎯') ? `<span style="background:rgba(168,85,247,.12);color:#9333ea;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;border:1.5px solid rgba(168,85,247,.3);">${p.badge}</span>` : p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
-          ${p.source_type ? `<span style="background:${p.source_type==='telegram'?'rgba(34,197,94,.12)':p.source_type==='url_fija'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${p.source_type==='telegram'?'#16a34a':p.source_type==='url_fija'?'#2563eb':'#6b7280'};font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${p.source_type==='telegram'?'rgba(34,197,94,.3)':p.source_type==='url_fija'?'rgba(59,130,246,.3)':'rgba(156,163,175,.3)'};" title="${p.source_channel||''}">${p.source_type==='telegram'?'📱':'📍'} ${p.source_channel||p.source_type||''}</span>` : ''}
+          ${p.source_type ? `<span style="background:${p.source_type==='telegram'?'rgba(34,197,94,.12)':p.source_type==='url_fija'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${p.source_type==='telegram'?'#16a34a':p.source_type==='url_fija'?'#2563eb':'#6b7280'};font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${p.source_type==='telegram'?'rgba(34,197,94,.3)':p.source_type==='url_fija'?'rgba(59,130,246,.3)':'rgba(156,163,175,.3)'};" title="${p.source_channel||''}">${p.source_type==='telegram'?'📱':'📍'} ${p.source_channel||p.source_type||''}</span>` : p.source_channel ? `<span style="background:rgba(99,102,241,.12);color:#6366f1;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,.3);">${p.source_channel}</span>` : ''}
+          ${p.telegram_published ? `<span style="background:rgba(156,163,175,.08);color:#6b7280;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(156,163,175,.2);" title="Publicado en Telegram">📅 ${new Date(p.telegram_published).toLocaleDateString('es-MX', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>` : ''}
         </div>
         ${currentFeedId ? `<button onclick="descartarProducto('${p.asin}', '${(p.title||'').replace(/'/g, "\\'")}', ${i}, event)" style="margin-top:8px;padding:4px 8px;font-size:11px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.3);border-radius:4px;cursor:pointer;width:100%;" title="Descartar este producto y aprender a evitar similares">👎 Descartar</button>` : ''}
         <div style="margin-top:4px;font-size:10px;color:#415f7a;line-height:1.7;">
@@ -3495,7 +3721,7 @@ async function cargarAudienciasEnSelect() {
   }
 }
 
-function cambiarAudienciaGlobal() {
+async function cambiarAudienciaGlobal() {
   const select = document.getElementById("audienciaGlobalSelect")
   const audienciaId = select.value
 
@@ -3535,6 +3761,10 @@ function cambiarAudienciaGlobal() {
     select.style.borderColor = "var(--border)"
     select.style.background = "var(--surface)"
   }, 800)
+
+  // Limpiar cache de Telegram al cambiar de audiencia
+  window.telegramProductosCache = null
+  console.log(`✅ Audiencia lista. Usa el botón "📱 Telegram" para ver ofertas del canal.`)
 }
 
 // Forzar mostrar elementos de feed si están cargados
@@ -3555,6 +3785,149 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }, 500);
 });
+
+// ==================== CONFIGURACIÓN ====================
+
+function abrirConfiguracion() {
+  const modal = document.getElementById("configModal")
+  modal.style.display = "flex"
+
+  // Cargar valores actuales
+  const diasTelegram = localStorage.getItem("telegram_dias") || "5"
+  const paginasDefault = localStorage.getItem("paginas_default") || "3"
+  const descuentoMin = localStorage.getItem("descuento_min_default") || "15"
+  const novedadDias = localStorage.getItem("novedad_dias") || "7"
+
+  document.getElementById("configTelegramDias").value = diasTelegram
+  document.getElementById("configPaginasDefault").value = paginasDefault
+  document.getElementById("configDescuentoMin").value = descuentoMin
+  document.getElementById("configNovedadDias").value = novedadDias
+
+  // Cargar lista de audiencias
+  cargarAudienciasConfig()
+}
+
+function cerrarConfiguracion() {
+  document.getElementById("configModal").style.display = "none"
+}
+
+async function cargarAudienciasConfig() {
+  try {
+    const res = await fetch("http://localhost:8765/feeds/listar")
+    const data = await res.json()
+
+    const container = document.getElementById("configAudienciasList")
+
+    if (data.ok && data.audiencias && data.audiencias.length > 0) {
+      const audienciasConTelegram = data.audiencias.filter(a =>
+        a.telegram_sources && a.telegram_sources.length > 0
+      )
+
+      if (audienciasConTelegram.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px;color:var(--t3);">
+            <div style="font-size:32px;margin-bottom:8px;">📱</div>
+            <p style="font-size:12px;">No hay audiencias con canales de Telegram configurados</p>
+          </div>
+        `
+        return
+      }
+
+      container.innerHTML = `
+        <div style="font-size:12px;color:var(--t3);margin-bottom:12px;">
+          ${audienciasConTelegram.length} audiencia(s) con Telegram configurado:
+        </div>
+        ${audienciasConTelegram.map(a => `
+          <div style="padding:12px;background:var(--bg);border-radius:6px;margin-bottom:8px;border-left:3px solid #22c55e;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:16px;">${a.icono || '📊'}</span>
+                <strong style="font-size:13px;color:var(--t1);">${a.nombre}</strong>
+              </div>
+              <span style="background:rgba(34,197,94,0.15);color:#16a34a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600;">
+                ${a.telegram_sources.length} canal(es)
+              </span>
+            </div>
+            <div style="font-size:11px;color:var(--t3);">
+              ${a.telegram_sources.map(s => `📱 ${s.nombre || 'Sin nombre'}`).join(' · ')}
+            </div>
+          </div>
+        `).join('')}
+      `
+    } else {
+      container.innerHTML = `
+        <div style="text-align:center;padding:20px;color:var(--t3);">
+          <p style="font-size:12px;">No se pudieron cargar las audiencias</p>
+        </div>
+      `
+    }
+  } catch (e) {
+    console.error("Error cargando audiencias:", e)
+  }
+}
+
+function guardarConfigBusquedas() {
+  const paginas = parseInt(document.getElementById("configPaginasDefault").value)
+  const descuento = parseInt(document.getElementById("configDescuentoMin").value)
+
+  if (isNaN(paginas) || paginas < 1 || paginas > 20) {
+    alert("⚠️ Las páginas deben estar entre 1 y 20")
+    return
+  }
+
+  if (isNaN(descuento) || descuento < 0 || descuento > 100) {
+    alert("⚠️ El descuento debe estar entre 0 y 100")
+    return
+  }
+
+  // Guardar en localStorage
+  localStorage.setItem("paginas_default", paginas)
+  localStorage.setItem("descuento_min_default", descuento)
+
+  // Actualizar valores en los inputs de la página principal
+  const paginasInput = document.getElementById("paginas")
+  const descMinInput = document.getElementById("descMin")
+  if (paginasInput) paginasInput.value = paginas
+  if (descMinInput) descMinInput.value = descuento
+
+  // Mostrar confirmación
+  const btn = event.target
+  const textoOriginal = btn.textContent
+  btn.textContent = "✅ Guardado"
+  btn.style.background = "#22c55e"
+
+  setTimeout(() => {
+    btn.textContent = textoOriginal
+    btn.style.background = ""
+  }, 2000)
+
+  console.log(`✅ Config búsquedas: ${paginas} páginas, ${descuento}% descuento mínimo`)
+}
+
+function guardarConfigTelegram() {
+  const dias = parseInt(document.getElementById("configTelegramDias").value)
+
+  if (isNaN(dias) || dias < 1 || dias > 30) {
+    alert("⚠️ Por favor ingresa un número válido entre 1 y 30 días")
+    return
+  }
+
+  // Guardar en localStorage
+  localStorage.setItem("telegram_dias", dias)
+
+  // Mostrar confirmación
+  const btn = event.target
+  const textoOriginal = btn.textContent
+  btn.textContent = "✅ Guardado"
+  btn.style.background = "#22c55e"
+
+  setTimeout(() => {
+    btn.textContent = textoOriginal
+    btn.style.background = ""
+  }, 2000)
+
+  console.log(`✅ Configuración guardada: ${dias} días de Telegram`)
+}
 
 </script>
 </body>

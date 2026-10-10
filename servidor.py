@@ -1193,6 +1193,28 @@ class Handler(BaseHTTPRequestHandler):
                         print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos de {total_antes}", flush=True)
                     # Score aplicado - mostrar todos los productos
 
+                # Agregar source_channel si hay audiencia seleccionada
+                if feed_id:
+                    try:
+                        perfil_path = os.path.join(BASE_DIR, 'feeds/perfiles_audiencia.json')
+                        if os.path.exists(perfil_path):
+                            with open(perfil_path, 'r', encoding='utf-8') as f:
+                                perfiles = json.load(f)
+                            perfil = perfiles.get(feed_id, {})
+                            telegram_sources = perfil.get('telegram_sources', [])
+
+                            if telegram_sources:
+                                # Crear mapa de ASIN -> canal para productos de Telegram
+                                # (esto requeriría trackear qué ASINs vienen de qué canal)
+                                # Por ahora, marcamos que viene de Telegram en general
+                                canal_nombre = perfil.get('nombre', 'Feed')
+                                for p in unicos:
+                                    # Marcar como proveniente de esta audiencia
+                                    p['source_channel'] = f"📱 {canal_nombre}"
+                                print(f"  📱 Marcados {len(unicos)} productos de audiencia '{canal_nombre}'", flush=True)
+                    except Exception as e:
+                        print(f"  ⚠️  Error agregando source_channel: {e}", flush=True)
+
                 self.send_response(200)
                 self._cors()
                 self.send_header("Content-Type", "application/json")
@@ -2523,10 +2545,61 @@ class Handler(BaseHTTPRequestHandler):
                 length = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(length))
                 feed_id = body.get("audiencia_id", "")
+                solo_telegram = body.get("solo_telegram", False)
                 asins_externos = body.get("asins_telegram", [])
+                telegram_timestamps = {}  # Inicializar vacío por defecto
 
                 if not feed_id:
                     raise ValueError("audiencia_id requerido")
+
+                # Si es solo_telegram, ejecutar scraping de Telegram
+                if solo_telegram:
+                    import telegram_utils
+                    perfiles = cargar_perfiles()
+                    perfil = perfiles.get(feed_id)
+
+                    if not perfil:
+                        raise ValueError(f"Feed '{feed_id}' no encontrado")
+
+                    telegram_sources = perfil.get('telegram_sources', [])
+                    if not telegram_sources:
+                        self.send_response(200); self._cors()
+                        self.send_header("Content-Type", "application/json"); self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "ok": True,
+                            "productos": [],
+                            "total": 0,
+                            "mensaje": "Esta audiencia no tiene canales de Telegram configurados"
+                        }).encode())
+                        return
+
+                    # Override días_historico con el parámetro recibido
+                    dias_telegram = int(body.get("dias", 5))
+                    for source in telegram_sources:
+                        source['dias_historico'] = dias_telegram
+
+                    print(f"📱 Scraping SOLO Telegram - Feed: {feed_id} (últimos {dias_telegram} días)", flush=True)
+
+                    # Obtener ASINs de Telegram con metadata
+                    asins_metadata = telegram_utils.obtener_asins_de_telegram(perfil)
+                    print(f"  📦 {len(asins_metadata)} ASINs de Telegram", flush=True)
+
+                    if not asins_metadata:
+                        self.send_response(200); self._cors()
+                        self.send_header("Content-Type", "application/json"); self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "ok": True,
+                            "productos": [],
+                            "total": 0,
+                            "mensaje": "No se encontraron ofertas en el canal"
+                        }).encode())
+                        return
+
+                    # Continuar con enriquecimiento normal
+                    asins_externos = list(asins_metadata.keys())
+                    # Guardar metadata para usarla después
+                    telegram_timestamps = asins_metadata
+
                 if not asins_externos:
                     raise ValueError("Sin ASINs para validar")
 
@@ -2570,8 +2643,9 @@ class Handler(BaseHTTPRequestHandler):
                         if descuento_real < min_descuento:
                             continue
 
-                        productos_validados.append({
-                            "asin": parsed.get("asin", ""),
+                        asin = parsed.get("asin", "")
+                        producto = {
+                            "asin": asin,
                             "title": parsed.get("title", ""),
                             "price": parsed.get("price_discounted", precio),
                             "price_original": parsed.get("price_original", 0),
@@ -2582,7 +2656,13 @@ class Handler(BaseHTTPRequestHandler):
                             "img": parsed.get("img", ""),
                             "link": parsed.get("link", ""),
                             "source": "telegram"
-                        })
+                        }
+
+                        # Agregar timestamp de Telegram si existe
+                        if solo_telegram and asin in telegram_timestamps:
+                            producto["telegram_published"] = telegram_timestamps[asin]
+
+                        productos_validados.append(producto)
 
                 print(f"  ✅ {len(productos_validados)} productos pasaron filtros", flush=True)
 
@@ -3443,6 +3523,117 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+        elif self.path == "/feeds/telegram-extract":
+            """
+            Endpoint dedicado: extrae SOLO de canales de Telegram (sin keywords ni URLs fijas).
+            No ejecuta el feed completo, solo scraping de Telegram.
+            """
+            print("🔵 Endpoint /feeds/telegram-extract recibido", flush=True)
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                audiencia_id = body.get("audiencia_id", "")
+                dias_historico = int(body.get("dias", 2))  # Días hacia atrás
+                print(f"🔵 audiencia_id={audiencia_id}, dias={dias_historico}", flush=True)
+
+                if not audiencia_id:
+                    raise ValueError("Falta audiencia_id")
+
+                # Cargar perfil
+                perfiles_path = os.path.join(BASE_DIR, "feeds/perfiles_audiencia.json")
+                with open(perfiles_path, 'r', encoding='utf-8') as f:
+                    perfiles = json.load(f)
+
+                if audiencia_id not in perfiles:
+                    raise ValueError(f"Feed '{audiencia_id}' no encontrado")
+
+                perfil = perfiles[audiencia_id]
+                telegram_sources = perfil.get('telegram_sources', [])
+
+                if not telegram_sources:
+                    raise ValueError(f"Feed '{audiencia_id}' no tiene canales de Telegram configurados")
+
+                print(f"\n{'='*60}")
+                print(f"📱 EXTRACCIÓN TELEGRAM - Feed: {audiencia_id}")
+                print(f"   Canales: {len(telegram_sources)}")
+                print(f"   Histórico: últimos {dias_historico} días")
+                print(f"{'='*60}\n", flush=True)
+
+                # Scrape Telegram
+                try:
+                    import telegram_utils
+                    import signal
+
+                    def timeout_handler(signum, frame):
+                        raise TimeoutError("Timeout scraping Telegram")
+
+                    # Override días en cada source
+                    for source in telegram_sources:
+                        source['dias_historico'] = dias_historico
+
+                    # Timeout de 30 segundos para scraping
+                    signal.signal(signal.SIGALRM, timeout_handler)
+                    signal.alarm(30)
+
+                    try:
+                        asins_telegram = telegram_utils.obtener_asins_de_telegram(perfil)
+                    finally:
+                        signal.alarm(0)  # Cancelar alarma
+
+                    if not asins_telegram:
+                        print("  ⚠️  No se encontraron ASINs en Telegram", flush=True)
+                        self.send_response(200); self._cors()
+                        self.send_header("Content-Type", "application/json"); self.end_headers()
+                        self.wfile.write(json.dumps({
+                            "ok": True,
+                            "productos": [],
+                            "total": 0,
+                            "mensaje": "No se encontraron ofertas en el período seleccionado"
+                        }).encode())
+                        return
+
+                    print(f"  📦 {len(asins_telegram)} ASINs extraídos de Telegram", flush=True)
+
+                    # Enriquecer con API
+                    items_telegram = enriquecer_asins(asins_telegram, minSavingPercent=1)
+                    print(f"  🔍 {len(items_telegram)} items enriquecidos con API", flush=True)
+
+                    # Parsear y agregar metadata
+                    productos = []
+                    for item in items_telegram:
+                        p = parsear_item(item)
+                        if p:
+                            # Agregar metadata de Telegram
+                            canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
+                            p['source'] = 'telegram'
+                            p['source_type'] = 'telegram'
+                            p['source_channel'] = canal_nombre
+                            p['keyword_match'] = f"📱 {canal_nombre}"
+                            productos.append(p)
+
+                    print(f"\n✅ Total productos: {len(productos)}", flush=True)
+
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True,
+                        "productos": productos,
+                        "total": len(productos),
+                        "asins_telegram": len(asins_telegram),
+                        "audiencia": audiencia_id
+                    }).encode())
+
+                except ImportError:
+                    raise ValueError("telegram_utils no disponible")
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print(f"❌ Error en /feeds/telegram-extract: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         # ==================== FIN ENDPOINTS DE FEEDS ====================
 
         else:
