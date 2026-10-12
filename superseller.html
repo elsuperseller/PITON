@@ -3526,6 +3526,8 @@ async function cargarFeed(refresh = false) {
 
     // Convertir productos del feed al formato de la app
     allItems = data.productos.map(p => {
+      const badge = p.keyword_match ? `🎯 ${p.keyword_match}` : ""
+
       // Inferir source_type si no viene del backend
       let sourceType = p.source_type
       if (!sourceType) {
@@ -3544,7 +3546,7 @@ async function cargarFeed(refresh = false) {
         descuento_pct: p.discount || 0,
         vigencia: "permanente",
         tipo: "",
-        badge: p.keyword_match ? `🎯 ${p.keyword_match}` : "",
+        badge: badge,
         access_type: "ALL",
         start_time: "",
         end_time: "",
