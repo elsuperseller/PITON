@@ -2361,44 +2361,8 @@ class Handler(BaseHTTPRequestHandler):
                 guardar_historial_feed(audiencia_id, historial_feed)
                 print(f"  ✅ ASIN {asin} guardado en historial como aprobado", flush=True)
 
-                # 3. Extraer keywords positivas del título
-                # Estas son palabras que indican el tipo de producto que SÍ queremos
-                palabras_clave = []
-                titulo_words = title.lower().split()
-
-                # Filtrar palabras significativas (más de 3 caracteres, no números puros)
-                palabras_significativas = [
-                    w for w in titulo_words
-                    if len(w) > 3 and not w.isdigit()
-                    and w not in ['para', 'with', 'from', 'that', 'this', 'have']
-                ]
-
-                # Tomar las primeras 3-5 palabras significativas
-                palabras_clave = palabras_significativas[:5]
-
-                print(f"  🎓 Keywords identificadas: {palabras_clave}", flush=True)
-
-                # 4. Agregar keywords al perfil para futuras búsquedas
-                if palabras_clave:
-                    perfiles = cargar_perfiles()
-                    perfil = perfiles.get(audiencia_id)
-
-                    if perfil:
-                        keywords_actuales = set(perfil.get('keywords', []))
-                        keywords_nuevas = [k for k in palabras_clave if k not in keywords_actuales]
-
-                        if keywords_nuevas:
-                            keywords_actuales.update(keywords_nuevas)
-                            perfil['keywords'] = sorted(list(keywords_actuales))
-
-                            # Guardar cambios en archivo
-                            perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
-                            with open(perfiles_path, 'w', encoding='utf-8') as f:
-                                json.dump(perfiles, f, indent=2, ensure_ascii=False)
-
-                            print(f"  ➕ {len(keywords_nuevas)} keywords agregadas al perfil: {keywords_nuevas}", flush=True)
-                        else:
-                            print(f"  ℹ️  Keywords ya existían en el perfil", flush=True)
+                # APRENDIZAJE AUTOMÁTICO DE KEYWORDS DESACTIVADO
+                # (El usuario puede agregar keywords manualmente desde el módulo de Configuración)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -2406,12 +2370,309 @@ class Handler(BaseHTTPRequestHandler):
                     "ok": True,
                     "asin": asin,
                     "title": title,
-                    "keywords_aprendidas": palabras_clave,
                     "mensaje": f"Producto agregado: {title[:50]}..."
                 }).encode())
 
             except Exception as e:
                 print(f"❌ /feeds/agregar_manual: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/buscar-urls":
+            # Buscar SOLO de URLs fijas configuradas
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                audiencia_id = body.get("audiencia_id", "")
+
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+
+                print(f"🔗 Búsqueda SOLO URLs - Feed: {audiencia_id}", flush=True)
+
+                # Cargar perfil
+                perfiles = cargar_perfiles()
+                perfil = perfiles.get(audiencia_id)
+
+                if not perfil:
+                    raise ValueError(f"Feed '{audiencia_id}' no encontrado")
+
+                urls_fijas = perfil.get('urls_fijas', [])
+                if not urls_fijas:
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True,
+                        "items": [],
+                        "total": 0,
+                        "mensaje": "Esta audiencia no tiene URLs fijas configuradas"
+                    }).encode())
+                    return
+
+                print(f"  🔗 {len(urls_fijas)} URLs configuradas", flush=True)
+
+                # Scraping de URLs - detectar Amazon vs Mercado Libre
+                productos = []
+                vistos = set()
+
+                for url_config in urls_fijas:
+                    url = url_config.get('url', '')
+                    desc = url_config.get('descripcion', 'URL')
+                    if not url:
+                        continue
+
+                    print(f"  📄 Scrapeando: {desc}", flush=True)
+
+                    # Detectar si es Mercado Libre o Amazon
+                    if 'mercadolibre' in url.lower() or 'mercadolibre' in url:
+                        # Mercado Libre
+                        print(f"    🛒 Usando scraper Mercado Libre", flush=True)
+                        if not _ML_OK:
+                            print(f"    ⚠️  scraper_ml no disponible", flush=True)
+                            continue
+
+                        try:
+                            items_ml = _ml.scrape_url(
+                                url,
+                                min_discount=perfil['filtros'].get('minSavingPercent', 1),
+                                pages=1
+                            )
+                            print(f"    ✅ {len(items_ml)} productos de ML", flush=True)
+
+                            for item in items_ml:
+                                if item['id'] not in vistos:
+                                    vistos.add(item['id'])
+                                    item['source_type'] = 'url_fija'
+                                    item['source_channel'] = desc
+                                    productos.append(item)
+
+                        except Exception as e:
+                            print(f"    ⚠️  Error scrapeando ML: {e}", flush=True)
+
+                    else:
+                        # Amazon
+                        print(f"    📦 Usando scraper Amazon", flush=True)
+                        if not _AZ_OK:
+                            print(f"    ⚠️  scraper_amazon no disponible", flush=True)
+                            continue
+
+                        try:
+                            asins, estado = _az.scrape_url(url)
+
+                            if estado == "bot_challenge":
+                                print(f"    ⚠️  Bot challenge detectado", flush=True)
+
+                            if not asins:
+                                print(f"    ⚠️  No se encontraron ASINs", flush=True)
+                                continue
+
+                            # Enriquecer con API
+                            items = enriquecer_asins(asins, perfil['filtros'].get('minSavingPercent', 1))
+                            print(f"    📦 {len(items)} items de Amazon", flush=True)
+
+                            # Parsear y filtrar
+                            for item in items:
+                                p = parsear_item(item)
+                                if p and p['asin'] not in vistos:
+                                    if p.get('descuento_pct', 0) >= perfil['filtros'].get('minSavingPercent', 0):
+                                        vistos.add(p['asin'])
+                                        p['source_type'] = 'url_fija'
+                                        p['source_channel'] = desc
+                                        productos.append(p)
+
+                        except Exception as e:
+                            print(f"    ⚠️  Error scrapeando Amazon: {e}", flush=True)
+
+                print(f"  ✅ {len(productos)} productos después de filtros", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "items": productos,
+                    "total": len(productos)
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/buscar-urls: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/buscar-keywords":
+            # Buscar SOLO por keywords configuradas
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                audiencia_id = body.get("audiencia_id", "")
+
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+
+                print(f"🔤 Búsqueda SOLO Keywords - Feed: {audiencia_id}", flush=True)
+
+                # Cargar perfil
+                perfiles = cargar_perfiles()
+                perfil = perfiles.get(audiencia_id)
+
+                if not perfil:
+                    raise ValueError(f"Feed '{audiencia_id}' no encontrado")
+
+                keywords = perfil.get('keywords', [])
+                if not keywords:
+                    self.send_response(200); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({
+                        "ok": True,
+                        "items": [],
+                        "total": 0,
+                        "mensaje": "Esta audiencia no tiene keywords configuradas"
+                    }).encode())
+                    return
+
+                print(f"  🔤 {len(keywords)} keywords configuradas", flush=True)
+
+                # Obtener parámetros de búsqueda
+                paginas_keywords = perfil.get('paginas_keywords', 3)
+                print(f"  📄 Buscando {paginas_keywords} páginas por keyword", flush=True)
+
+                # Buscar por cada keyword
+                token = get_token()
+                api_headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "x-marketplace": "www.amazon.com.mx"
+                }
+
+                # Obtener descuento mínimo del perfil
+                min_saving = perfil['filtros'].get('minSavingPercent', 15)
+                print(f"  💰 Filtro descuento mínimo: {min_saving}%", flush=True)
+
+                all_items = []
+                for keyword in keywords[:50]:  # Limitar a 50 keywords para no saturar
+                    print(f"  🔍 Buscando: {keyword}", flush=True)
+
+                    for pag in range(1, paginas_keywords + 1):
+                        try:
+                            body = {
+                                "partnerTag": CREDS["partner_tag"],
+                                "marketplace": "www.amazon.com.mx",
+                                "keywords": keyword,
+                                "itemPage": pag,
+                                "languagesOfPreference": ["es_MX"],
+                                "currencyOfPreference": "MXN",
+                                "resources": ["itemInfo.title", "itemInfo.externalIds",
+                                            "images.primary.medium", "offersV2.listings.price",
+                                            "offersV2.listings.dealDetails", "offersV2.listings.isBuyBoxWinner",
+                                            "offersV2.listings.type", "offersV2.listings.availability",
+                                            "browseNodeInfo.browseNodes"]
+                            }
+
+                            # Agregar filtros si están configurados
+                            if min_saving > 0:
+                                body["minSavingPercent"] = min_saving
+
+                            r = requests.post(
+                                "https://creatorsapi.amazon/catalog/v1/searchItems",
+                                headers=api_headers,
+                                json=body,
+                                timeout=20
+                            )
+
+                            if r.status_code == 200:
+                                data = r.json()
+                                items = data.get("itemsResult", {}).get("items", [])
+
+                                if items:
+                                    print(f"    ✓ {len(items)} items", flush=True)
+                                    all_items.extend(items)
+                                else:
+                                    # Verificar si hay error en la respuesta
+                                    errors = data.get("errors", [])
+                                    if errors:
+                                        print(f"    ⚠️  API error: {errors[0]}", flush=True)
+                            else:
+                                print(f"    ⚠️  HTTP {r.status_code}", flush=True)
+
+                            time.sleep(0.5)  # Rate limiting
+
+                        except Exception as e:
+                            print(f"    ⚠️  Error buscando '{keyword}': {e}", flush=True)
+                            continue  # Continuar con la siguiente keyword, no break
+
+                print(f"  ✅ {len(all_items)} items encontrados", flush=True)
+
+                # Parsear y filtrar
+                productos = []
+                vistos = set()
+
+                for item in all_items:
+                    p = parsear_item(item)
+                    if p and p['asin'] not in vistos:
+                        # Aplicar filtros del perfil
+                        if p.get('descuento_pct', 0) >= perfil['filtros'].get('minSavingPercent', 0):
+                            vistos.add(p['asin'])
+                            productos.append(p)
+
+                print(f"  ✅ {len(productos)} productos únicos después de filtros", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "items": productos,
+                    "total": len(productos)
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/buscar-keywords: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/feeds/actualizar":
+            # Actualizar configuración completa de una audiencia
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                audiencia_id = body.get("audiencia_id", "")
+                config = body.get("config", {})
+
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+
+                if not config:
+                    raise ValueError("config requerida")
+
+                print(f"💾 Actualizando configuración de audiencia: {audiencia_id}", flush=True)
+
+                # Cargar perfiles
+                perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                with open(perfiles_path, 'r', encoding='utf-8') as f:
+                    perfiles = json.load(f)
+
+                if audiencia_id not in perfiles:
+                    raise ValueError(f"Audiencia '{audiencia_id}' no encontrada")
+
+                # Actualizar toda la configuración
+                perfiles[audiencia_id] = config
+
+                # Guardar cambios
+                with open(perfiles_path, 'w', encoding='utf-8') as f:
+                    json.dump(perfiles, f, indent=2, ensure_ascii=False)
+
+                print(f"  ✅ Configuración guardada exitosamente", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "mensaje": "Configuración actualizada correctamente"
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ /feeds/actualizar: {e}", flush=True)
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())

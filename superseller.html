@@ -702,7 +702,15 @@ input[type=file] {
     </select>
     <button id="btnDetener" onclick="detenerProceso()" style="display:none;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
     <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;" class="btn btn-danger">👎 Descartar</button>
-    <button class="btn" style="background:#22c55e;color:white;" onclick="buscarSoloTelegram()">📱 Telegram</button>
+
+    <!-- Menú desplegable de búsqueda por fuente -->
+    <select id="buscarPorFuente" onchange="ejecutarBusquedaPorFuente()" style="padding:8px 12px;border:2px solid #22c55e;border-radius:6px;font-size:13px;font-weight:600;color:#16a34a;background:white;cursor:pointer;">
+      <option value="">🔍 Buscar por...</option>
+      <option value="telegram">📱 Telegram</option>
+      <option value="urls">🔗 URLs Fijas</option>
+      <option value="keywords">🔤 Keywords</option>
+    </select>
+
     <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar</button>
     <button class="btn" style="background:#6366f1;color:white;" onclick="abrirConfiguracion()">⚙️ Config</button>
   </div>
@@ -1210,79 +1218,10 @@ input[type=file] {
     <!-- Content -->
     <div style="flex:1;overflow-y:auto;padding:24px;">
 
-      <!-- Sección Búsquedas Amazon -->
-      <div style="margin-bottom:30px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-          <span style="font-size:20px;">🔍</span>
-          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Búsquedas de Amazon</h4>
-        </div>
-
-        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
-              Páginas por defecto
-            </label>
-            <p style="font-size:11px;color:var(--t3);margin-bottom:12px;">
-              Número de páginas que se buscarán por categoría
-            </p>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <input type="number" id="configPaginasDefault" min="1" max="20" value="3"
-                     style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
-              <span style="font-size:13px;color:var(--t2);">páginas</span>
-            </div>
-          </div>
-
-          <div style="margin-bottom:16px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
-              Descuento mínimo por defecto
-            </label>
-            <p style="font-size:11px;color:var(--t3);margin-bottom:12px;">
-              Descuento mínimo para filtrar productos
-            </p>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <input type="number" id="configDescuentoMin" min="0" max="100" value="15"
-                     style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
-              <span style="font-size:13px;color:var(--t2);">%</span>
-            </div>
-          </div>
-
-          <button onclick="guardarConfigBusquedas()" class="btn btn-primary" style="font-size:12px;padding:8px 16px;">
-            💾 Guardar configuración de búsquedas
-          </button>
-        </div>
-      </div>
-
-      <!-- Sección Telegram -->
-      <div style="margin-bottom:30px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-          <span style="font-size:20px;">📱</span>
-          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Canales de Telegram</h4>
-        </div>
-
-        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
-          <label style="display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:8px;">
-            Días de histórico a extraer
-          </label>
-          <p style="font-size:11px;color:var(--t3);margin-bottom:12px;line-height:1.5;">
-            Número de días hacia atrás que se extraerán del canal de Telegram cuando uses el botón "📱 Telegram"
-          </p>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <input type="number" id="configTelegramDias" min="1" max="30" value="5"
-                   style="width:80px;padding:10px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
-            <span style="font-size:13px;color:var(--t2);">días</span>
-            <button onclick="guardarConfigTelegram()" class="btn btn-primary" style="margin-left:auto;font-size:12px;padding:8px 16px;">
-              💾 Guardar
-            </button>
-          </div>
-          <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border-left:3px solid #667eea;">
-            <div style="font-size:11px;color:var(--t3);line-height:1.6;">
-              <strong style="color:var(--t2);">Recomendado:</strong><br>
-              • 1-3 días: Ofertas muy recientes<br>
-              • 5-7 días: Balance entre novedad y cantidad<br>
-              • 10-30 días: Máxima cobertura histórica
-            </div>
-          </div>
-        </div>
+      <!-- ==================== CONFIGURACIÓN GLOBAL ==================== -->
+      <div style="background:rgba(102,126,234,0.05);padding:20px;border-radius:var(--r);margin-bottom:30px;border-left:4px solid #667eea;">
+        <h3 style="font-size:14px;font-weight:700;color:var(--t1);margin:0 0 6px 0;">⚙️ Configuración Global</h3>
+        <p style="font-size:11px;color:var(--t3);margin:0;">Configuración general del sistema</p>
       </div>
 
       <!-- Sección Historial -->
@@ -1312,17 +1251,144 @@ input[type=file] {
         </div>
       </div>
 
-      <!-- Sección Audiencias -->
+      <!-- ==================== CONFIGURACIÓN POR AUDIENCIA ==================== -->
+      <div style="background:rgba(118,75,162,0.05);padding:20px;border-radius:var(--r);margin-bottom:30px;border-left:4px solid #764ba2;">
+        <h3 style="font-size:14px;font-weight:700;color:var(--t1);margin:0 0 6px 0;">🎯 Configuración por Audiencia</h3>
+        <p style="font-size:11px;color:var(--t3);margin:0 0 16px 0;">Edita canales, URLs, keywords y filtros específicos de cada audiencia</p>
+
+        <!-- Selector de Audiencia -->
+        <label style="display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px;">
+          Selecciona una audiencia para editar
+        </label>
+        <select id="configAudienciaSelect" onchange="cargarConfigAudiencia()" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;color:var(--t1);background:var(--inp-bg);">
+          <option value="">-- Seleccionar audiencia --</option>
+        </select>
+        <p style="font-size:11px;color:var(--t3);margin-top:8px;">
+          Los cambios se guardan automáticamente en el servidor
+        </p>
+      </div>
+
+      <div id="configAudienciaEditor" style="display:none;">
+
+      <!-- Sección Canales Telegram de la Audiencia -->
       <div style="margin-bottom:30px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-          <span style="font-size:20px;">🎯</span>
-          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Audiencias Configuradas</h4>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">📱</span>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Canales de Telegram</h4>
+          </div>
+          <button onclick="agregarCanalTelegram()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+            ➕ Agregar Canal
+          </button>
         </div>
 
-        <div id="configAudienciasList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+        <div id="configTelegramList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
           <!-- Se llena dinámicamente -->
         </div>
       </div>
+
+      <!-- Sección URLs Fijas -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🔗</span>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">URLs Fijas de Amazon</h4>
+          </div>
+          <button onclick="agregarURLFija()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+            ➕ Agregar URL
+          </button>
+        </div>
+
+        <div id="configURLsList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Sección Keywords -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🔤</span>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Palabras Clave (Keywords)</h4>
+          </div>
+          <button onclick="agregarKeyword()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+            ➕ Agregar Keyword
+          </button>
+        </div>
+
+        <div id="configKeywordsList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Sección Palabras Excluidas -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">⛔</span>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Palabras Excluidas</h4>
+          </div>
+          <button onclick="agregarExcluida()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+            ➕ Agregar
+          </button>
+        </div>
+
+        <div id="configExcluidasList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Sección Filtros -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">🎯</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Filtros y Búsqueda</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <p style="font-size:11px;color:var(--t3);margin-bottom:16px;">
+            Configuración de búsqueda y filtros que se aplicarán a esta audiencia
+          </p>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Páginas por categoría</label>
+              <input type="number" id="configFilterPaginas" min="1" max="20" value="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+              <p style="font-size:10px;color:var(--t3);margin-top:4px;">Búsquedas por categorías de Amazon</p>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Páginas por keyword</label>
+              <input type="number" id="configFilterPaginasKeywords" min="1" max="20" value="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+              <p style="font-size:10px;color:var(--t3);margin-top:4px;">Búsquedas por palabras clave</p>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Descuento mínimo (%)</label>
+              <input type="number" id="configFilterMinSaving" min="0" max="100" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio mínimo ($)</label>
+              <input type="number" id="configFilterMinPrice" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio máximo ($)</label>
+              <input type="number" id="configFilterMaxPrice" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Reviews mínimas</label>
+              <input type="number" id="configFilterMinReviews" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Rating mínimo</label>
+              <input type="number" id="configFilterMinRating" min="0" max="5" step="0.1" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+          </div>
+          <button onclick="guardarFiltrosAudiencia()" class="btn btn-primary" style="margin-top:16px;font-size:12px;padding:8px 16px;">
+            💾 Guardar Configuración
+          </button>
+        </div>
+      </div>
+
+      </div><!-- Fin configAudienciaEditor -->
 
       <!-- Sección Exportación -->
       <div style="margin-bottom:30px;">
@@ -1786,27 +1852,50 @@ let allItems = []
 let currentFeedId = null // Para tracking de qué feed está cargado actualmente
 let descartadosEnSesion = new Set() // ASINs descartados en esta sesión (no volver a mostrar)
 
-async function buscarSoloTelegram() {
+async function ejecutarBusquedaPorFuente() {
+  const select = document.getElementById("buscarPorFuente")
+  const fuente = select.value
+
+  if (!fuente) return
+
+  // Resetear el select
+  select.value = ""
+
   const feedId = currentFeedId || window.currentFeedId
 
-  if (!feedId) {
+  if (!feedId && fuente !== "categorias") {
     alert("⚠️ Selecciona una audiencia primero")
     return
   }
 
-  setStatus("📱 Ejecutando feed - solo Telegram...", "running")
+  switch(fuente) {
+    case "telegram":
+      await buscarSoloTelegram()
+      break
+    case "urls":
+      await buscarSoloURLs()
+      break
+    case "keywords":
+      await buscarSoloKeywords()
+      break
+  }
+}
+
+async function buscarSoloTelegram() {
+  const feedId = currentFeedId || window.currentFeedId
+
+  setStatus("📱 Extrayendo ofertas del canal de Telegram...", "running")
   document.getElementById("results").style.display = "none"
   document.getElementById("exportBar").style.display = "none"
 
   try {
-    // Usar el endpoint de feeds normal pero solo ejecutar Telegram
     const res = await fetch("http://localhost:8765/feeds/buscar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         audiencia_id: feedId,
-        solo_telegram: true,  // Flag para ejecutar SOLO Telegram
-        dias: 5  // Últimos 5 días
+        solo_telegram: true,
+        dias: 5
       })
     })
 
@@ -1824,7 +1913,6 @@ async function buscarSoloTelegram() {
       return
     }
 
-    // Normalizar productos (agregar campos faltantes)
     allItems = productos.map(p => ({
       ...p,
       vigencia: p.vigencia || 'permanente',
@@ -1839,7 +1927,102 @@ async function buscarSoloTelegram() {
     renderResults(allItems)
     setStatus(`✅ ${productos.length} ofertas del canal de Telegram`, "done")
 
-    console.log(`📱 Telegram: ${productos.length} productos`)
+  } catch (e) {
+    console.error("Error:", e)
+    setStatus(`❌ Error: ${e.message}`, "error")
+  }
+}
+
+async function buscarSoloURLs() {
+  const feedId = currentFeedId || window.currentFeedId
+
+  setStatus("🔗 Extrayendo productos de URLs fijas...", "running")
+  document.getElementById("results").style.display = "none"
+  document.getElementById("exportBar").style.display = "none"
+
+  try {
+    const res = await fetch("http://localhost:8765/feeds/buscar-urls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        audiencia_id: feedId
+      })
+    })
+
+    const data = await res.json()
+
+    if (!data.ok) {
+      setStatus(`❌ Error: ${data.error || 'Error desconocido'}`, "error")
+      return
+    }
+
+    const productos = data.productos || data.items || []
+
+    if (productos.length === 0) {
+      setStatus("⚠️ No se encontraron productos en las URLs configuradas", "error")
+      return
+    }
+
+    allItems = productos.map(p => ({
+      ...p,
+      vigencia: p.vigencia || 'permanente',
+      tipo: p.tipo || '',
+      badge: p.badge || '',
+      start_time: p.start_time || '',
+      end_time: p.end_time || '',
+      access_type: p.access_type || 'ALL',
+      source_type: p.source_type || 'url_fija'
+    }))
+    renderResults(allItems)
+    setStatus(`✅ ${productos.length} productos de URLs fijas`, "done")
+
+  } catch (e) {
+    console.error("Error:", e)
+    setStatus(`❌ Error: ${e.message}`, "error")
+  }
+}
+
+async function buscarSoloKeywords() {
+  const feedId = currentFeedId || window.currentFeedId
+
+  setStatus("🔤 Buscando productos por keywords...", "running")
+  document.getElementById("results").style.display = "none"
+  document.getElementById("exportBar").style.display = "none"
+
+  try {
+    const res = await fetch("http://localhost:8765/feeds/buscar-keywords", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        audiencia_id: feedId
+      })
+    })
+
+    const data = await res.json()
+
+    if (!data.ok) {
+      setStatus(`❌ Error: ${data.error || 'Error desconocido'}`, "error")
+      return
+    }
+
+    const productos = data.productos || data.items || []
+
+    if (productos.length === 0) {
+      setStatus("⚠️ No se encontraron productos con las keywords", "error")
+      return
+    }
+
+    allItems = productos.map(p => ({
+      ...p,
+      vigencia: p.vigencia || 'permanente',
+      tipo: p.tipo || '',
+      badge: p.badge || '',
+      start_time: p.start_time || '',
+      end_time: p.end_time || '',
+      access_type: p.access_type || 'ALL'
+    }))
+    renderResults(allItems)
+    setStatus(`✅ ${productos.length} productos por keywords`, "done")
 
   } catch (e) {
     console.error("Error:", e)
@@ -3788,134 +3971,304 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // ==================== CONFIGURACIÓN ====================
 
-function abrirConfiguracion() {
+let audienciaActualConfig = null
+
+async function abrirConfiguracion() {
   const modal = document.getElementById("configModal")
   modal.style.display = "flex"
 
-  // Cargar valores actuales
-  const diasTelegram = localStorage.getItem("telegram_dias") || "5"
-  const paginasDefault = localStorage.getItem("paginas_default") || "3"
-  const descuentoMin = localStorage.getItem("descuento_min_default") || "15"
+  // Cargar valores actuales globales
   const novedadDias = localStorage.getItem("novedad_dias") || "7"
-
-  document.getElementById("configTelegramDias").value = diasTelegram
-  document.getElementById("configPaginasDefault").value = paginasDefault
-  document.getElementById("configDescuentoMin").value = descuentoMin
   document.getElementById("configNovedadDias").value = novedadDias
 
-  // Cargar lista de audiencias
-  cargarAudienciasConfig()
-}
-
-function cerrarConfiguracion() {
-  document.getElementById("configModal").style.display = "none"
-}
-
-async function cargarAudienciasConfig() {
+  // Cargar audiencias en el selector
   try {
     const res = await fetch("http://localhost:8765/feeds/listar")
     const data = await res.json()
 
-    const container = document.getElementById("configAudienciasList")
+    const select = document.getElementById("configAudienciaSelect")
+    select.innerHTML = '<option value="">-- Seleccionar audiencia --</option>'
 
     if (data.ok && data.audiencias && data.audiencias.length > 0) {
-      const audienciasConTelegram = data.audiencias.filter(a =>
-        a.telegram_sources && a.telegram_sources.length > 0
-      )
-
-      if (audienciasConTelegram.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center;padding:20px;color:var(--t3);">
-            <div style="font-size:32px;margin-bottom:8px;">📱</div>
-            <p style="font-size:12px;">No hay audiencias con canales de Telegram configurados</p>
-          </div>
-        `
-        return
-      }
-
-      container.innerHTML = `
-        <div style="font-size:12px;color:var(--t3);margin-bottom:12px;">
-          ${audienciasConTelegram.length} audiencia(s) con Telegram configurado:
-        </div>
-        ${audienciasConTelegram.map(a => `
-          <div style="padding:12px;background:var(--bg);border-radius:6px;margin-bottom:8px;border-left:3px solid #22c55e;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:16px;">${a.icono || '📊'}</span>
-                <strong style="font-size:13px;color:var(--t1);">${a.nombre}</strong>
-              </div>
-              <span style="background:rgba(34,197,94,0.15);color:#16a34a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600;">
-                ${a.telegram_sources.length} canal(es)
-              </span>
-            </div>
-            <div style="font-size:11px;color:var(--t3);">
-              ${a.telegram_sources.map(s => `📱 ${s.nombre || 'Sin nombre'}`).join(' · ')}
-            </div>
-          </div>
-        `).join('')}
-      `
-    } else {
-      container.innerHTML = `
-        <div style="text-align:center;padding:20px;color:var(--t3);">
-          <p style="font-size:12px;">No se pudieron cargar las audiencias</p>
-        </div>
-      `
+      data.audiencias.forEach(a => {
+        const option = document.createElement("option")
+        option.value = a.id
+        option.textContent = `${a.icono || '📊'} ${a.nombre}`
+        select.appendChild(option)
+      })
     }
   } catch (e) {
     console.error("Error cargando audiencias:", e)
   }
 }
 
-function guardarConfigBusquedas() {
-  const paginas = parseInt(document.getElementById("configPaginasDefault").value)
-  const descuento = parseInt(document.getElementById("configDescuentoMin").value)
-
-  if (isNaN(paginas) || paginas < 1 || paginas > 20) {
-    alert("⚠️ Las páginas deben estar entre 1 y 20")
-    return
-  }
-
-  if (isNaN(descuento) || descuento < 0 || descuento > 100) {
-    alert("⚠️ El descuento debe estar entre 0 y 100")
-    return
-  }
-
-  // Guardar en localStorage
-  localStorage.setItem("paginas_default", paginas)
-  localStorage.setItem("descuento_min_default", descuento)
-
-  // Actualizar valores en los inputs de la página principal
-  const paginasInput = document.getElementById("paginas")
-  const descMinInput = document.getElementById("descMin")
-  if (paginasInput) paginasInput.value = paginas
-  if (descMinInput) descMinInput.value = descuento
-
-  // Mostrar confirmación
-  const btn = event.target
-  const textoOriginal = btn.textContent
-  btn.textContent = "✅ Guardado"
-  btn.style.background = "#22c55e"
-
-  setTimeout(() => {
-    btn.textContent = textoOriginal
-    btn.style.background = ""
-  }, 2000)
-
-  console.log(`✅ Config búsquedas: ${paginas} páginas, ${descuento}% descuento mínimo`)
+function cerrarConfiguracion() {
+  document.getElementById("configModal").style.display = "none"
 }
 
-function guardarConfigTelegram() {
-  const dias = parseInt(document.getElementById("configTelegramDias").value)
+async function cargarConfigAudiencia() {
+  const audienciaId = document.getElementById("configAudienciaSelect").value
 
-  if (isNaN(dias) || dias < 1 || dias > 30) {
-    alert("⚠️ Por favor ingresa un número válido entre 1 y 30 días")
+  if (!audienciaId) {
+    document.getElementById("configAudienciaEditor").style.display = "none"
+    audienciaActualConfig = null
     return
   }
 
-  // Guardar en localStorage
-  localStorage.setItem("telegram_dias", dias)
+  try {
+    const res = await fetch("http://localhost:8765/feeds/listar")
+    const data = await res.json()
 
-  // Mostrar confirmación
+    if (data.ok && data.audiencias) {
+      const audiencia = data.audiencias.find(a => a.id === audienciaId)
+
+      if (!audiencia) {
+        alert("Error: No se encontró la audiencia")
+        return
+      }
+
+      audienciaActualConfig = audiencia
+
+      // Mostrar editor
+      document.getElementById("configAudienciaEditor").style.display = "block"
+
+      // Cargar Canales Telegram
+      renderTelegramChannels(audiencia.telegram_sources || [])
+
+      // Cargar URLs Fijas
+      renderURLsFijas(audiencia.urls_fijas || [])
+
+      // Cargar Keywords
+      renderKeywords(audiencia.keywords || [])
+
+      // Cargar Excluidas
+      renderExcluidas(audiencia.filtros?.excludeKeywords || [])
+
+      // Cargar Filtros
+      document.getElementById("configFilterPaginas").value = audiencia.paginas_default || 3
+      document.getElementById("configFilterPaginasKeywords").value = audiencia.paginas_keywords || 3
+      document.getElementById("configFilterMinSaving").value = audiencia.filtros?.minSavingPercent || 0
+      document.getElementById("configFilterMinPrice").value = audiencia.filtros?.minPrice || 0
+      document.getElementById("configFilterMaxPrice").value = audiencia.filtros?.maxPrice || 999999
+      document.getElementById("configFilterMinReviews").value = audiencia.filtros?.minReviews || 0
+      document.getElementById("configFilterMinRating").value = audiencia.filtros?.minRating || 0
+    }
+  } catch (e) {
+    console.error("Error cargando configuración:", e)
+    alert("Error cargando configuración de la audiencia")
+  }
+}
+
+function renderTelegramChannels(channels) {
+  const container = document.getElementById("configTelegramList")
+
+  if (channels.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay canales de Telegram configurados</p>'
+    return
+  }
+
+  container.innerHTML = channels.map((ch, i) => `
+    <div style="background:var(--bg);padding:12px;border-radius:6px;margin-bottom:8px;border-left:3px solid #22c55e;">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+        <div style="flex:1;">
+          <strong style="font-size:13px;color:var(--t1);">${ch.nombre || 'Sin nombre'}</strong>
+          <div style="font-size:11px;color:var(--t3);margin-top:4px;word-break:break-all;">${ch.url}</div>
+        </div>
+        <button onclick="eliminarCanalTelegram(${i})" style="background:rgba(239,68,68,0.1);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-left:8px;">❌</button>
+      </div>
+      <div style="font-size:11px;color:var(--t2);">
+        📅 Histórico: <strong>${ch.dias_historico || 5} días</strong>
+      </div>
+    </div>
+  `).join('')
+}
+
+function renderURLsFijas(urls) {
+  const container = document.getElementById("configURLsList")
+
+  if (urls.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay URLs fijas configuradas</p>'
+    return
+  }
+
+  container.innerHTML = urls.map((u, i) => `
+    <div style="background:var(--bg);padding:12px;border-radius:6px;margin-bottom:8px;border-left:3px solid #667eea;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div style="flex:1;">
+          <div style="font-size:12px;color:var(--t2);margin-bottom:4px;">${u.descripcion || 'Sin descripción'}</div>
+          <div style="font-size:10px;color:var(--t3);word-break:break-all;">${u.url}</div>
+        </div>
+        <button onclick="eliminarURLFija(${i})" style="background:rgba(239,68,68,0.1);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-left:8px;">❌</button>
+      </div>
+    </div>
+  `).join('')
+}
+
+function renderKeywords(keywords) {
+  const container = document.getElementById("configKeywordsList")
+
+  if (keywords.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay keywords configuradas</p>'
+    return
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${keywords.map((kw, i) => `
+        <span style="background:var(--bg);padding:6px 10px;border-radius:16px;font-size:12px;color:var(--t1);border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px;">
+          ${kw}
+          <button onclick="eliminarKeyword(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;line-height:1;">×</button>
+        </span>
+      `).join('')}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--t3);">
+      Total: ${keywords.length} palabras clave
+    </div>
+  `
+}
+
+function renderExcluidas(excluidas) {
+  const container = document.getElementById("configExcluidasList")
+
+  if (excluidas.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay palabras excluidas</p>'
+    return
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${excluidas.map((ex, i) => `
+        <span style="background:rgba(239,68,68,0.1);padding:6px 10px;border-radius:16px;font-size:12px;color:#dc2626;border:1px solid rgba(239,68,68,0.3);display:inline-flex;align-items:center;gap:6px;">
+          ${ex}
+          <button onclick="eliminarExcluida(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;line-height:1;">×</button>
+        </span>
+      `).join('')}
+    </div>
+  `
+}
+
+// Funciones para agregar items
+function agregarCanalTelegram() {
+  const url = prompt("URL del canal de Telegram (ej: https://t.me/s/nombre_canal):")
+  if (!url) return
+
+  const nombre = prompt("Nombre del canal:")
+  if (!nombre) return
+
+  const dias = parseInt(prompt("Días de histórico (1-30):", "5"))
+  if (isNaN(dias) || dias < 1 || dias > 30) {
+    alert("Días inválidos")
+    return
+  }
+
+  if (!audienciaActualConfig.telegram_sources) {
+    audienciaActualConfig.telegram_sources = []
+  }
+
+  audienciaActualConfig.telegram_sources.push({ url, nombre, dias_historico: dias })
+  renderTelegramChannels(audienciaActualConfig.telegram_sources)
+  guardarAudienciaEnServidor()
+}
+
+function agregarURLFija() {
+  const url = prompt("URL de Amazon (completa):")
+  if (!url) return
+
+  const descripcion = prompt("Descripción de esta URL:")
+
+  if (!audienciaActualConfig.urls_fijas) {
+    audienciaActualConfig.urls_fijas = []
+  }
+
+  audienciaActualConfig.urls_fijas.push({
+    url,
+    plataforma: "amazon",
+    descripcion: descripcion || "Sin descripción"
+  })
+
+  renderURLsFijas(audienciaActualConfig.urls_fijas)
+  guardarAudienciaEnServidor()
+}
+
+function agregarKeyword() {
+  const keyword = prompt("Nueva palabra clave:")
+  if (!keyword || !keyword.trim()) return
+
+  if (!audienciaActualConfig.keywords) {
+    audienciaActualConfig.keywords = []
+  }
+
+  audienciaActualConfig.keywords.push(keyword.trim())
+  renderKeywords(audienciaActualConfig.keywords)
+  guardarAudienciaEnServidor()
+}
+
+function agregarExcluida() {
+  const palabra = prompt("Palabra a excluir:")
+  if (!palabra || !palabra.trim()) return
+
+  if (!audienciaActualConfig.filtros) {
+    audienciaActualConfig.filtros = {}
+  }
+  if (!audienciaActualConfig.filtros.excludeKeywords) {
+    audienciaActualConfig.filtros.excludeKeywords = []
+  }
+
+  audienciaActualConfig.filtros.excludeKeywords.push(palabra.trim())
+  renderExcluidas(audienciaActualConfig.filtros.excludeKeywords)
+  guardarAudienciaEnServidor()
+}
+
+// Funciones para eliminar items
+function eliminarCanalTelegram(index) {
+  if (!confirm("¿Eliminar este canal de Telegram?")) return
+
+  audienciaActualConfig.telegram_sources.splice(index, 1)
+  renderTelegramChannels(audienciaActualConfig.telegram_sources)
+  guardarAudienciaEnServidor()
+}
+
+function eliminarURLFija(index) {
+  if (!confirm("¿Eliminar esta URL?")) return
+
+  audienciaActualConfig.urls_fijas.splice(index, 1)
+  renderURLsFijas(audienciaActualConfig.urls_fijas)
+  guardarAudienciaEnServidor()
+}
+
+function eliminarKeyword(index) {
+  audienciaActualConfig.keywords.splice(index, 1)
+  renderKeywords(audienciaActualConfig.keywords)
+  guardarAudienciaEnServidor()
+}
+
+function eliminarExcluida(index) {
+  audienciaActualConfig.filtros.excludeKeywords.splice(index, 1)
+  renderExcluidas(audienciaActualConfig.filtros.excludeKeywords)
+  guardarAudienciaEnServidor()
+}
+
+function guardarFiltrosAudiencia() {
+  if (!audienciaActualConfig) return
+
+  if (!audienciaActualConfig.filtros) {
+    audienciaActualConfig.filtros = {}
+  }
+
+  // Guardar páginas
+  audienciaActualConfig.paginas_default = parseInt(document.getElementById("configFilterPaginas").value) || 3
+  audienciaActualConfig.paginas_keywords = parseInt(document.getElementById("configFilterPaginasKeywords").value) || 3
+
+  // Guardar filtros
+  audienciaActualConfig.filtros.minSavingPercent = parseInt(document.getElementById("configFilterMinSaving").value) || 0
+  audienciaActualConfig.filtros.minPrice = parseInt(document.getElementById("configFilterMinPrice").value) || 0
+  audienciaActualConfig.filtros.maxPrice = parseInt(document.getElementById("configFilterMaxPrice").value) || 999999
+  audienciaActualConfig.filtros.minReviews = parseInt(document.getElementById("configFilterMinReviews").value) || 0
+  audienciaActualConfig.filtros.minRating = parseFloat(document.getElementById("configFilterMinRating").value) || 0
+
+  guardarAudienciaEnServidor()
+
+  // Confirmación visual
   const btn = event.target
   const textoOriginal = btn.textContent
   btn.textContent = "✅ Guardado"
@@ -3925,8 +4278,33 @@ function guardarConfigTelegram() {
     btn.textContent = textoOriginal
     btn.style.background = ""
   }, 2000)
+}
 
-  console.log(`✅ Configuración guardada: ${dias} días de Telegram`)
+async function guardarAudienciaEnServidor() {
+  if (!audienciaActualConfig) return
+
+  try {
+    const res = await fetch("http://localhost:8765/feeds/actualizar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        audiencia_id: audienciaActualConfig.id,
+        config: audienciaActualConfig
+      })
+    })
+
+    const data = await res.json()
+
+    if (data.ok) {
+      console.log("✅ Audiencia guardada correctamente")
+    } else {
+      console.error("❌ Error guardando:", data.error)
+      alert("Error al guardar: " + (data.error || "Error desconocido"))
+    }
+  } catch (e) {
+    console.error("Error guardando audiencia:", e)
+    alert("Error de red al guardar la configuración")
+  }
 }
 
 </script>

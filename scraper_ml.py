@@ -8,6 +8,7 @@ Normaliza al objeto oferta común compatible con Amazon.
 import json
 import re
 import time
+import os
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 import requests
@@ -24,6 +25,9 @@ except ImportError:
 ML_BASE     = "https://www.mercadolibre.com.mx"
 ML_API_BASE = "https://api.mercadolibre.com/sites/MLM/search"
 IMG_TPL     = "https://http2.mlstatic.com/D_NQ_NP_{pic_id}-F.webp"
+
+# Perfil de Chrome persistente con sesión de ML
+ML_BROWSER_PROFILE = os.path.expanduser('~/Desktop/SUPERSELLER/.ml_browser_profile')
 
 URLS_PREDEFINIDAS = {
     "ofertas_dia": [f"{ML_BASE}/ofertas"],   # punto de entrada; se expande automáticamente
@@ -378,20 +382,28 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
 
     try:
         with _sync_playwright() as pw:
-            browser = pw.chromium.launch(
-                channel='chrome',
+            # Usar perfil persistente con sesión de ML guardada
+            # Si no existe el perfil, se creará vacío (sin sesión)
+            # Ejecutar ml_login.py primero para guardar la sesión
+            ctx = pw.chromium.launch_persistent_context(
+                ML_BROWSER_PROFILE,
                 headless=True,
-                args=['--disable-blink-features=AutomationControlled',
-                      '--no-sandbox', '--disable-setuid-sandbox'],
-            )
-            ctx = browser.new_context(
+                channel='chrome',
                 viewport={'width': 1280, 'height': 800},
                 locale='es-MX',
-                user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                           'AppleWebKit/537.36 (KHTML, like Gecko) '
-                           'Chrome/124.0.0.0 Safari/537.36',
+                args=['--disable-blink-features=AutomationControlled'],
             )
-            page = ctx.new_page()
+
+            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+
+            # Inyectar script anti-detección
+            page.add_init_script("""
+                Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+                Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+                Object.defineProperty(navigator, 'languages', {get: () => ['es-MX', 'es', 'en']});
+                window.chrome = {runtime: {}};
+            """)
+
             current_url = url
 
             for page_num in range(1, pages + 1):
@@ -447,7 +459,7 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
                     current_url = next_url
                     time.sleep(1.5)
 
-            browser.close()
+            ctx.close()
     except Exception as e:
         print(f"  ❌ Playwright ML error: {e}", flush=True)
 
@@ -553,8 +565,8 @@ def scrape_url(url, min_discount=0, pages=1, precio_min=0, precio_max=0):
             precio_max = int(m.group(2))
             print(f"  💰 Filtro de precio detectado: ${precio_min}-${precio_max} MXN", flush=True)
 
-    # Listado URLs son SPAs — renderizar con Playwright e interceptar XHR
-    if "listado.mercadolibre.com.mx" in url:
+    # Listado URLs y ofertas son SPAs — renderizar con Playwright e interceptar XHR
+    if "listado.mercadolibre.com.mx" in url or "/ofertas" in url:
         # 1. Intentar Playwright primero
         if _PLAYWRIGHT_OK:
             resultados_pw = _scrape_listado_playwright(url, pages=pages, min_discount=min_discount,
