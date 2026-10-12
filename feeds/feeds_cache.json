@@ -1,7 +1,7 @@
 {
   "coleccionistas": {
     "fecha": "2026-10-12",
-    "timestamp": "2026-10-12T14:47:26.880724",
+    "timestamp": "2026-10-12T15:28:53.152060",
     "productos": [
       {
         "asin": "B0DQ1W3MK1",
@@ -58,6 +58,30 @@
         "discount": 53,
         "image": "https://m.media-amazon.com/images/I/41MGrNofpYL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B083MCN5YF?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DF6JR3ZP",
+        "title": "Funko Pop! Sanrio: Kuromi 88 Sticker Special Edition",
+        "price": 259.0,
+        "discount": 48,
+        "image": "https://m.media-amazon.com/images/I/31GXv2dXAXL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DF6JR3ZP?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B09RP9FLSY",
+        "title": "Funko My Hero Academia Pop! Figura de vinilo de animación Twice Hot Topic Exclusiva",
+        "price": 319.0,
+        "discount": 47,
+        "image": "https://m.media-amazon.com/images/I/31pmkftLf3L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B09RP9FLSY?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -352,6 +376,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B07QCDFCCX",
+        "title": "Funko Figura Coleccionable Pop Movies Harry Potter Hermione Granger Toy Figure",
+        "price": 329.0,
+        "discount": 34,
+        "image": "https://m.media-amazon.com/images/I/317aBIVpZzL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B07QCDFCCX?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FD31KSZQ",
         "title": "Brawler: Stories",
         "price": 369.43,
@@ -406,6 +442,18 @@
         "discount": 33,
         "image": "https://m.media-amazon.com/images/I/41B9DcRb2wL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DZNTKMRT?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DZBDWZSQ",
+        "title": "100 unidades de fundas para tarjetas de carga superior para tarjetas de intercambio, fundas Penny Soft para protectores de tarjetas de béisbol, compatibles con tarjetas deportivas, de fútbol y de",
+        "price": 195.02,
+        "discount": 33,
+        "image": "https://m.media-amazon.com/images/I/41-1HotCfdL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DZBDWZSQ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -568,18 +616,6 @@
         "novedad_score": 1.0
       },
       {
-        "asin": "B0DZBQMHPK",
-        "title": "600 fundas de tarjetas para tarjetas de intercambio, fundas suaves para tarjetas de béisbol, protectores de manga para tarjetas, ideales para deportes, fútbol, tarjetas de juego",
-        "price": 245.56,
-        "discount": 29,
-        "image": "https://m.media-amazon.com/images/I/41Uc96YRDsL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DZBQMHPK?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
-        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
-        "source_type": "url_fija",
-        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 1.0
-      },
-      {
         "asin": "B0FH1V5P7S",
         "title": "Godzilla Vs. America: Boston, Chicago, Kansas City, Los Angeles",
         "price": 306.31,
@@ -658,6 +694,18 @@
         "discount": 28,
         "image": "https://m.media-amazon.com/images/I/51lFDmoNHAL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DJL3S64W?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0B7TV2WSF",
+        "title": "Funko Pop Pokemon: Salameche metálico - Charmander Metallic # 455 - Convención de Verano 2022.",
+        "price": 359.0,
+        "discount": 28,
+        "image": "https://m.media-amazon.com/images/I/51e8qZlo2sL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0B7TV2WSF?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -801,10 +849,10 @@
         "price": 156.13,
         "discount": 26,
         "image": "https://m.media-amazon.com/images/I/41VCpmpE1+L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DSWFH7J6?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Dc Multiverse",
-        "source_type": "keyword",
-        "keyword_match": "Dc Multiverse",
+        "link": "https://www.amazon.com.mx/dp/B0DSWFH7J6?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 1.0
       },
       {
@@ -1132,6 +1180,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B08HH57K4R",
+        "title": "Funko Pop!&Buddy: Star Wars - Embo & Keibu - Mandalorian and Grogu - Collectable Vinyl Figure - Gift Idea - Official Merchandise - Toys for Kids & Adults - Sci-Fi Fans - Model Figure for Collectors",
+        "price": 252.91,
+        "discount": 21,
+        "image": "https://m.media-amazon.com/images/I/41UzJB0cXWL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B08HH57K4R?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0GSCPKSHR",
         "title": "Magic: The Gathering Captain America Team Leader - Fundas para Tarjetas Premium",
         "price": 521.08,
@@ -1186,6 +1246,18 @@
         "discount": 20,
         "image": "https://m.media-amazon.com/images/I/51CrwN38-fL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0GHWHV4ZK?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0GLGKMR12",
+        "title": "MINIX - Football Legends - Campeonato Mundial de Leyendas #120 - Brasil - Ronaldinho - Figura Coleccionable de 12 cm",
+        "price": 481.33,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/41QLnohedSL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GLGKMR12?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -1468,6 +1540,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0F7SRW6H5",
+        "title": "Lenovo Legion Go S Funda de Transporte con Protección Resistente a Derrames",
+        "price": 427.0,
+        "discount": 19,
+        "image": "https://m.media-amazon.com/images/I/31VZ26bqpUL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0F7SRW6H5?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "1302967444",
         "title": "Iron Man Epic Collection: Demon In A Bottle",
         "price": 816.37,
@@ -1558,6 +1642,18 @@
         "discount": 18,
         "image": "https://m.media-amazon.com/images/I/31JzG-KCUqL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FGVQRBWK?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0D98TQN8V",
+        "title": "Funko Pop! Disney: The Black Cauldron - Horned King with Creeper",
+        "price": 152.65,
+        "discount": 18,
+        "image": "https://m.media-amazon.com/images/I/41v9rkpEKTL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D98TQN8V?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2008,12 +2104,48 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0D2DHLV6L",
+        "title": "Funko Pop! Animation: Naruto Shippuden - Karin - Amazon Exclusive",
+        "price": 298.79,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/41ULCKofqBL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D2DHLV6L?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0C5RR7YQ4",
         "title": "BANDAI Figura Minix Rocky - Clubber Lang - Coleccionables para Exhibición - Idea de Regalo - Juguetes para Niños Y Adultos - Fans De TV MN11681",
         "price": 540.28,
         "discount": 13,
         "image": "https://m.media-amazon.com/images/I/41QLjXTZXTL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0C5RR7YQ4?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0CDJXJR7G",
+        "title": "Funko Pop! Movies: Jurassic Park Hatchling - Velociraptor Hatchling",
+        "price": 278.07,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/417A7P+sozL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CDJXJR7G?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0CSV5542N",
+        "title": "Funko Pop! Disney: Stitch (Dreidel)",
+        "price": 324.12,
+        "discount": 13,
+        "image": "https://m.media-amazon.com/images/I/41c9T51yEWL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CSV5542N?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2062,6 +2194,18 @@
         "discount": 12,
         "image": "https://m.media-amazon.com/images/I/51iZaDRbFIL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0BLT6D5JM?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DCW2BKJH",
+        "title": "Funko Pop! Plus: Sonic - Super Sonic with Emeralds - Sonic The Hedgehog - Exclusivo Amazon - Figura de Vinilo Coleccionable - Idea Regalo - Merchandising Oficial - Juguetes para niños y Adultos",
+        "price": 544.0,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/41cPAk4ndnL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DCW2BKJH?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2128,6 +2272,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0BJXF3RSC",
+        "title": "Ultimate Guard Flip 'n' Tray 80+, funda para 80 tarjetas TCG de doble manga + bandeja de dados, color negro, cierre magnético no empotrado y forro interior de microfibra",
+        "price": 649.94,
+        "discount": 12,
+        "image": "https://m.media-amazon.com/images/I/31AESXsSnsL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0BJXF3RSC?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "1302963988",
         "title": "Deadpool Kills The Marvel Universe One Last Time: 1",
         "price": 269.51,
@@ -2182,6 +2338,30 @@
         "discount": 11,
         "image": "https://m.media-amazon.com/images/I/41uPyvOiM+L._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0BLV95Q64?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "B0DSWJF552",
+        "title": "Funko Pop! TV: Buffy The Vampire Slayer - Buffy Summers with Scythe",
+        "price": 168.08,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41yR9gFiVLL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DSWJF552?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
+        "asin": "1632369060",
+        "title": "Cardcaptor Sakura: Clear Card 8",
+        "price": 178.72,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/51ayFmlWFmL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/1632369060?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
@@ -2368,6 +2548,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0DDXTYYRN",
+        "title": "POP Super Batman Arkham Asylum - Bane #532 GameStop Exclusive",
+        "price": 809.1,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/51E7njzmVwL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DDXTYYRN?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0FLZL922S",
         "title": "Principles of Animation & Game Design: Print Purchase Includes Free Online Access",
         "price": 3203.81,
@@ -2521,18 +2713,6 @@
         "source_channel": "Keyword: Animation",
         "source_type": "keyword",
         "keyword_match": "Animation",
-        "novedad_score": 1.0
-      },
-      {
-        "asin": "B0G491ZHVQ",
-        "title": "Marvel Avengers Set de Arte Infantil, Kit de Dibujo Para Niños con Libreta, Crayones, Calcomanías Holográficas, Sellos, Acuarelas y Plumones, Todo lo que Necesitas para Crear",
-        "price": 199.0,
-        "discount": 9,
-        "image": "https://m.media-amazon.com/images/I/41+qSkZQW8L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G491ZHVQ?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Avengers",
-        "source_type": "keyword",
-        "keyword_match": "Avengers",
         "novedad_score": 1.0
       },
       {
@@ -2776,6 +2956,18 @@
         "novedad_score": 1.0
       },
       {
+        "asin": "B0C9VQQ4R8",
+        "title": "Gamegenic Token Keep Caja de Fichas Premium Almacenamiento Seguro Negro",
+        "price": 449.94,
+        "discount": 0,
+        "image": "https://m.media-amazon.com/images/I/31v7JdBMQxL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0C9VQQ4R8?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 1.0
+      },
+      {
         "asin": "B0DPVGWQZ3",
         "title": "Marvel's Deadpool and Wolverine: The Illustrated History Box Set",
         "price": 290.89,
@@ -2797,6 +2989,18 @@
         "source_channel": "Keyword: Wolverine",
         "source_type": "keyword",
         "keyword_match": "Wolverine",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0CQTM39F4",
+        "title": "Star Wars The Black Series Cassian Andor Figura de Acción +4 años",
+        "price": 275.0,
+        "discount": 58,
+        "image": "https://m.media-amazon.com/images/I/41AZ-xF-2PL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0CQTM39F4?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: INART",
+        "source_type": "keyword",
+        "keyword_match": "INART",
         "novedad_score": 0.5
       },
       {
@@ -3208,6 +3412,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0FSKH6S8X",
+        "title": "Banloga - Caja de cartas para MTG Commander, se adapta a más de 100",
+        "price": 292.63,
+        "discount": 30,
+        "image": "https://m.media-amazon.com/images/I/51P1naFSn4L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FSKH6S8X?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0DYK7N5LN",
         "title": "Paladone - Lámpara de escritorio articulada de Sombrero de Paja de One Piece, lámpara flexible de anime con licencia oficial para fans de la cultura pop, para dormitorio, hogar y oficina",
         "price": 699.3,
@@ -3385,6 +3601,30 @@
         "source_channel": "Keyword: Wolverine",
         "source_type": "keyword",
         "keyword_match": "Wolverine",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0DYNH1G9N",
+        "title": "Fundas de Tarjetas para Tarjetas de Intercambio, Fundas de Béisbol Suaves para Tarjetas, Ideales para Deportes, Fútbol, MTG (5000 Piezas)",
+        "price": 646.74,
+        "discount": 27,
+        "image": "https://m.media-amazon.com/images/I/41vM-7MGVtL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DYNH1G9N?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0B1M7S2MJ",
+        "title": "Funko Pop Keychain Minions - 70's Bob & Roller Skating Stuart 2 Pack",
+        "price": 244.0,
+        "discount": 27,
+        "image": "https://m.media-amazon.com/images/I/51ETn3HumLL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0B1M7S2MJ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 0.5
       },
       {
@@ -3580,15 +3820,15 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0FDFYYH1F",
-        "title": "Marvel Legends Abomination Figura de Acción Articulada 15 cm",
-        "price": 915.5,
-        "discount": 24,
-        "image": "https://m.media-amazon.com/images/I/41XXmWwof0L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FDFYYH1F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Marvel Legends",
-        "source_type": "keyword",
-        "keyword_match": "Marvel Legends",
+        "asin": "B0D1DJ88KC",
+        "title": "Funko Pop! Rocks: Queen - Freddie Mercury - Radio Gaga 4 Pack",
+        "price": 896.5,
+        "discount": 23,
+        "image": "https://m.media-amazon.com/images/I/41S85Xy5aDL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D1DJ88KC?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
         "novedad_score": 0.5
       },
       {
@@ -3700,6 +3940,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0D7DT2R7D",
+        "title": "The Noble Collection Linterna Verde Plegable (cómic)",
+        "price": 412.45,
+        "discount": 20,
+        "image": "https://m.media-amazon.com/images/I/31SYAdUrarL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0D7DT2R7D?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0FTSY3CN2",
         "title": "Banpresto - Naruto Shippuden - Naruto Uzumaki Combinación Battle 2 Figura",
         "price": 655.2,
@@ -3796,18 +4048,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0FDWW35KD",
-        "title": "Avengers Marvel Titan Series Iron Man Figura de Acción",
-        "price": 239.2,
-        "discount": 17,
-        "image": "https://m.media-amazon.com/images/I/31DNx-suPIL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FDWW35KD?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Avengers",
-        "source_type": "keyword",
-        "keyword_match": "Avengers",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0GYGLJM6V",
         "title": "Nintendo Splatoon Raiders para Switch 2",
         "price": 1249.0,
@@ -3829,18 +4069,6 @@
         "source_channel": "Keyword: Demon Slayer",
         "source_type": "keyword",
         "keyword_match": "Demon Slayer",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0FNR8PMVW",
-        "title": "Blokees Marvel Infinity Saga Champion Class: Ironman Mark LXXXV 73923",
-        "price": 454.0,
-        "discount": 16,
-        "image": "https://m.media-amazon.com/images/I/51nrGjpFo2L._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0FNR8PMVW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Avengers",
-        "source_type": "keyword",
-        "keyword_match": "Avengers",
         "novedad_score": 0.5
       },
       {
@@ -3930,7 +4158,7 @@
       {
         "asin": "B0G2TCDPZP",
         "title": "Marvel Figuras de Acción Legends Series Thunderbolts Valentina Allegra de Fontaine y The Void",
-        "price": 1231.19,
+        "price": 1224.89,
         "discount": 15,
         "image": "https://m.media-amazon.com/images/I/41Cc+frdsaL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0G2TCDPZP?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -4048,18 +4276,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0DKL4Y1RY",
-        "title": "Star Wars The Black Series The Ronin Figura de Acción 15 cm",
-        "price": 555.48,
-        "discount": 13,
-        "image": "https://m.media-amazon.com/images/I/41NSfNNXVDL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0DKL4Y1RY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Collector",
-        "source_type": "keyword",
-        "keyword_match": "Collector",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0DTMTWVGT",
         "title": "Magic: The Gathering - Final Fantasy Commander Deck 3",
         "price": 1469.86,
@@ -4096,18 +4312,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0F4HPW384",
-        "title": "Jada - Figura de acción de 15 cm del Tigre Tony, Zucaritas, Altamente articulada, Coleccionable, Detalle nostálgico, Embalaje Exclusivo",
-        "price": 789.0,
-        "discount": 13,
-        "image": "https://m.media-amazon.com/images/I/31TvfFWwsjL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0F4HPW384?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Jada Toys",
-        "source_type": "keyword",
-        "keyword_match": "Jada Toys",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0DKVGSWX9",
         "title": "Marvel Collection - Estatua de PVC 1/10, 17 cm, diseño de Spider-Man (The Amazing Spider-Man #302)",
         "price": 879.12,
@@ -4132,18 +4336,6 @@
         "novedad_score": 0.5
       },
       {
-        "asin": "B0G43Y411C",
-        "title": "Mattel DC - Figura de acción de Batman de 12 Pulgadas, Traje Negro con cinturón Amarillo y Capa de Tela, diseño detallado y 7 Puntos de articulación",
-        "price": 335.0,
-        "discount": 12,
-        "image": "https://m.media-amazon.com/images/I/31LLT6OOgDL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0G43Y411C?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Superman",
-        "source_type": "keyword",
-        "keyword_match": "Superman",
-        "novedad_score": 0.5
-      },
-      {
         "asin": "B0C5RRNT2L",
         "title": "MINIX - Figura de Scott Howard - Teen Wolf - Coleccionables de 12 cm para Exhibición, Idea de Regalo para Niños Y Adultos, Fans de TV & Cine - MN11926",
         "price": 635.62,
@@ -4153,6 +4345,42 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0DKL4Y1RY",
+        "title": "Star Wars The Black Series The Ronin Figura de Acción 15 cm",
+        "price": 567.01,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41NSfNNXVDL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0DKL4Y1RY?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Collector",
+        "source_type": "keyword",
+        "keyword_match": "Collector",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0H92SDVQT",
+        "title": "Jada Street Fighter II T. Hawk Figura de acción – 1:12 Deluxe Scale Toys – 6 Pulgadas de Alto, Totalmente articulado, Embalaje de coleccionista",
+        "price": 695.0,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/31RVbGkjHDL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0H92SDVQT?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Jada Toys",
+        "source_type": "keyword",
+        "keyword_match": "Jada Toys",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0FDFYYH1F",
+        "title": "Marvel Legends Abomination Figura de Acción Articulada 15 cm",
+        "price": 1071.14,
+        "discount": 11,
+        "image": "https://m.media-amazon.com/images/I/41XXmWwof0L._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0FDFYYH1F?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Marvel Legends",
+        "source_type": "keyword",
+        "keyword_match": "Marvel Legends",
         "novedad_score": 0.5
       },
       {
@@ -4168,6 +4396,18 @@
         "novedad_score": 0.5
       },
       {
+        "asin": "B0GSSXNWD5",
+        "title": "Cápsulas para monedas coleccionables con sello ajustable y bases, redondos",
+        "price": 305.1,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/516NFvDXVUL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GSSXNWD5?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",
+        "source_channel": "Ofertas del día - Juguetes y Coleccionables",
+        "source_type": "url_fija",
+        "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
+        "novedad_score": 0.5
+      },
+      {
         "asin": "B0CMNRJSPT",
         "title": "Saichotoy - Vitrina de Ruedas Calientes: Almacenamiento apilable para Coche, Organizador Transparente para Cajas de cerillas y Ruedas Calientes a Escala 1/64 (16 Paquetes, Solo Funda Gris)",
         "price": 429.99,
@@ -4177,18 +4417,6 @@
         "source_channel": "Ofertas del día - Juguetes y Coleccionables",
         "source_type": "url_fija",
         "keyword_match": "🔗 Ofertas del día - Juguetes y Coleccionables",
-        "novedad_score": 0.5
-      },
-      {
-        "asin": "B0GS54V4MW",
-        "title": "Hot Toys Miles Morales Avengers Suit 1/6 Figura",
-        "price": 13841.1,
-        "discount": 10,
-        "image": "https://m.media-amazon.com/images/I/31+Yihe9kUL._SL500_.jpg",
-        "link": "https://www.amazon.com.mx/dp/B0GS54V4MW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
-        "source_channel": "Keyword: Hot Toys",
-        "source_type": "keyword",
-        "keyword_match": "Hot Toys",
         "novedad_score": 0.5
       },
       {
@@ -4225,6 +4453,18 @@
         "source_channel": "Keyword: Star Wars",
         "source_type": "keyword",
         "keyword_match": "Star Wars",
+        "novedad_score": 0.5
+      },
+      {
+        "asin": "B0GS54V4MW",
+        "title": "Hot Toys Miles Morales Avengers Suit 1/6 Figura",
+        "price": 13841.1,
+        "discount": 10,
+        "image": "https://m.media-amazon.com/images/I/31+Yihe9kUL._SL500_.jpg",
+        "link": "https://www.amazon.com.mx/dp/B0GS54V4MW?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
+        "source_channel": "Keyword: Hot Toys",
+        "source_type": "keyword",
+        "keyword_match": "Hot Toys",
         "novedad_score": 0.5
       },
       {
@@ -4290,7 +4530,7 @@
       {
         "asin": "B0FJR65GL7",
         "title": "Marvel Legends Series, Future Foundation, Mister Fantastic y el Hombre Araña, Pack Doble de Figuras coleccionables a Escala de 15 cm inspiradas en los cómics de Los Cuatro Fantásticos",
-        "price": 1303.1,
+        "price": 1302.88,
         "discount": 10,
         "image": "https://m.media-amazon.com/images/I/51dK5SO+UiL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0FJR65GL7?tag=bunkerxstudio-20&linkCode=osi&th=1&psc=1&language=es_MX",
@@ -4650,7 +4890,7 @@
       {
         "asin": "B0DP5D7LNJ",
         "title": "TUBBZ NS5435",
-        "price": 482.47,
+        "price": 471.25,
         "discount": 0,
         "image": "https://m.media-amazon.com/images/I/41H6c8bWlqL._SL500_.jpg",
         "link": "https://www.amazon.com.mx/dp/B0DP5D7LNJ?tag=bunkerxstudio-20&linkCode=ogi&th=1&psc=1&language=es_MX",

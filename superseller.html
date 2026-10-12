@@ -3525,25 +3525,35 @@ async function cargarFeed(refresh = false) {
     }
 
     // Convertir productos del feed al formato de la app
-    allItems = data.productos.map(p => ({
-      asin: p.asin,
-      title: p.title,
-      img: p.image,
-      link: p.link,
-      price_discounted: p.price || 0,
-      price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
-      descuento_pct: p.discount || 0,
-      vigencia: "permanente",
-      tipo: "",
-      badge: p.keyword_match ? `🎯 ${p.keyword_match}` : "",
-      access_type: "ALL",
-      start_time: "",
-      end_time: "",
-      pct_claimed: null,
-      source_type: p.source_type,
-      source_channel: p.source_channel,
-      novedad_score: p.novedad_score
-    }))
+    allItems = data.productos.map(p => {
+      // Inferir source_type si no viene del backend
+      let sourceType = p.source_type
+      if (!sourceType) {
+        if (p.keyword_match) sourceType = 'keyword'
+        else if (p.source_channel && p.source_channel.toLowerCase().includes('telegram')) sourceType = 'telegram'
+        else sourceType = 'url_fija'
+      }
+
+      return {
+        asin: p.asin,
+        title: p.title,
+        img: p.image,
+        link: p.link,
+        price_discounted: p.price || 0,
+        price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
+        descuento_pct: p.discount || 0,
+        vigencia: "permanente",
+        tipo: "",
+        badge: p.keyword_match ? `🎯 ${p.keyword_match}` : "",
+        access_type: "ALL",
+        start_time: "",
+        end_time: "",
+        pct_claimed: null,
+        source_type: sourceType,
+        source_channel: p.source_channel,
+        novedad_score: p.novedad_score
+      }
+    })
 
     // Renderizar en grid principal (igual que búsquedas normales)
     renderResults(allItems)
@@ -4337,9 +4347,13 @@ function renderStats(items) {
   const stats = calcularStats(items)
   const totalConFuente = stats.keywords.encontrados + stats.urls.encontrados + stats.telegram.encontrados
 
+  // DEBUG: Mostrar en consola
+  console.log('📊 Stats calculadas:', stats, 'Total items:', items.length)
+  console.log('📊 Primer item:', items[0])
+
   // Si no hay productos con fuente identificada, no mostrar nada
   if (totalConFuente === 0) {
-    statsDiv.innerHTML = ''
+    statsDiv.innerHTML = `<div style="padding:8px;background:rgba(255,193,7,.1);color:#ffc107;font-size:11px;border-radius:6px;">ℹ️ ${items.length} productos (fuente no identificada)</div>`
     return
   }
 
