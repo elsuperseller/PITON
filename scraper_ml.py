@@ -370,24 +370,23 @@ def _extraer_next_url(body):
 
 def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, precio_max=0):
     """
-    Renderiza URLs listado.mercadolibre.com.mx con Playwright.
-    Captura el cuerpo completo (2-3 MB) que incluye el initialState con polycards.
-    Navega automáticamente a páginas siguientes usando next_page.url del initialState.
+    Renderiza URLs de ML con Playwright extrayendo productos del DOM.
+    ML cambió su estructura - ahora renderiza productos client-side en HTML.
+    IMPORTANTE: Corre en modo visible (headless=False) porque ML detecta headless.
     """
     if not _PLAYWRIGHT_OK:
         print("  ⚠️  Playwright no disponible — pip install playwright && playwright install chrome", flush=True)
         return []
 
-    captured = {}
+    productos = []
 
     try:
         with _sync_playwright() as pw:
             # Usar perfil persistente con sesión de ML guardada
-            # Si no existe el perfil, se creará vacío (sin sesión)
-            # Ejecutar ml_login.py primero para guardar la sesión
+            # IMPORTANTE: headless=False porque ML detecta headless y no carga productos
             ctx = pw.chromium.launch_persistent_context(
                 ML_BROWSER_PROFILE,
-                headless=True,
+                headless=False,  # ML no carga productos en headless
                 channel='chrome',
                 viewport={'width': 1280, 'height': 800},
                 locale='es-MX',
@@ -396,76 +395,150 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
 
             page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
-            # Inyectar script anti-detección
-            page.add_init_script("""
-                Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-                Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
-                Object.defineProperty(navigator, 'languages', {get: () => ['es-MX', 'es', 'en']});
-                window.chrome = {runtime: {}};
-            """)
+            print(f"  🎭 Playwright ML: {url[:80]} ({pages} página(s))", flush=True)
 
-            current_url = url
+            # Procesar múltiples páginas
+            todos_productos = []
 
             for page_num in range(1, pages + 1):
-                big_body = [None]   # lista para captura en closure
+                # Construir URL de página
+                if page_num == 1:
+                    page_url = url
+                else:
+                    # Remover fragment (#...) antes de agregar page=
+                    # El fragment no se envía al servidor y causa que page= se ignore
+                    url_sin_fragment = url.split('#')[0]
+                    separator = '&' if '?' in url_sin_fragment else '?'
+                    page_url = f"{url_sin_fragment}{separator}page={page_num}"
 
-                all_responses = []  # diagnóstico
+                print(f"  📄 Página {page_num}/{pages}: {page_url}", flush=True)
 
-                def _on_response(resp, _holder=big_body, _log=all_responses):
-                    if resp.status != 200:
-                        return
-                    try:
-                        body = resp.text()
-                    except Exception:
-                        return
-                    # Usar comillas para distinguir JSON de variables JS en bundles
-                    has_state = '"initialState"' in body
-                    has_poly  = '"POLYCARD"' in body or '"results"' in body
-                    if len(body) > 5000:  # loguear cualquier respuesta grande
-                        _log.append((resp.url[:90], len(body), has_state, has_poly))
-                    # Preferir la respuesta más grande con JSON real (no JS bundles)
-                    if len(body) > 50000 and has_state and '"results"' in body:
-                        if _holder[0] is None or len(body) > len(_holder[0]):
-                            _holder[0] = body
+                # Navegar a la página
+                page.goto(page_url, wait_until='networkidle', timeout=60000)
+                page.wait_for_timeout(4000)  # Esperar más para asegurar carga completa
 
-                page.on('response', _on_response)
-                print(f"  🎭 Playwright ML p{page_num}: {current_url[:80]}", flush=True)
-                page.goto(current_url, wait_until='networkidle', timeout=40000)
-                page.wait_for_timeout(3000)
-                page.remove_listener('response', _on_response)
+                # Scroll para asegurar que todo cargó
+                page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                page.wait_for_timeout(1000)
+                page.evaluate("window.scrollTo(0, 0)")
+                page.wait_for_timeout(1000)
 
-                titulo = page.title()
-                print(f"  📋 Título: '{titulo[:60]}'", flush=True)
-                print(f"  📡 Respuestas >5KB capturadas: {len(all_responses)}", flush=True)
-                for r_url, r_len, r_has_state, r_has_poly in sorted(all_responses, key=lambda x: -x[1])[:8]:
-                    flags = ('✅initialState ' if r_has_state else '') + ('🃏polycards' if r_has_poly else '')
-                    print(f"    {r_len:>9} bytes {flags:<25} {r_url}", flush=True)
+                # Extraer productos del DOM (ML ya no usa JSON embebido)
+                productos_raw = page.evaluate("""() => {
+                const productos = [];
+                const cards = document.querySelectorAll('.poly-card, [class*="poly-card"]');
 
-                if not big_body[0]:
-                    print(f"  ⚠️  p{page_num}: sin initialState — deteniendo", flush=True)
-                    break
+                cards.forEach(card => {
+                    try {
+                        const linkElem = card.querySelector('a[href*="/p/"]');
+                        if (!linkElem) return;
 
-                prods = _extraer_polycards(big_body[0], min_discount, precio_min, precio_max)
-                nuevos = sum(1 for p in prods if p['id'] not in captured)
-                for p in prods:
-                    captured[p['id']] = p
-                print(f"  📄 p{page_num}: {len(prods)} polycards → {nuevos} nuevos (total={len(captured)})", flush=True)
+                        const link = linkElem.href;
+                        const idMatch = link.match(/MLM\\d+/);
+                        if (!idMatch) return;
+                        const id = idMatch[0];
 
+                        const titleElem = card.querySelector('.poly-component__title, [class*="title"]');
+                        const title = titleElem ? titleElem.textContent.trim() : '';
+                        if (!title) return;
+
+                        const precioElems = card.querySelectorAll('.andes-money-amount__fraction');
+                        if (precioElems.length === 0) return;
+
+                        let precio = 0;
+                        let precioOrig = 0;
+
+                        if (precioElems.length >= 2) {
+                            precioOrig = parseFloat(precioElems[0].textContent.replace(/[^0-9]/g, ''));
+                            precio = parseFloat(precioElems[1].textContent.replace(/[^0-9]/g, ''));
+                        } else {
+                            precio = parseFloat(precioElems[0].textContent.replace(/[^0-9]/g, ''));
+                            precioOrig = precio;
+                        }
+
+                        if (precio === 0) return;
+
+                        let descuento = 0;
+                        if (precioOrig > precio) {
+                            descuento = Math.round(((precioOrig - precio) / precioOrig) * 100);
+                        }
+
+                        const descuentoElem = card.querySelector('[class*="discount"], [class*="off"]');
+                        if (descuentoElem) {
+                            const match = descuentoElem.textContent.match(/(\\d+)%/);
+                            if (match) descuento = parseInt(match[1]);
+                        }
+
+                        const imgElem = card.querySelector('img');
+                        const img = imgElem ? (imgElem.src || imgElem.dataset.src || '') : '';
+
+                        productos.push({
+                            id: id,
+                            title: title,
+                            link: link,
+                            price_discounted: precio,
+                            price_original: precioOrig,
+                            descuento_pct: descuento,
+                            img: img
+                        });
+                    } catch (e) {}
+                });
+
+                return productos;
+            }""")
+
+                # Deduplicar por ID dentro de esta página (puede haber duplicados en DOM)
+                ids_vistos = set()
+                productos_unicos_pagina = []
+                for p in productos_raw:
+                    if p['id'] not in ids_vistos:
+                        ids_vistos.add(p['id'])
+                        productos_unicos_pagina.append(p)
+
+                primer_id = productos_unicos_pagina[0]['id'] if productos_unicos_pagina else 'ninguno'
+                print(f"    ✅ {len(productos_raw)} elementos → {len(productos_unicos_pagina)} únicos en p{page_num} (primer ID: {primer_id})", flush=True)
+                todos_productos.extend(productos_unicos_pagina)
+
+                # Delay entre páginas
                 if page_num < pages:
-                    next_url = _extraer_next_url(big_body[0])
-                    if not next_url:
-                        print(f"  ⏹  Sin página siguiente — deteniendo", flush=True)
-                        break
-                    current_url = next_url
-                    time.sleep(1.5)
+                    import time
+                    time.sleep(2)
+
+            print(f"  📊 Total: {len(todos_productos)} productos de {pages} página(s)", flush=True)
+
+            # Normalizar al formato común y aplicar filtros
+            for p_raw in todos_productos:
+                # Filtro de descuento mínimo
+                if p_raw['descuento_pct'] < min_discount:
+                    continue
+
+                # Filtro de precio
+                precio = p_raw['price_discounted']
+                if precio_min > 0 and precio < precio_min:
+                    continue
+                if precio_max > 0 and precio > precio_max:
+                    continue
+
+                # Normalizar al formato común de ML
+                productos.append({
+                    'id': p_raw['id'],
+                    'title': p_raw['title'],
+                    'link': p_raw['link'],
+                    'img': p_raw['img'],
+                    'price_discounted': p_raw['price_discounted'],
+                    'price_original': p_raw['price_original'],
+                    'descuento_pct': p_raw['descuento_pct'],
+                    'source': 'Mercado Libre',  # Identificar origen
+                    'canal': 'Mercado Libre',    # Para export a Sheets
+                })
+
+            print(f"  📊 {len(productos)} con descuento≥{min_discount}%", flush=True)
 
             ctx.close()
     except Exception as e:
         print(f"  ❌ Playwright ML error: {e}", flush=True)
 
-    result = list(captured.values())
-    print(f"  ✅ Playwright listado → {len(result)} productos total", flush=True)
-    return result
+    return productos
 
 
 def _scrape_via_api(filtros, pages=3, min_discount=0, precio_min=0, precio_max=0):

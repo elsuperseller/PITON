@@ -39,7 +39,8 @@ try:
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
         print("📄 Navegando a Mercado Libre...")
-        page.goto('https://www.mercadolibre.com.mx', wait_until='networkidle')
+        print("   (Esto puede tardar si tienes VPN activo...)")
+        page.goto('https://www.mercadolibre.com.mx', wait_until='domcontentloaded', timeout=60000)
 
         print()
         print("=" * 60)
@@ -56,7 +57,11 @@ try:
         print("🔍 Verificando sesión...")
 
         # Ir a cuenta para verificar que está logueado
-        page.goto('https://www.mercadolibre.com.mx/navigation/account', timeout=10000)
+        try:
+            page.goto('https://www.mercadolibre.com.mx/navigation/account', timeout=15000)
+        except:
+            # No importa si falla, lo importante es que la sesión se guardó
+            pass
 
         print("💾 Guardando sesión...")
         ctx.close()
