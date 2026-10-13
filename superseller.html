@@ -682,7 +682,30 @@ input[type=file] {
   box-shadow: 0 2px 8px rgba(41,104,212,.22);
 }
 .btn-ml:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(41,104,212,.35); }
+
+/* ========== LAZY LOADING (FASE 3) ========== */
+img[data-src] {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+img.loaded {
+  opacity: 1;
+}
+
+/* Placeholder mientras carga */
+img[data-src]:not(.loaded) {
+  background: linear-gradient(90deg, #1a1a2e 25%, #16213e 50%, #1a1a2e 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 </style>
+
 </head>
 <body>
 
@@ -700,6 +723,11 @@ input[type=file] {
     <select id="audienciaGlobalSelect" onchange="cambiarAudienciaGlobal()" class="audiencia-select">
       <option value="">🎯 Selecciona audiencia...</option>
     </select>
+
+    <!-- Botones de Ofertas y Novedades -->
+    <button onclick="cargarFeedGlobal(false, 'promocional')" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">🔍 Ofertas</button>
+    <button onclick="cargarFeedGlobal(false, 'novedades')" class="btn" style="background:#3b82f6;color:white;font-size:12px;padding:8px 14px;">🆕 Novedades</button>
+
     <button id="btnDetener" onclick="detenerProceso()" style="display:none;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
     <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;" class="btn btn-danger">👎 Descartar</button>
 
@@ -1430,70 +1458,7 @@ const CATS = {
 }
 
 // ========== CONSTANTES GLOBALES ==========
-const API_BASE = "http://localhost:8765"
-const DEBOUNCE_MS = 300
-
-// ========== FUNCIONES HELPER ==========
-
-/**
- * Llamada centralizada a la API con manejo de errores
- */
-async function apiCall(endpoint, options = {}) {
-  try {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`
-    const res = await fetch(url, options)
-    const data = await res.json()
-
-    if (!res.ok && !data.ok) {
-      throw new Error(data.error || `HTTP ${res.status}`)
-    }
-
-    return data
-  } catch(e) {
-    console.error(`❌ API Error [${endpoint}]:`, e)
-    throw e
-  }
-}
-
-/**
- * Infiere el source_type de un producto
- */
-function inferirSourceType(producto) {
-  if (producto.source_type) return producto.source_type
-  if (producto.keyword_match) return 'keyword'
-  if (producto.source_channel?.toLowerCase().includes('telegram')) return 'telegram'
-  return 'url_fija'
-}
-
-/**
- * Mapea un producto del feed al formato de la app
- */
-function mapearProductoFeed(p) {
-  const badge = p.keyword_match ? `🎯 ${p.keyword_match}` : ""
-  const sourceType = inferirSourceType(p)
-
-  return {
-    asin: p.asin,
-    title: p.title,
-    img: p.image,
-    link: p.link,
-    price_discounted: p.price || 0,
-    price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
-    descuento_pct: p.discount || 0,
-    vigencia: "permanente",
-    tipo: "",
-    badge: badge,
-    access_type: "ALL",
-    start_time: "",
-    end_time: "",
-    pct_claimed: null,
-    source_type: sourceType,
-    source_channel: p.source_channel,
-    novedad_score: p.novedad_score || 1.0
-  }
-}
-
-// ========== FIN HELPERS ==========
+// Constantes, API y helpers ahora en módulos externos (js/constants.js, js/api.js, js/feeds.js)
 
 const catsEl = document.getElementById("cats")
 Object.keys(CATS).forEach(nombre => {
@@ -1897,8 +1862,60 @@ function setStatus(msg, cls="") {
 }
 
 let allItems = []
-let currentFeedId = null // Para tracking de qué feed está cargado actualmente
-let descartadosEnSesion = new Set() // ASINs descartados en esta sesión (no volver a mostrar)
+let currentFeedId = null
+let descartadosEnSesion = new Set()
+
+// ========== API HELPERS ==========
+const API_BASE = "http://localhost:8765"
+
+async function apiCall(endpoint, options = {}) {
+  try {
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`
+    const res = await fetch(url, options)
+    const data = await res.json()
+
+    if (!res.ok && !data.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`)
+    }
+
+    return data
+  } catch(e) {
+    console.error(`❌ API Error [${endpoint}]:`, e)
+    throw e
+  }
+}
+
+function inferirSourceType(producto) {
+  if (producto.source_type) return producto.source_type
+  if (producto.keyword_match) return 'keyword'
+  if (producto.source_channel?.toLowerCase().includes('telegram')) return 'telegram'
+  return 'url_fija'
+}
+
+function mapearProductoFeed(p) {
+  const badge = p.keyword_match ? `🎯 ${p.keyword_match}` : ""
+  const sourceType = inferirSourceType(p)
+
+  return {
+    asin: p.asin,
+    title: p.title,
+    img: p.image,
+    link: p.link,
+    price_discounted: p.price || 0,
+    price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
+    descuento_pct: p.discount || 0,
+    vigencia: "permanente",
+    tipo: "",
+    badge: badge,
+    access_type: "ALL",
+    start_time: "",
+    end_time: "",
+    pct_claimed: null,
+    source_type: sourceType,
+    source_channel: p.source_channel,
+    novedad_score: p.novedad_score || 1.0
+  }
+}
 
 async function ejecutarBusquedaPorFuente() {
   const select = document.getElementById("buscarPorFuente")
@@ -2179,7 +2196,7 @@ function renderResults(items) {
   grid.innerHTML = items.map((p, i) => `
     <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:160px;object-fit:cover;">
       <div class="product-info">
         <div class="product-title">${p.title}</div>
         <div class="product-prices">
@@ -2224,6 +2241,8 @@ function renderResults(items) {
   updateCount()
   document.getElementById("results").style.display = "block"
   document.getElementById("exportBar").style.display = "flex"
+
+  // Lazy loading desactivado - imágenes cargan normalmente con src=""
 }
 
 function toggleCard(i) {
@@ -3406,20 +3425,40 @@ function cerrarFeeds() {
   document.getElementById("feedsModal").style.display = "none"
 }
 
+async function verFeeds() {
+  const modal = document.getElementById("feedsModal")
+  modal.style.display = "flex"
+  await actualizarAudiencias()
+}
+
 async function actualizarAudiencias() {
   try {
     const data = await apiCall("/feeds/listar")
 
-    // Actualizar select del menú superior
-    const selectModal = document.getElementById("audienciaSelect")
-    if (selectModal && data.ok && data.audiencias) {
-      selectModal.innerHTML = '<option value="">-- Seleccionar audiencia --</option>'
-      data.audiencias.forEach(a => {
-        const opt = document.createElement("option")
-        opt.value = a.id
-        opt.textContent = `${a.icono || "📊"} ${a.nombre} (${a.keywords.length} keywords)`
-        selectModal.appendChild(opt)
-      })
+    if (data.ok && data.audiencias) {
+      // Actualizar select del modal
+      const selectModal = document.getElementById("audienciaSelect")
+      if (selectModal) {
+        selectModal.innerHTML = '<option value="">-- Seleccionar audiencia --</option>'
+        data.audiencias.forEach(a => {
+          const opt = document.createElement("option")
+          opt.value = a.id
+          opt.textContent = `${a.icono || "📊"} ${a.nombre} (${a.keywords.length} keywords)`
+          selectModal.appendChild(opt)
+        })
+      }
+
+      // Actualizar select global de la barra superior
+      const selectGlobal = document.getElementById("audienciaGlobalSelect")
+      if (selectGlobal) {
+        selectGlobal.innerHTML = '<option value="">🎯 Selecciona audiencia...</option>'
+        data.audiencias.forEach(a => {
+          const opt = document.createElement("option")
+          opt.value = a.id
+          opt.textContent = `${a.icono || "📊"} ${a.nombre}`
+          selectGlobal.appendChild(opt)
+        })
+      }
     }
   } catch(e) {
     console.error("Error cargando audiencias:", e)
@@ -3430,8 +3469,28 @@ async function actualizarAudiencias() {
 
 let feedAbortController = null
 
+/**
+ * Cargar feed desde el selector global de la barra superior
+ */
+async function cargarFeedGlobal(refresh = false, modo = 'promocional') {
+  const audienciaId = document.getElementById("audienciaGlobalSelect").value
+  if (!audienciaId) {
+    alert("Selecciona una audiencia primero")
+    return
+  }
+
+  // Sincronizar con el selector del modal
+  const audienciaSelect = document.getElementById("audienciaSelect")
+  if (audienciaSelect) {
+    audienciaSelect.value = audienciaId
+  }
+
+  // Llamar a cargarFeed con el audienciaId correcto
+  return cargarFeed(refresh, modo)
+}
+
 async function cargarFeed(refresh = false, modo = 'promocional') {
-  const audienciaId = document.getElementById("audienciaSelect").value
+  const audienciaId = document.getElementById("audienciaSelect").value || document.getElementById("audienciaGlobalSelect").value
   if (!audienciaId) {
     alert("Selecciona una audiencia primero")
     return
@@ -3719,7 +3778,7 @@ function filtrarPorFuente(sourceType) {
     return `
     <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:160px;object-fit:cover;">
       <div class="product-info">
         <div class="product-title">${p.title}</div>
         <div class="product-prices">
@@ -4391,5 +4450,6 @@ function renderStats(items) {
 }
 
 </script>
+
 </body>
 </html>

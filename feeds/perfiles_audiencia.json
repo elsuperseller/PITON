@@ -358,10 +358,11 @@
       "Transformers",
       "Tubbz",
       "Vengadores",
-      "Wolverine"
+      "Wolverine",
+      "Gamerverse"
     ],
     "filtros": {
-      "minSavingPercent": 0,
+      "minSavingPercent": 1,
       "minPrice": 50,
       "maxPrice": 30000,
       "minReviews": 0,
