@@ -1297,37 +1297,145 @@ img[data-src]:not(.loaded) {
         </div>
       </div>
 
-      <!-- Sección URLs Fijas -->
+      <!-- ==================== CONFIGURACIÓN OFERTAS ==================== -->
+      <div style="background:rgba(16,185,129,0.05);padding:20px;border-radius:var(--r);margin-bottom:24px;border-left:4px solid #10b981;">
+        <h3 style="font-size:14px;font-weight:700;color:var(--t1);margin:0 0 6px 0;">🔍 Configuración de OFERTAS</h3>
+        <p style="font-size:11px;color:var(--t3);margin:0;">Keywords y URLs que se usan SOLO para el botón "Ofertas"</p>
+      </div>
+
+      <!-- Sección URLs Ofertas -->
       <div style="margin-bottom:30px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:20px;">🔗</span>
-            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">URLs Fijas de Amazon</h4>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">URLs para Ofertas</h4>
           </div>
-          <button onclick="agregarURLFija()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+          <button onclick="agregarURLOfertas()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
             ➕ Agregar URL
           </button>
         </div>
 
-        <div id="configURLsList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+        <div id="configURLsOfertasList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
           <!-- Se llena dinámicamente -->
         </div>
       </div>
 
-      <!-- Sección Keywords -->
+      <!-- Sección Keywords Ofertas -->
       <div style="margin-bottom:30px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:20px;">🔤</span>
-            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Palabras Clave (Keywords)</h4>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Keywords para Ofertas</h4>
           </div>
-          <button onclick="agregarKeyword()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+          <button onclick="agregarKeywordOfertas()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
             ➕ Agregar Keyword
           </button>
         </div>
 
-        <div id="configKeywordsList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+        <div id="configKeywordsOfertasList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
           <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Filtros de Ofertas -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">🎯</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Filtros de Ofertas</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Descuento mínimo (%)</label>
+              <input type="number" id="configFilterMinSavingOfertas" min="0" max="100" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio mínimo ($)</label>
+              <input type="number" id="configFilterMinPriceOfertas" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio máximo ($)</label>
+              <input type="number" id="configFilterMaxPriceOfertas" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+          </div>
+          <button onclick="guardarFiltrosOfertas()" class="btn btn-primary" style="margin-top:12px;font-size:12px;padding:8px 16px;">
+            💾 Guardar Filtros Ofertas
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== CONFIGURACIÓN NOVEDADES ==================== -->
+      <div style="background:rgba(59,130,246,0.05);padding:20px;border-radius:var(--r);margin-bottom:24px;border-left:4px solid #3b82f6;">
+        <h3 style="font-size:14px;font-weight:700;color:var(--t1);margin:0 0 6px 0;">🆕 Configuración de NOVEDADES</h3>
+        <p style="font-size:11px;color:var(--t3);margin:0;">Keywords y URLs que se usan SOLO para el botón "Novedades"</p>
+      </div>
+
+      <!-- Sección URLs Novedades -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🔗</span>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">URLs para Novedades</h4>
+          </div>
+          <button onclick="agregarURLNovedades()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+            ➕ Agregar URL
+          </button>
+        </div>
+
+        <div id="configURLsNovedadesList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Sección Keywords Novedades -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">🔤</span>
+            <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Keywords para Novedades</h4>
+          </div>
+          <button onclick="agregarKeywordNovedades()" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">
+            ➕ Agregar Keyword
+          </button>
+        </div>
+
+        <div id="configKeywordsNovedadesList" style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);min-height:100px;">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Filtros de Novedades -->
+      <div style="margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="font-size:20px;">🎯</span>
+          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Filtros de Novedades</h4>
+        </div>
+
+        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
+          <div style="background:rgba(59,130,246,0.1);padding:12px;border-radius:6px;margin-bottom:12px;border-left:3px solid #3b82f6;">
+            <p style="font-size:11px;color:var(--t2);margin:0;">
+              ℹ️ Novedades normalmente NO filtra por descuento (acepta productos sin oferta)
+            </p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Descuento mínimo (%)</label>
+              <input type="number" id="configFilterMinSavingNovedades" min="0" max="100" value="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+              <p style="font-size:10px;color:var(--t3);margin-top:4px;">Dejar en 0 para aceptar todo</p>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio mínimo ($)</label>
+              <input type="number" id="configFilterMinPriceNovedades" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio máximo ($)</label>
+              <input type="number" id="configFilterMaxPriceNovedades" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
+            </div>
+          </div>
+          <button onclick="guardarFiltrosNovedades()" class="btn btn-primary" style="margin-top:12px;font-size:12px;padding:8px 16px;">
+            💾 Guardar Filtros Novedades
+          </button>
         </div>
       </div>
 
@@ -4088,23 +4196,37 @@ async function cargarConfigAudiencia() {
       // Cargar Canales Telegram
       renderTelegramChannels(audiencia.telegram_sources || [])
 
-      // Cargar URLs Fijas
-      renderURLsFijas(audiencia.urls_fijas || [])
+      // Cargar OFERTAS
+      renderURLsOfertas(audiencia.links_ofertas || [])
+      renderKeywordsOfertas(audiencia.keywords_ofertas || [])
 
-      // Cargar Keywords
-      renderKeywords(audiencia.keywords || [])
+      // Cargar NOVEDADES
+      renderURLsNovedades(audiencia.links_novedades || [])
+      renderKeywordsNovedades(audiencia.keywords_novedades || [])
 
       // Cargar Excluidas
       renderExcluidas(audiencia.filtros?.excludeKeywords || [])
 
-      // Cargar Filtros
-      document.getElementById("configFilterPaginas").value = audiencia.paginas_default || 3
-      document.getElementById("configFilterPaginasKeywords").value = audiencia.paginas_keywords || 3
-      document.getElementById("configFilterMinSaving").value = audiencia.filtros?.minSavingPercent || 0
-      document.getElementById("configFilterMinPrice").value = audiencia.filtros?.minPrice || 0
-      document.getElementById("configFilterMaxPrice").value = audiencia.filtros?.maxPrice || 999999
-      document.getElementById("configFilterMinReviews").value = audiencia.filtros?.minReviews || 0
-      document.getElementById("configFilterMinRating").value = audiencia.filtros?.minRating || 0
+      // Cargar Filtros OFERTAS
+      document.getElementById("configFilterMinSavingOfertas").value = audiencia.filtros_ofertas?.minSavingPercent || 10
+      document.getElementById("configFilterMinPriceOfertas").value = audiencia.filtros_ofertas?.minPrice || 0
+      document.getElementById("configFilterMaxPriceOfertas").value = audiencia.filtros_ofertas?.maxPrice || 999999
+
+      // Cargar Filtros NOVEDADES
+      document.getElementById("configFilterMinSavingNovedades").value = audiencia.filtros_novedades?.minSavingPercent || 0
+      document.getElementById("configFilterMinPriceNovedades").value = audiencia.filtros_novedades?.minPrice || 0
+      document.getElementById("configFilterMaxPriceNovedades").value = audiencia.filtros_novedades?.maxPrice || 999999
+
+      // Cargar Filtros LEGACY (si existen los viejos inputs)
+      if (document.getElementById("configFilterPaginas")) {
+        document.getElementById("configFilterPaginas").value = audiencia.paginas_default || 3
+        document.getElementById("configFilterPaginasKeywords").value = audiencia.paginas_keywords || 3
+        document.getElementById("configFilterMinSaving").value = audiencia.filtros?.minSavingPercent || 0
+        document.getElementById("configFilterMinPrice").value = audiencia.filtros?.minPrice || 0
+        document.getElementById("configFilterMaxPrice").value = audiencia.filtros?.maxPrice || 999999
+        document.getElementById("configFilterMinReviews").value = audiencia.filtros?.minReviews || 0
+        document.getElementById("configFilterMinRating").value = audiencia.filtros?.minRating || 0
+      }
     }
   } catch (e) {
     console.error("Error cargando configuración:", e)
@@ -4200,6 +4322,94 @@ function renderExcluidas(excluidas) {
   `
 }
 
+function renderURLsOfertas(urls) {
+  const container = document.getElementById("configURLsOfertasList")
+
+  if (urls.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay URLs para Ofertas</p>'
+    return
+  }
+
+  container.innerHTML = urls.map((u, i) => `
+    <div style="background:var(--bg);padding:12px;border-radius:6px;margin-bottom:8px;border-left:3px solid #10b981;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div style="flex:1;">
+          <div style="font-size:12px;color:var(--t2);margin-bottom:4px;">${u.descripcion}</div>
+          <div style="font-size:10px;color:var(--t3);word-break:break-all;">${u.url}</div>
+        </div>
+        <button onclick="eliminarURLOfertas(${i})" style="background:rgba(239,68,68,0.1);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-left:8px;">❌</button>
+      </div>
+    </div>
+  `).join('')
+}
+
+function renderKeywordsOfertas(keywords) {
+  const container = document.getElementById("configKeywordsOfertasList")
+
+  if (keywords.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay keywords para Ofertas</p>'
+    return
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${keywords.map((kw, i) => `
+        <span style="background:var(--bg);padding:6px 10px;border-radius:16px;font-size:12px;color:var(--t1);border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px;">
+          ${kw}
+          <button onclick="eliminarKeywordOfertas(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;line-height:1;">×</button>
+        </span>
+      `).join('')}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--t3);">
+      Total: ${keywords.length} palabras clave
+    </div>
+  `
+}
+
+function renderURLsNovedades(urls) {
+  const container = document.getElementById("configURLsNovedadesList")
+
+  if (urls.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay URLs para Novedades</p>'
+    return
+  }
+
+  container.innerHTML = urls.map((u, i) => `
+    <div style="background:var(--bg);padding:12px;border-radius:6px;margin-bottom:8px;border-left:3px solid #3b82f6;">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div style="flex:1;">
+          <div style="font-size:12px;color:var(--t2);margin-bottom:4px;">${u.descripcion}</div>
+          <div style="font-size:10px;color:var(--t3);word-break:break-all;">${u.url}</div>
+        </div>
+        <button onclick="eliminarURLNovedades(${i})" style="background:rgba(239,68,68,0.1);color:#dc2626;border:1px solid rgba(239,68,68,0.3);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;margin-left:8px;">❌</button>
+      </div>
+    </div>
+  `).join('')
+}
+
+function renderKeywordsNovedades(keywords) {
+  const container = document.getElementById("configKeywordsNovedadesList")
+
+  if (keywords.length === 0) {
+    container.innerHTML = '<p style="font-size:12px;color:var(--t3);text-align:center;padding:20px;">No hay keywords para Novedades</p>'
+    return
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${keywords.map((kw, i) => `
+        <span style="background:var(--bg);padding:6px 10px;border-radius:16px;font-size:12px;color:var(--t1);border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px;">
+          ${kw}
+          <button onclick="eliminarKeywordNovedades(${i})" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;line-height:1;">×</button>
+        </span>
+      `).join('')}
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--t3);">
+      Total: ${keywords.length} palabras clave
+    </div>
+  `
+}
+
 // Funciones para agregar items
 function agregarCanalTelegram() {
   const url = prompt("URL del canal de Telegram (ej: https://t.me/s/nombre_canal):")
@@ -4272,6 +4482,67 @@ function agregarExcluida() {
   guardarAudienciaEnServidor()
 }
 
+// ========== FUNCIONES PARA OFERTAS Y NOVEDADES ==========
+function agregarURLOfertas() {
+  const url = prompt("URL de Amazon para OFERTAS:")
+  if (!url || !url.trim()) return
+
+  const desc = prompt("Descripción:")
+  if (!desc || !desc.trim()) return
+
+  if (!audienciaActualConfig.links_ofertas) audienciaActualConfig.links_ofertas = []
+
+  audienciaActualConfig.links_ofertas.push({
+    url: url.trim(),
+    plataforma: "amazon",
+    descripcion: desc.trim()
+  })
+
+  renderURLsOfertas(audienciaActualConfig.links_ofertas)
+  guardarAudienciaEnServidor()
+}
+
+function agregarKeywordOfertas() {
+  const keyword = prompt("Keyword para OFERTAS:")
+  if (!keyword || !keyword.trim()) return
+
+  if (!audienciaActualConfig.keywords_ofertas) audienciaActualConfig.keywords_ofertas = []
+
+  audienciaActualConfig.keywords_ofertas.push(keyword.trim())
+  renderKeywordsOfertas(audienciaActualConfig.keywords_ofertas)
+  guardarAudienciaEnServidor()
+}
+
+function agregarURLNovedades() {
+  const url = prompt("URL de Amazon para NOVEDADES:")
+  if (!url || !url.trim()) return
+
+  const desc = prompt("Descripción:")
+  if (!desc || !desc.trim()) return
+
+  if (!audienciaActualConfig.links_novedades) audienciaActualConfig.links_novedades = []
+
+  audienciaActualConfig.links_novedades.push({
+    url: url.trim(),
+    plataforma: "amazon",
+    descripcion: desc.trim()
+  })
+
+  renderURLsNovedades(audienciaActualConfig.links_novedades)
+  guardarAudienciaEnServidor()
+}
+
+function agregarKeywordNovedades() {
+  const keyword = prompt("Keyword para NOVEDADES:")
+  if (!keyword || !keyword.trim()) return
+
+  if (!audienciaActualConfig.keywords_novedades) audienciaActualConfig.keywords_novedades = []
+
+  audienciaActualConfig.keywords_novedades.push(keyword.trim())
+  renderKeywordsNovedades(audienciaActualConfig.keywords_novedades)
+  guardarAudienciaEnServidor()
+}
+
 // Funciones para eliminar items
 function eliminarCanalTelegram(index) {
   if (!confirm("¿Eliminar este canal de Telegram?")) return
@@ -4301,6 +4572,36 @@ function eliminarExcluida(index) {
   guardarAudienciaEnServidor()
 }
 
+function eliminarURLOfertas(index) {
+  if (!confirm("¿Eliminar esta URL de Ofertas?")) return
+  if (!audienciaActualConfig.links_ofertas) audienciaActualConfig.links_ofertas = []
+  audienciaActualConfig.links_ofertas.splice(index, 1)
+  renderURLsOfertas(audienciaActualConfig.links_ofertas)
+  guardarAudienciaEnServidor()
+}
+
+function eliminarKeywordOfertas(index) {
+  if (!audienciaActualConfig.keywords_ofertas) audienciaActualConfig.keywords_ofertas = []
+  audienciaActualConfig.keywords_ofertas.splice(index, 1)
+  renderKeywordsOfertas(audienciaActualConfig.keywords_ofertas)
+  guardarAudienciaEnServidor()
+}
+
+function eliminarURLNovedades(index) {
+  if (!confirm("¿Eliminar esta URL de Novedades?")) return
+  if (!audienciaActualConfig.links_novedades) audienciaActualConfig.links_novedades = []
+  audienciaActualConfig.links_novedades.splice(index, 1)
+  renderURLsNovedades(audienciaActualConfig.links_novedades)
+  guardarAudienciaEnServidor()
+}
+
+function eliminarKeywordNovedades(index) {
+  if (!audienciaActualConfig.keywords_novedades) audienciaActualConfig.keywords_novedades = []
+  audienciaActualConfig.keywords_novedades.splice(index, 1)
+  renderKeywordsNovedades(audienciaActualConfig.keywords_novedades)
+  guardarAudienciaEnServidor()
+}
+
 function guardarFiltrosAudiencia() {
   if (!audienciaActualConfig) return
 
@@ -4322,6 +4623,54 @@ function guardarFiltrosAudiencia() {
   guardarAudienciaEnServidor()
 
   // Confirmación visual
+  const btn = event.target
+  const textoOriginal = btn.textContent
+  btn.textContent = "✅ Guardado"
+  btn.style.background = "#22c55e"
+
+  setTimeout(() => {
+    btn.textContent = textoOriginal
+    btn.style.background = ""
+  }, 2000)
+}
+
+function guardarFiltrosOfertas() {
+  if (!audienciaActualConfig) return
+
+  if (!audienciaActualConfig.filtros_ofertas) {
+    audienciaActualConfig.filtros_ofertas = {}
+  }
+
+  audienciaActualConfig.filtros_ofertas.minSavingPercent = parseInt(document.getElementById("configFilterMinSavingOfertas").value) || 0
+  audienciaActualConfig.filtros_ofertas.minPrice = parseInt(document.getElementById("configFilterMinPriceOfertas").value) || 0
+  audienciaActualConfig.filtros_ofertas.maxPrice = parseInt(document.getElementById("configFilterMaxPriceOfertas").value) || 999999
+
+  guardarAudienciaEnServidor()
+
+  const btn = event.target
+  const textoOriginal = btn.textContent
+  btn.textContent = "✅ Guardado"
+  btn.style.background = "#22c55e"
+
+  setTimeout(() => {
+    btn.textContent = textoOriginal
+    btn.style.background = ""
+  }, 2000)
+}
+
+function guardarFiltrosNovedades() {
+  if (!audienciaActualConfig) return
+
+  if (!audienciaActualConfig.filtros_novedades) {
+    audienciaActualConfig.filtros_novedades = {}
+  }
+
+  audienciaActualConfig.filtros_novedades.minSavingPercent = parseInt(document.getElementById("configFilterMinSavingNovedades").value) || 0
+  audienciaActualConfig.filtros_novedades.minPrice = parseInt(document.getElementById("configFilterMinPriceNovedades").value) || 0
+  audienciaActualConfig.filtros_novedades.maxPrice = parseInt(document.getElementById("configFilterMaxPriceNovedades").value) || 999999
+
+  guardarAudienciaEnServidor()
+
   const btn = event.target
   const textoOriginal = btn.textContent
   btn.textContent = "✅ Guardado"

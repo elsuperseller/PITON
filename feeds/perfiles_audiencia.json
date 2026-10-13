@@ -248,6 +248,59 @@
     "descripcion": "Figuras de acción, estatuas y coleccionables premium de marcas top",
     "icono": "🎭",
     "sheets_export_url": "https://script.google.com/macros/s/AKfycbxnWNZ7FDaLhqBvQyNtTZcjmo33v4EQXS-R37JCJDJ7G3K1XTbBLvWLZcepGljMZiDZPA/exec",
+    "keywords_ofertas": [
+      "Funko Pop",
+      "Marvel Legends",
+      "DC Multiverse",
+      "Star Wars",
+      "LEGO",
+      "Hot Toys",
+      "NECA",
+      "Hasbro",
+      "Mcfarlane",
+      "Diamond Select",
+      "Bandai",
+      "Good Smile"
+    ],
+    "links_ofertas": [
+      {
+        "url": "https://www.amazon.com.mx/deals?ref_=nav_cs_gb&discounts-widget=%2522%257B%255C%2522state%255C%2522%253A%257B%255C%2522refinementFilters%255C%2522%253A%257B%255C%2522departments%255C%2522%253A%255B%255C%252211260443011%252F20940159011%255C%2522%255D%257D%257D%252C%255C%2522version%255C%2522%253A1%257D%2522",
+        "plataforma": "amazon",
+        "descripcion": "Ofertas del día - Juguetes y Coleccionables"
+      }
+    ],
+    "keywords_novedades": [
+      "New Release",
+      "Pre-order",
+      "Coming Soon",
+      "Preventa",
+      "Nuevo Lanzamiento",
+      "Exclusivo"
+    ],
+    "links_novedades": [
+      {
+        "url": "https://www.amazon.com.mx/gp/new-releases/toys-and-games",
+        "plataforma": "amazon",
+        "descripcion": "Nuevos Lanzamientos - Juguetes"
+      },
+      {
+        "url": "https://www.amazon.com.mx/gp/bestsellers/toys-and-games",
+        "plataforma": "amazon",
+        "descripcion": "Más Vendidos - Juguetes"
+      }
+    ],
+
+    "filtros_ofertas": {
+      "minSavingPercent": 10,
+      "minPrice": 50,
+      "maxPrice": 30000
+    },
+    "filtros_novedades": {
+      "minSavingPercent": 0,
+      "minPrice": 50,
+      "maxPrice": 30000
+    },
+
     "telegram_sources": [
       {
         "url": "https://t.me/s/TheGeekChroniclesOfertas",
