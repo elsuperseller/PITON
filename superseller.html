@@ -1456,56 +1456,6 @@ img[data-src]:not(.loaded) {
         </div>
       </div>
 
-      <!-- Sección Filtros -->
-      <div style="margin-bottom:30px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-          <span style="font-size:20px;">🎯</span>
-          <h4 style="font-size:16px;font-weight:700;color:var(--t1);margin:0;">Filtros y Búsqueda</h4>
-        </div>
-
-        <div style="background:var(--panel);padding:16px;border-radius:var(--r);border:1px solid var(--border-l);">
-          <p style="font-size:11px;color:var(--t3);margin-bottom:16px;">
-            Configuración de búsqueda y filtros que se aplicarán a esta audiencia
-          </p>
-
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Páginas por categoría</label>
-              <input type="number" id="configFilterPaginas" min="1" max="20" value="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-              <p style="font-size:10px;color:var(--t3);margin-top:4px;">Búsquedas por categorías de Amazon</p>
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Páginas por keyword</label>
-              <input type="number" id="configFilterPaginasKeywords" min="1" max="20" value="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-              <p style="font-size:10px;color:var(--t3);margin-top:4px;">Búsquedas por palabras clave</p>
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Descuento mínimo (%)</label>
-              <input type="number" id="configFilterMinSaving" min="0" max="100" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio mínimo ($)</label>
-              <input type="number" id="configFilterMinPrice" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Precio máximo ($)</label>
-              <input type="number" id="configFilterMaxPrice" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Reviews mínimas</label>
-              <input type="number" id="configFilterMinReviews" min="0" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;">Rating mínimo</label>
-              <input type="number" id="configFilterMinRating" min="0" max="5" step="0.1" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--inp-bg);">
-            </div>
-          </div>
-          <button onclick="guardarFiltrosAudiencia()" class="btn btn-primary" style="margin-top:16px;font-size:12px;padding:8px 16px;">
-            💾 Guardar Configuración
-          </button>
-        </div>
-      </div>
-
       </div><!-- Fin configAudienciaEditor -->
 
       <!-- Sección Exportación -->
