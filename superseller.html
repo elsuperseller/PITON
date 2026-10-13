@@ -789,27 +789,7 @@ input[type=file] {
       </div>
     </div>
 
-    <!-- Feeds por Audiencia -->
-    <div class="sec">
-      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">📊</span>Feeds por Audiencia <span class="plat-pill pill-amz">AMZ</span></span>
-        <span class="chev">▼</span>
-      </div>
-      <div class="sec-bd">
-        <p class="hint">Selecciona un público objetivo para cargar productos curados automáticamente.</p>
-        <div class="fld">
-          <label class="fl">Audiencia</label>
-          <select id="feedAudienciaSelect" class="inp" onchange="cargarFeedDesdeSidebar()">
-            <option value="">-- Seleccionar --</option>
-          </select>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:6px;">
-          <button class="btn btn-primary" onclick="cargarFeedDesdeSidebar()" style="flex:1;justify-content:center;font-size:11px;">🔍 Cargar Feed</button>
-          <button class="btn btn-ghost" onclick="cargarFeedDesdeSidebar(true)" style="padding:7px 11px;font-size:11px;" title="Refrescar (sin cache)">🔄</button>
-        </div>
-        <div id="feed-sidebar-status" class="inline-st"></div>
-      </div>
-    </div>
+    <!-- Feeds por Audiencia: ELIMINADO - movido al menú superior -->
 
     <!-- Precio y búsqueda -->
     <div class="sec">
@@ -1154,11 +1134,13 @@ input[type=file] {
     <div style="padding:14px 20px;border-bottom:1px solid var(--border-l);background:var(--panel);">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <label style="font-size:12px;font-weight:600;color:var(--t2);">Audiencia:</label>
-        <select id="audienciaSelect" onchange="cargarFeed()" style="flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--t1);background:var(--inp-bg);">
+        <select id="audienciaSelect" style="flex:1;min-width:200px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--t1);background:var(--inp-bg);">
           <option value="">-- Seleccionar audiencia --</option>
         </select>
-        <button onclick="cargarFeed(true)" class="btn btn-primary" style="font-size:11px;padding:7px 13px;">🔄 Refrescar</button>
-        <button onclick="cerrarFeeds()" class="btn btn-ghost" style="font-size:11px;padding:7px 13px;">✕ Cerrar</button>
+        <button onclick="cargarFeed(false, 'promocional')" class="btn btn-primary" style="font-size:11px;padding:7px 13px;">🔍 Ofertas</button>
+        <button onclick="cargarFeed(false, 'novedades')" class="btn btn-primary" style="font-size:11px;padding:7px 13px;background:#3b82f6;">🆕 Novedades</button>
+        <button onclick="cargarFeed(true, 'promocional')" class="btn btn-ghost" style="font-size:11px;padding:7px 13px;" title="Refrescar ofertas">🔄</button>
+        <button onclick="cerrarFeeds()" class="btn btn-ghost" style="font-size:11px;padding:7px 13px;">✕</button>
       </div>
 
       <!-- Stats -->
@@ -1446,6 +1428,72 @@ const CATS = {
   "Productos Handmade":               "Handmade",
   "Industria, Empresas y Ciencia":    "IndustrialAndScientific",
 }
+
+// ========== CONSTANTES GLOBALES ==========
+const API_BASE = "http://localhost:8765"
+const DEBOUNCE_MS = 300
+
+// ========== FUNCIONES HELPER ==========
+
+/**
+ * Llamada centralizada a la API con manejo de errores
+ */
+async function apiCall(endpoint, options = {}) {
+  try {
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`
+    const res = await fetch(url, options)
+    const data = await res.json()
+
+    if (!res.ok && !data.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`)
+    }
+
+    return data
+  } catch(e) {
+    console.error(`❌ API Error [${endpoint}]:`, e)
+    throw e
+  }
+}
+
+/**
+ * Infiere el source_type de un producto
+ */
+function inferirSourceType(producto) {
+  if (producto.source_type) return producto.source_type
+  if (producto.keyword_match) return 'keyword'
+  if (producto.source_channel?.toLowerCase().includes('telegram')) return 'telegram'
+  return 'url_fija'
+}
+
+/**
+ * Mapea un producto del feed al formato de la app
+ */
+function mapearProductoFeed(p) {
+  const badge = p.keyword_match ? `🎯 ${p.keyword_match}` : ""
+  const sourceType = inferirSourceType(p)
+
+  return {
+    asin: p.asin,
+    title: p.title,
+    img: p.image,
+    link: p.link,
+    price_discounted: p.price || 0,
+    price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
+    descuento_pct: p.discount || 0,
+    vigencia: "permanente",
+    tipo: "",
+    badge: badge,
+    access_type: "ALL",
+    start_time: "",
+    end_time: "",
+    pct_claimed: null,
+    source_type: sourceType,
+    source_channel: p.source_channel,
+    novedad_score: p.novedad_score || 1.0
+  }
+}
+
+// ========== FIN HELPERS ==========
 
 const catsEl = document.getElementById("cats")
 Object.keys(CATS).forEach(nombre => {
@@ -1889,7 +1937,7 @@ async function buscarSoloTelegram() {
   document.getElementById("exportBar").style.display = "none"
 
   try {
-    const res = await fetch("http://localhost:8765/feeds/buscar", {
+    const data = await apiCall("/feeds/buscar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1898,8 +1946,6 @@ async function buscarSoloTelegram() {
         dias: 5
       })
     })
-
-    const data = await res.json()
 
     if (!data.ok) {
       setStatus(`❌ Error: ${data.error || 'Error desconocido'}`, "error")
@@ -1941,15 +1987,13 @@ async function buscarSoloURLs() {
   document.getElementById("exportBar").style.display = "none"
 
   try {
-    const res = await fetch("http://localhost:8765/feeds/buscar-urls", {
+    const data = await apiCall("/feeds/buscar-urls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         audiencia_id: feedId
       })
     })
-
-    const data = await res.json()
 
     if (!data.ok) {
       setStatus(`❌ Error: ${data.error || 'Error desconocido'}`, "error")
@@ -1990,15 +2034,13 @@ async function buscarSoloKeywords() {
   document.getElementById("exportBar").style.display = "none"
 
   try {
-    const res = await fetch("http://localhost:8765/feeds/buscar-keywords", {
+    const data = await apiCall("/feeds/buscar-keywords", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         audiencia_id: feedId
       })
     })
-
-    const data = await res.json()
 
     if (!data.ok) {
       setStatus(`❌ Error: ${data.error || 'Error desconocido'}`, "error")
@@ -2313,33 +2355,7 @@ async function exportarSheets() {
   }
 }
 
-async function verFeeds() {
-  setStatus("Consultando feeds disponibles en Amazon...", "running")
-  try {
-    const r = await fetch("http://localhost:8765/feeds")
-    const d = await r.json()
-    if (!d.ok) {
-      setStatus(`❌ Error: ${d.error}`, "error")
-      return
-    }
-    const feeds = d.data.feeds || d.data.feedList || []
-    if (!feeds.length) {
-      setStatus(`⚠️ Sin feeds disponibles. Respuesta: ${JSON.stringify(d.data)}`, "error")
-    } else {
-      setStatus(`✅ ${feeds.length} feeds encontrados`, "done")
-      document.getElementById("results-count").textContent = `${feeds.length} feeds disponibles`
-      document.getElementById("product-grid").innerHTML = feeds.map(f =>
-        `<div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="color:var(--red);font-size:12px;font-weight:700;margin-bottom:6px;">📦 Feed</div>
-          <pre style="color:var(--t2);font-size:10px;white-space:pre-wrap;">${JSON.stringify(f, null, 2)}</pre>
-        </div>`
-      ).join("")
-      document.getElementById("results").style.display = "block"
-    }
-  } catch(e) {
-    setStatus("❌ Servidor no disponible — ¿corriste servidor.py?", "error")
-  }
-}
+// verFeeds() OBSOLETA - eliminada (consultaba feeds de Amazon API)
 
 async function buscarDirecto() {
   currentFeedId = null // Limpiar contexto de feed al hacer búsqueda regular
@@ -3392,117 +3408,82 @@ function cerrarFeeds() {
 
 async function actualizarAudiencias() {
   try {
-    const res = await fetch("http://localhost:8765/feeds/listar")
-    const data = await res.json()
+    const data = await apiCall("/feeds/listar")
 
-    // Actualizar select del modal (si existe)
+    // Actualizar select del menú superior
     const selectModal = document.getElementById("audienciaSelect")
-    if (selectModal) {
+    if (selectModal && data.ok && data.audiencias) {
       selectModal.innerHTML = '<option value="">-- Seleccionar audiencia --</option>'
-      if (data.ok && data.audiencias) {
-        data.audiencias.forEach(a => {
-          const opt = document.createElement("option")
-          opt.value = a.id
-          opt.textContent = `${a.icono || "📊"} ${a.nombre} (${a.keywords.length} keywords)`
-          selectModal.appendChild(opt)
-        })
-      }
-    }
-
-    // Actualizar select del sidebar
-    const selectSidebar = document.getElementById("feedAudienciaSelect")
-    if (selectSidebar) {
-      selectSidebar.innerHTML = '<option value="">-- Seleccionar --</option>'
-      if (data.ok && data.audiencias) {
-        data.audiencias.forEach(a => {
-          const opt = document.createElement("option")
-          opt.value = a.id
-          opt.textContent = `${a.icono || "📊"} ${a.nombre}`
-          selectSidebar.appendChild(opt)
-        })
-      }
+      data.audiencias.forEach(a => {
+        const opt = document.createElement("option")
+        opt.value = a.id
+        opt.textContent = `${a.icono || "📊"} ${a.nombre} (${a.keywords.length} keywords)`
+        selectModal.appendChild(opt)
+      })
     }
   } catch(e) {
     console.error("Error cargando audiencias:", e)
   }
 }
 
-async function cargarFeedDesdeSidebar(refresh = false) {
-  const audienciaId = document.getElementById("feedAudienciaSelect").value
+// cargarFeedDesdeSidebar() ELIMINADA - usar cargarFeed() directamente
+
+let feedAbortController = null
+
+async function cargarFeed(refresh = false, modo = 'promocional') {
+  const audienciaId = document.getElementById("audienciaSelect").value
   if (!audienciaId) {
     alert("Selecciona una audiencia primero")
     return
   }
 
-  const statusEl = document.getElementById("feed-sidebar-status")
-  statusEl.textContent = refresh ? "🔄 Refrescando..." : "⏳ Cargando..."
-  statusEl.style.color = "#e94560"
-
-  setStatus(`Cargando feed "${audienciaId}"...`, "running")
-  document.getElementById("results").style.display = "none"
-
-  try {
-    const url = `http://localhost:8765/feeds/${audienciaId}${refresh ? '?refresh=true' : ''}`
-    const res = await fetch(url)
-    const data = await res.json()
-
-    if (!data.ok) throw new Error(data.error)
-
-    // Guardar el feed actual para exportación y actualizar indicador
-    currentFeedId = audienciaId
-
-    // Ya no necesitamos actualizar elementos visuales obsoletos
-    // La audiencia ya está seleccionada en el dropdown
-
-    // Convertir productos del feed al formato de la app
-    allItems = data.productos.map(p => ({
-      asin: p.asin,
-      title: p.title,
-      img: p.image,
-      link: p.link,
-      price_discounted: p.price || 0,
-      price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
-      descuento_pct: p.discount || 0,
-      vigencia: "permanente",
-      tipo: "",
-      badge: p.keyword_match ? `🎯 ${p.keyword_match}` : "",
-      access_type: "ALL",
-      start_time: "",
-      end_time: "",
-      pct_claimed: null,
-      novedad_score: p.novedad_score || 1.0  // Para detectar repetidos
-    }))
-
-    // Renderizar en grid principal
-    renderResults(allItems)
-    setStatus(`✅ Feed "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
-    statusEl.textContent = `✅ ${allItems.length} productos`
-    statusEl.style.color = "#10b981"
-
-  } catch(e) {
-    console.error("Error cargando feed:", e)
-    setStatus(`❌ Error cargando feed: ${e.message}`, "error")
-    statusEl.textContent = `❌ ${e.message}`
-    statusEl.style.color = "#ef4444"
+  // Si ya hay una carga en progreso, cancelarla
+  if (feedAbortController) {
+    feedAbortController.abort()
+    feedAbortController = null
+    setStatus(`❌ Carga cancelada`, "error")
+    restaurarBotonesFeed()
+    return
   }
-}
 
-async function cargarFeed(refresh = false) {
-  const audienciaId = document.getElementById("audienciaSelect").value
-  if (!audienciaId) return
+  // Crear nuevo AbortController
+  feedAbortController = new AbortController()
+
+  // Cambiar botones relevantes a modo "Detener"
+  const botonesOfertas = document.querySelectorAll('button[onclick*="\'promocional\'"]')
+  const botonesNovedades = document.querySelectorAll('button[onclick*="\'novedades\'"]')
+
+  botonesOfertas.forEach(btn => {
+    if (modo === 'promocional' && btn.textContent.includes('Ofertas')) {
+      btn.textContent = '⏹️ Detener'
+      btn.classList.add('red')
+    } else {
+      btn.disabled = true
+    }
+  })
+
+  botonesNovedades.forEach(btn => {
+    if (modo === 'novedades' && btn.textContent.includes('Novedades')) {
+      btn.textContent = '⏹️ Detener'
+      btn.classList.add('red')
+    } else {
+      btn.disabled = true
+    }
+  })
 
   // Cerrar modal y mostrar loading en área principal
   cerrarFeeds()
-  setStatus(`Cargando feed "${audienciaId}"...`, "running")
+  const modoTexto = modo === 'novedades' ? 'novedades' : 'ofertas'
+  setStatus(`Cargando ${modoTexto} "${audienciaId}"...`, "running")
   document.getElementById("results").style.display = "none"
 
   // Limpiar productos descartados de sesión anterior (cada feed es independiente)
   descartadosEnSesion.clear()
 
   try {
-    const url = `http://localhost:8765/feeds/${audienciaId}${refresh ? '?refresh=true' : ''}`
-    const res = await fetch(url)
-    const data = await res.json()
+    const endpoint = modo === 'novedades' ? 'novedades' : 'feeds'
+    const url = `/${endpoint}/${audienciaId}${refresh ? '?refresh=true' : ''}`
+    const data = await apiCall(url, { signal: feedAbortController.signal })
 
     if (!data.ok) throw new Error(data.error)
 
@@ -3511,8 +3492,7 @@ async function cargarFeed(refresh = false) {
     window.currentFeedId = audienciaId
 
     // Guardar en localStorage
-    const resAudiencias = await fetch("http://localhost:8765/feeds/listar")
-    const dataAudiencias = await resAudiencias.json()
+    const dataAudiencias = await apiCall("/feeds/listar")
     if (dataAudiencias.ok && dataAudiencias.audiencias) {
       const audiencia = dataAudiencias.audiencias.find(a => a.id === audienciaId)
       if (audiencia) {
@@ -3525,37 +3505,8 @@ async function cargarFeed(refresh = false) {
     }
 
     // Convertir productos del feed al formato de la app
-    allItems = data.productos.map(p => {
-      const badge = p.keyword_match ? `🎯 ${p.keyword_match}` : ""
-
-      // Inferir source_type si no viene del backend
-      let sourceType = p.source_type
-      if (!sourceType) {
-        if (p.keyword_match) sourceType = 'keyword'
-        else if (p.source_channel && p.source_channel.toLowerCase().includes('telegram')) sourceType = 'telegram'
-        else sourceType = 'url_fija'
-      }
-
-      return {
-        asin: p.asin,
-        title: p.title,
-        img: p.image,
-        link: p.link,
-        price_discounted: p.price || 0,
-        price_original: p.discount > 0 ? Math.round(p.price / (1 - p.discount/100)) : p.price,
-        descuento_pct: p.discount || 0,
-        vigencia: "permanente",
-        tipo: "",
-        badge: badge,
-        access_type: "ALL",
-        start_time: "",
-        end_time: "",
-        pct_claimed: null,
-        source_type: sourceType,
-        source_channel: p.source_channel,
-        novedad_score: p.novedad_score
-      }
-    })
+    // Mapear productos usando función helper centralizada
+    allItems = data.productos.map(mapearProductoFeed)
 
     // Renderizar en grid principal (igual que búsquedas normales)
     renderResults(allItems)
@@ -3570,12 +3521,39 @@ async function cargarFeed(refresh = false) {
     document.getElementById("agregar-manual").style.display = "block"
     document.getElementById("btnDescartarSeleccionados").style.display = "inline-block"
 
-    setStatus(`✅ Feed "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
+    const modoLabel = modo === 'novedades' ? 'Novedades' : 'Ofertas'
+    setStatus(`✅ ${modoLabel} "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
 
   } catch(e) {
-    console.error("Error cargando feed:", e)
-    setStatus(`❌ Error cargando feed: ${e.message}`, "error")
+    if (e.name === 'AbortError') {
+      console.log("Carga cancelada por el usuario")
+      setStatus(`❌ Carga cancelada`, "error")
+    } else {
+      console.error("Error cargando feed:", e)
+      setStatus(`❌ Error cargando feed: ${e.message}`, "error")
+    }
+  } finally {
+    feedAbortController = null
+    restaurarBotonesFeed()
   }
+}
+
+function restaurarBotonesFeed() {
+  // Restaurar todos los botones
+  const todosBotones = document.querySelectorAll('button[onclick*="cargarFeed"]')
+  todosBotones.forEach(btn => {
+    btn.disabled = false
+    btn.classList.remove('red')
+
+    // Restaurar texto original
+    if (btn.textContent.includes('Detener')) {
+      if (btn.onclick.toString().includes('promocional')) {
+        btn.textContent = btn.onclick.toString().includes('true') ? '🔄' : '🔍 Ofertas'
+      } else if (btn.onclick.toString().includes('novedades')) {
+        btn.textContent = '🆕 Novedades'
+      }
+    }
+  })
 }
 
 // Cerrar modal con ESC

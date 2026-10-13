@@ -3245,6 +3245,60 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif path.startswith("/novedades/"):
+            # MODO NOVEDADES: Igual que feeds pero SIN filtro de descuento (descuento mínimo = 0%)
+            try:
+                audiencia_id = path.split('/')[2].split('?')[0] if len(path.split('/')) > 2 else None
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+
+                refresh = 'refresh=true' in path
+                perfiles = cargar_perfiles()
+
+                if audiencia_id not in perfiles:
+                    self.send_response(404); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({"ok": False, "error": "Audiencia no encontrada"}).encode())
+                    return
+
+                # HACK TEMPORAL: Modificar el perfil para forzar minSavingPercent = 0
+                # y luego hacer un "redirect interno" a /feeds/
+                perfil_original = perfiles[audiencia_id]
+                perfil_modificado = json.loads(json.dumps(perfil_original))  # Deep copy
+
+                if 'filtros' not in perfil_modificado:
+                    perfil_modificado['filtros'] = {}
+
+                perfil_modificado['filtros']['minSavingPercent'] = 0
+
+                # Guardar temporalmente
+                perfil_temp_id = f"_temp_novedades_{audiencia_id}"
+                perfiles[perfil_temp_id] = perfil_modificado
+
+                # Modificar el path para que parezca una llamada a /feeds/
+                self.path = f"/feeds/{perfil_temp_id}{'?refresh=true' if refresh else ''}"
+
+                # RECURSIÓN: Llamar al handler de /feeds/ modificando el path
+                # (esto ejecutará toda la lógica de /feeds/ pero con descuento = 0%)
+                # Pero antes necesitamos guardar el resultado y limpiarlo
+
+                # Por ahora, return un mensaje temporal
+                print(f"🆕 NOVEDADES: Redirigiendo internamente a /feeds/ con minSavingPercent=0", flush=True)
+
+                self.send_response(501); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": False,
+                    "error": "Endpoint /novedades en desarrollo - próximamente disponible"
+                }).encode())
+                return
+
+            except Exception as e:
+                print(f"❌ Error en /novedades: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         elif path.startswith("/feeds/"):
             try:
                 # Extraer audiencia_id del path (ej: /feeds/coleccionistas?refresh=true)
@@ -3411,9 +3465,10 @@ class Handler(BaseHTTPRequestHandler):
                     print(f"  📱 Scrapeando {len(telegram_sources)} canal(es) de Telegram...", flush=True)
                     try:
                         import telegram_utils
-                        asins_telegram = telegram_utils.obtener_asins_de_telegram(perfil)
+                        asins_telegram_dict = telegram_utils.obtener_asins_de_telegram(perfil)
 
-                        if asins_telegram:
+                        if asins_telegram_dict:
+                            asins_telegram = list(asins_telegram_dict.keys())  # Convertir dict a lista
                             print(f"    📦 {len(asins_telegram)} ASINs de Telegram a validar", flush=True)
                             # Enriquecer con Creators API
                             items_telegram = enriquecer_asins(asins_telegram, perfil['filtros'].get('minSavingPercent', 1))

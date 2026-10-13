@@ -286,6 +286,7 @@
       "Figuarts",
       "Fortnite",
       "Freddie",
+      "Friends",
       "Fundas",
       "Funko",
       "Funko Pop",
@@ -301,6 +302,7 @@
       "Heroes",
       "Hot Toys",
       "INART",
+      "Imaginext",
       "Jada",
       "Jada Toys",
       "Jazwares",
@@ -318,6 +320,7 @@
       "Mcfarlane",
       "Medicom",
       "Minecraft",
+      "Monopoly",
       "Multiverse",
       "Mutante",
       "My Hero Academia",
@@ -330,8 +333,10 @@
       "Panini",
       "Peanuts",
       "Pixar",
+      "Playmates",
       "Pokemon",
       "Power Rangers",
+      "Prizm",
       "Ruedas",
       "Sanrio",
       "Seiya",
@@ -346,6 +351,7 @@
       "Superman",
       "TAMASHII Nations",
       "Tamashii",
+      "Tech",
       "Teenage Mutant Ninja Turtles",
       "Thundercats",
       "Toys",
@@ -355,7 +361,7 @@
       "Wolverine"
     ],
     "filtros": {
-      "minSavingPercent": 1,
+      "minSavingPercent": 0,
       "minPrice": 50,
       "maxPrice": 30000,
       "minReviews": 0,
@@ -381,7 +387,7 @@
       "Sports Collectibles"
     ],
     "frecuencia_actualizacion": "diaria",
-    "paginas_default": 3,
+    "paginas_default": 1,
     "paginas_keywords": 3
   },
   "gamers": {
