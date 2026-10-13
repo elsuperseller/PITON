@@ -3245,60 +3245,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
-        elif path.startswith("/novedades/"):
-            # MODO NOVEDADES: Igual que feeds pero SIN filtro de descuento (descuento mínimo = 0%)
-            try:
-                audiencia_id = path.split('/')[2].split('?')[0] if len(path.split('/')) > 2 else None
-                if not audiencia_id:
-                    raise ValueError("audiencia_id requerido")
-
-                refresh = 'refresh=true' in path
-                perfiles = cargar_perfiles()
-
-                if audiencia_id not in perfiles:
-                    self.send_response(404); self._cors()
-                    self.send_header("Content-Type", "application/json"); self.end_headers()
-                    self.wfile.write(json.dumps({"ok": False, "error": "Audiencia no encontrada"}).encode())
-                    return
-
-                # HACK TEMPORAL: Modificar el perfil para forzar minSavingPercent = 0
-                # y luego hacer un "redirect interno" a /feeds/
-                perfil_original = perfiles[audiencia_id]
-                perfil_modificado = json.loads(json.dumps(perfil_original))  # Deep copy
-
-                if 'filtros' not in perfil_modificado:
-                    perfil_modificado['filtros'] = {}
-
-                perfil_modificado['filtros']['minSavingPercent'] = 0
-
-                # Guardar temporalmente
-                perfil_temp_id = f"_temp_novedades_{audiencia_id}"
-                perfiles[perfil_temp_id] = perfil_modificado
-
-                # Modificar el path para que parezca una llamada a /feeds/
-                self.path = f"/feeds/{perfil_temp_id}{'?refresh=true' if refresh else ''}"
-
-                # RECURSIÓN: Llamar al handler de /feeds/ modificando el path
-                # (esto ejecutará toda la lógica de /feeds/ pero con descuento = 0%)
-                # Pero antes necesitamos guardar el resultado y limpiarlo
-
-                # Por ahora, return un mensaje temporal
-                print(f"🆕 NOVEDADES: Redirigiendo internamente a /feeds/ con minSavingPercent=0", flush=True)
-
-                self.send_response(501); self._cors()
-                self.send_header("Content-Type", "application/json"); self.end_headers()
-                self.wfile.write(json.dumps({
-                    "ok": False,
-                    "error": "Endpoint /novedades en desarrollo - próximamente disponible"
-                }).encode())
-                return
-
-            except Exception as e:
-                print(f"❌ Error en /novedades: {e}", flush=True)
-                self.send_response(500); self._cors()
-                self.send_header("Content-Type", "application/json"); self.end_headers()
-                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
-
         elif path.startswith("/feeds/"):
             try:
                 # Extraer audiencia_id del path (ej: /feeds/coleccionistas?refresh=true)
@@ -3526,7 +3472,9 @@ class Handler(BaseHTTPRequestHandler):
                         print(f"  ⚠️  Error scrapeando Telegram: {e}", flush=True)
 
                 # 1. PROCESAR URLS FIJAS (si existen)
-                urls_fijas = perfil.get('urls_fijas', [])
+                # OFERTAS: usar links_ofertas si existe, sino usar urls_fijas (retrocompatibilidad)
+                urls_fijas = perfil.get('links_ofertas', perfil.get('urls_fijas', []))
+
                 if urls_fijas and _AZ_OK:
                     print(f"  🔗 Procesando {len(urls_fijas)} URLs fijas primero...", flush=True)
                     for url_config in urls_fijas:
@@ -3620,13 +3568,20 @@ class Handler(BaseHTTPRequestHandler):
 
                 # 2. PROCESAR KEYWORDS
                 keywords_procesados = 0
-                print(f"  🔎 Procesando {len(perfil['keywords'])} keywords...", flush=True)
 
-                for keyword in perfil['keywords']:
+                # OFERTAS: usar keywords_ofertas si existe, sino usar keywords (retrocompatibilidad)
+                keywords = perfil.get('keywords_ofertas', perfil.get('keywords', []))
+
+                print(f"  🔎 Procesando {len(keywords)} keywords...", flush=True)
+
+                for keyword in keywords:
                     try:
+                        # OFERTAS: usar filtros_ofertas si existe, sino usar filtros legacy
+                        filtros_ofertas = perfil.get('filtros_ofertas', perfil.get('filtros', {}))
+
                         items = buscar_productos_amazon(
                             keyword=keyword,
-                            minSavingPercent=perfil['filtros'].get('minSavingPercent', 10),
+                            minSavingPercent=filtros_ofertas.get('minSavingPercent', 10),
                             maxPages=2
                         )
 
@@ -3643,13 +3598,13 @@ class Handler(BaseHTTPRequestHandler):
 
                             precio = extraer_precio(item)
                             if precio:
-                                min_price = perfil['filtros'].get('minPrice', 0)
+                                min_price = filtros_ofertas.get('minPrice', 0)
                                 if precio < min_price:
                                     print(f"      ❌ Excluido: \"{titulo_short}\" - Precio ${precio:.0f} < mínimo ${min_price:.0f}", flush=True)
                                     stats_filtrado['excluidos'] += 1
                                     stats_filtrado['razones_exclusion']['precio_minimo'] += 1
                                     continue
-                                max_price = perfil['filtros'].get('maxPrice', 999999)
+                                max_price = filtros_ofertas.get('maxPrice', 999999)
                                 if precio > max_price:
                                     print(f"      ❌ Excluido: \"{titulo_short}\" - Precio ${precio:.0f} > máximo ${max_price:.0f}", flush=True)
                                     stats_filtrado['excluidos'] += 1
@@ -3839,6 +3794,334 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_response(500); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif path.startswith("/novedades/"):
+            """
+            Endpoint /novedades/{audiencia_id}
+            Similar a /feeds/ pero SIN filtro de descuento mínimo.
+            Muestra productos NUEVOS (novedad_score alto) aunque no tengan descuento.
+            """
+            try:
+                # Extraer audiencia_id del path
+                audiencia_id = path.split('/')[2].split('?')[0] if len(path.split('/')) > 2 else None
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+
+                refresh = 'refresh=true' in path
+                perfiles = cargar_perfiles()
+
+                if audiencia_id not in perfiles:
+                    self.send_response(404); self._cors()
+                    self.send_header("Content-Type", "application/json"); self.end_headers()
+                    self.wfile.write(json.dumps({"ok": False, "error": "Audiencia no encontrada"}).encode())
+                    return
+
+                perfil = perfiles[audiencia_id]
+
+                # IMPORTANTE: Para novedades usamos un cache separado con sufijo "_novedades"
+                cache = cargar_feed_cache()
+                cache_key = f"{audiencia_id}_novedades"
+
+                # Si tiene cache y no es refresh, verificar expiración
+                if not refresh and cache_key in cache:
+                    cache_data = cache[cache_key]
+                    from datetime import datetime as dt, timedelta
+
+                    cache_timestamp_str = cache_data.get('timestamp')
+                    if cache_timestamp_str:
+                        try:
+                            cache_timestamp = dt.fromisoformat(cache_timestamp_str)
+                            now = dt.now()
+
+                            frecuencia = perfil.get('frecuencia_actualizacion', 'diaria')
+                            cache_valido = False
+                            horas_restantes = 0
+
+                            if frecuencia == 'diaria':
+                                fecha_cache = cache_timestamp.date()
+                                fecha_hoy = now.date()
+                                cache_valido = (fecha_cache == fecha_hoy)
+                                if cache_valido:
+                                    medianoche = dt.combine(fecha_hoy + timedelta(days=1), dt.min.time())
+                                    horas_restantes = int((medianoche - now).total_seconds() / 3600)
+                            elif frecuencia == 'manual':
+                                cache_valido = True
+                                horas_restantes = 999999
+                            else:
+                                expiracion_horas = {
+                                    'cada_12_horas': 12,
+                                    'cada_6_horas': 6,
+                                    'cada_3_horas': 3
+                                }.get(frecuencia, 24)
+
+                                tiempo_transcurrido = now - cache_timestamp
+                                cache_valido = tiempo_transcurrido < timedelta(hours=expiracion_horas)
+                                if cache_valido:
+                                    horas_restantes = int((timedelta(hours=expiracion_horas) - tiempo_transcurrido).total_seconds() / 3600)
+
+                            if cache_valido:
+                                productos_cache = cache_data.get('productos', [])
+                                productos_filtrados = [
+                                    p for p in productos_cache
+                                    if not esta_bloqueado(audiencia_id, p.get('asin', ''))
+                                ]
+
+                                # Recalcular novedad_score
+                                historial_feed = cargar_historial_feed(audiencia_id)
+                                from datetime import datetime as fecha_dt, timezone
+                                now_recalc = fecha_dt.now(timezone.utc)
+
+                                for producto in productos_filtrados:
+                                    asin = producto.get('asin')
+                                    title = producto.get('title', '')
+                                    modelo = _hv._extraer_modelo(title) if _HV_OK and hasattr(_hv, '_extraer_modelo') else ""
+
+                                    item_id = asin or modelo
+                                    if item_id and item_id in historial_feed:
+                                        registro = historial_feed[item_id]
+                                        ultima_vez = registro.get('ultima_vez', '')
+
+                                        try:
+                                            ultima_fecha = fecha_dt.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                                            dias = (now_recalc - ultima_fecha).days
+
+                                            if dias > 14:
+                                                score = 0.8
+                                            elif dias > 7:
+                                                score = 0.5
+                                            elif dias > 3:
+                                                score = 0.2
+                                            else:
+                                                score = 0.0
+                                        except:
+                                            score = 0.5
+
+                                        producto['novedad_score'] = score
+                                    else:
+                                        producto['novedad_score'] = 1.0
+
+                                ya_vistos_cache = sum(1 for p in productos_filtrados if p.get('novedad_score', 1.0) < 1.0)
+                                print(f"📊 /novedades/{audiencia_id} → {len(productos_filtrados)} productos (cache, {ya_vistos_cache} ya vistos, válido {horas_restantes}h)", flush=True)
+
+                                self.send_response(200); self._cors()
+                                self.send_header("Content-Type", "application/json"); self.end_headers()
+                                self.wfile.write(json.dumps({
+                                    "ok": True,
+                                    "audiencia": audiencia_id,
+                                    "productos": productos_filtrados,
+                                    "total": len(productos_filtrados),
+                                    "from_cache": True,
+                                    "cache_expira_en_horas": horas_restantes
+                                }).encode())
+                                return
+                        except Exception as e:
+                            print(f"⚠️  Error verificando cache: {e}, regenerando...", flush=True)
+
+                # Buscar productos frescos
+                print(f"🔄 Generando NOVEDADES para '{audiencia_id}' (SIN filtro de descuento)...", flush=True)
+                productos = []
+
+                stats_filtrado = {
+                    'total_procesados': 0,
+                    'aceptados': 0,
+                    'excluidos': 0,
+                    'razones_exclusion': {
+                        'sin_keywords_core': 0,
+                        'precio_minimo': 0,
+                        'precio_maximo': 0,
+                        'keyword_excluida': 0,
+                        'descuento_minimo': 0,
+                        'bloqueado_manual': 0,
+                        'sin_parsear': 0
+                    }
+                }
+
+                # Procesar todas las fuentes igual que /feeds/ pero SIN filtro de descuento
+
+                # TELEGRAM
+                telegram_sources = perfil.get('telegram_sources', [])
+                if telegram_sources:
+                    print(f"  📱 Scrapeando {len(telegram_sources)} canal(es) de Telegram...", flush=True)
+                    try:
+                        import telegram_utils
+                        asins_telegram_dict = telegram_utils.obtener_asins_de_telegram(perfil)
+
+                        if asins_telegram_dict:
+                            asins_telegram = list(asins_telegram_dict.keys())
+                            print(f"    📦 {len(asins_telegram)} ASINs de Telegram a validar", flush=True)
+                            items_telegram = enriquecer_asins(asins_telegram, 0)  # ← descuento mínimo = 0
+                            print(f"    ✅ {len(items_telegram)} items enriquecidos desde Telegram", flush=True)
+
+                            for item in items_telegram:
+                                parsed = parsear_item(item)
+                                if not parsed:
+                                    continue
+
+                                asin = parsed.get("asin", "")
+                                if esta_bloqueado(audiencia_id, asin):
+                                    continue
+
+                                precio = extraer_precio(item) or parsed.get("price_discounted", 0)
+                                canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
+
+                                productos.append({
+                                    "asin": asin,
+                                    "title": parsed.get("title", ""),
+                                    "price": precio,
+                                    "discount": parsed.get("descuento_pct", 0),
+                                    "image": parsed.get("img", ""),
+                                    "link": parsed.get("link", ""),
+                                    "source_channel": canal_nombre,
+                                    "source_type": "telegram",
+                                    "keyword_match": f"📱 {canal_nombre}"
+                                })
+
+                    except Exception as e:
+                        print(f"  ⚠️  Error scrapeando Telegram: {e}", flush=True)
+
+                # URLS FIJAS
+                # NOVEDADES: usar links_novedades si existe, sino usar urls_fijas (retrocompatibilidad)
+                urls_fijas = perfil.get('links_novedades', perfil.get('urls_fijas', []))
+                if urls_fijas and _AZ_OK:
+                    print(f"  🔗 Procesando {len(urls_fijas)} URLs fijas...", flush=True)
+                    for url_config in urls_fijas:
+                        try:
+                            url = url_config.get('url', '')
+                            desc = url_config.get('descripcion', 'URL Fija')
+
+                            asins, estado = _az.scrape_url_custom(url, pages=3)
+                            print(f"    🌐 {desc}: {len(asins)} ASINs extraídos", flush=True)
+
+                            if asins:
+                                items = enriquecer_asins(asins, 0)  # ← descuento mínimo = 0
+                                print(f"    📦 {len(items)} items enriquecidos vía API", flush=True)
+
+                                for item in items:
+                                    titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "")
+                                    precio = extraer_precio(item)
+
+                                    # Aplicar solo filtros de precio
+                                    if precio:
+                                        min_price = perfil['filtros'].get('minPrice', 0)
+                                        max_price = perfil['filtros'].get('maxPrice', 999999)
+                                        if precio < min_price or precio > max_price:
+                                            continue
+
+                                    # Exclusión contextual
+                                    debe_excluir, razon = evaluar_exclusion_contextual(titulo, perfil, es_url_fija=True)
+                                    if debe_excluir:
+                                        continue
+
+                                    parsed = parsear_item(item)
+                                    if parsed:
+                                        asin = parsed.get("asin", "")
+                                        if esta_bloqueado(audiencia_id, asin):
+                                            continue
+
+                                        productos.append({
+                                            "asin": asin,
+                                            "title": parsed.get("title", ""),
+                                            "price": precio or 0,
+                                            "discount": parsed.get("descuento_pct", 0),
+                                            "image": parsed.get("img", ""),
+                                            "link": parsed.get("link", ""),
+                                            "source_channel": desc,
+                                            "source_type": "url_fija",
+                                            "keyword_match": f"🔗 {desc}"
+                                        })
+                                        stats_filtrado['aceptados'] += 1
+
+                        except Exception as e:
+                            print(f"  ⚠️  Error con URL fija '{desc}': {e}", flush=True)
+
+                # KEYWORDS
+                # NOVEDADES: usar keywords_novedades si existe, sino usar keywords (retrocompatibilidad)
+                keywords = perfil.get('keywords_novedades', perfil.get('keywords', []))
+
+                # NOVEDADES: usar filtros_novedades si existe, sino usar filtros legacy
+                filtros_novedades = perfil.get('filtros_novedades', perfil.get('filtros', {}))
+
+                print(f"  🔎 Procesando {len(keywords)} keywords...", flush=True)
+                for keyword in keywords:
+                    try:
+                        items = buscar_productos_amazon(
+                            keyword=keyword,
+                            minSavingPercent=filtros_novedades.get('minSavingPercent', 0),
+                            maxPages=2
+                        )
+
+                        print(f"    🔎 '{keyword}': {len(items)} items", flush=True)
+
+                        for item in items:
+                            titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "")
+                            precio = extraer_precio(item)
+
+                            # Solo filtros de precio
+                            if precio:
+                                min_price = filtros_novedades.get('minPrice', 0)
+                                max_price = filtros_novedades.get('maxPrice', 999999)
+                                if precio < min_price or precio > max_price:
+                                    continue
+
+                            # Evaluar exclusión
+                            debe_excluir, razon = evaluar_exclusion_contextual(titulo, perfil)
+                            if debe_excluir:
+                                continue
+
+                            # Parsear
+                            parsed = parsear_item(item)
+                            if parsed:
+                                asin = parsed.get("asin", "")
+                                if esta_bloqueado(audiencia_id, asin):
+                                    continue
+
+                                # NOVEDADES: Aceptar aunque descuento_pct = 0
+                                productos.append({
+                                    "asin": asin,
+                                    "title": parsed.get("title", ""),
+                                    "price": precio or 0,
+                                    "discount": parsed.get("descuento_pct", 0),
+                                    "image": parsed.get("img", ""),
+                                    "link": parsed.get("link", ""),
+                                    "source_channel": keyword,
+                                    "source_type": "keyword",
+                                    "keyword_match": f"🎯 {keyword}"
+                                })
+                                stats_filtrado['aceptados'] += 1
+
+                    except Exception as e:
+                        print(f"  ⚠️  Error buscando '{keyword}': {e}", flush=True)
+
+                # Aplicar novedad_score
+                productos = aplicar_novedad_score_feed(productos, audiencia_id)
+
+                # Guardar en cache
+                from datetime import datetime as dt
+                cache[cache_key] = {
+                    'productos': productos,
+                    'timestamp': dt.now().isoformat()
+                }
+                guardar_feed_cache(cache)
+
+                print(f"✅ /novedades/{audiencia_id} → {len(productos)} productos generados (SIN filtro de descuento)", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "audiencia": audiencia_id,
+                    "productos": productos,
+                    "total": len(productos),
+                    "from_cache": False
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ Error en /novedades/: {e}", flush=True)
+                traceback.print_exc()
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         elif self.path == "/feeds/telegram-extract":
             """
             Endpoint dedicado: extrae SOLO de canales de Telegram (sin keywords ni URLs fijas).
