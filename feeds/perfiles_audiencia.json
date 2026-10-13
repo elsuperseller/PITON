@@ -387,9 +387,29 @@
     "keywords_novedades": [],
     "links_novedades": [
       {
-        "url": "https://www.amazon.com.mx/gp/new-releases/toys-and-games",
+        "url": "https://www.amazon.com.mx/gp/new-releases/toys/20940159011",
         "plataforma": "amazon",
-        "descripcion": "Nuevos Lanzamientos - Juguetes"
+        "descripcion": "Todos los coleccionables"
+      },
+      {
+        "url": "https://www.amazon.com.mx/gp/new-releases/toys/11337769011",
+        "plataforma": "amazon",
+        "descripcion": "Almacenamiento de coleccionables."
+      },
+      {
+        "url": "https://www.amazon.com.mx/gp/new-releases/toys/11337506011",
+        "plataforma": "amazon",
+        "descripcion": "Cromos y cartas coleccionables."
+      },
+      {
+        "url": "https://www.amazon.com.mx/gp/new-releases/toys/11337503011",
+        "plataforma": "amazon",
+        "descripcion": "Estatuas y bustos."
+      },
+      {
+        "url": "https://www.amazon.com.mx/gp/new-releases/toys/ref=zg_bsms_tab_t_toys_bsnr",
+        "plataforma": "amazon",
+        "descripcion": "Últimas novedades en juguetes."
       }
     ],
     "filtros_ofertas": {

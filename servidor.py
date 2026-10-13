@@ -28,8 +28,10 @@ except ImportError:
 try:
     import scraper_amazon as _az
     _AZ_OK = True
-except ImportError:
+    print("✅ scraper_amazon cargado correctamente", flush=True)
+except ImportError as e:
     _AZ_OK = False
+    print(f"⚠️  scraper_amazon NO disponible: {e}", flush=True)
 
 try:
     import historial_variedad as _hv
