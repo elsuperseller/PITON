@@ -2042,30 +2042,30 @@ class Handler(BaseHTTPRequestHandler):
                     # Guardar stats actualizadas
                     guardar_keyword_stats(feed_id, stats)
 
-                    # Agregar nuevas keywords al perfil
-                    keywords_actuales = set(perfil.get('keywords', []))
-                    keywords_nuevas = [k for k in todas_keywords if k not in keywords_actuales]
-
-                    if keywords_nuevas:
-                        keywords_actuales.update(keywords_nuevas)
-                        perfil['keywords'] = sorted(list(keywords_actuales))
-
-                        # Aplicar límite de 200 keywords
-                        perfil = aplicar_limite_keywords(feed_id, perfil, limite=200)
-
-                        # Guardar cambios
-                        perfiles[feed_id] = perfil
-                        perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
-                        with open(perfiles_path, 'w', encoding='utf-8') as f:
-                            json.dump(perfiles, f, indent=2, ensure_ascii=False)
-
-                        # Mostrar keywords aprendidas
-                        ejemplos = list(keywords_nuevas)[:10]
-                        if len(keywords_nuevas) > 10:
-                            print(f"  🎓 {len(keywords_nuevas)} keywords núcleo aprendidas: {', '.join(ejemplos)}... (+{len(keywords_nuevas)-10} más)", flush=True)
-                        else:
-                            print(f"  🎓 {len(keywords_nuevas)} keywords núcleo aprendidas: {', '.join(ejemplos)}", flush=True)
-                        print(f"  📊 Total keywords activas: {len(perfil['keywords'])}/200", flush=True)
+                    # DESACTIVADO: Auto-agregar keywords (genera keywords de mala calidad)
+                    # keywords_actuales = set(perfil.get('keywords', []))
+                    # keywords_nuevas = [k for k in todas_keywords if k not in keywords_actuales]
+                    #
+                    # if keywords_nuevas:
+                    #     keywords_actuales.update(keywords_nuevas)
+                    #     perfil['keywords'] = sorted(list(keywords_actuales))
+                    #
+                    #     # Aplicar límite de 200 keywords
+                    #     perfil = aplicar_limite_keywords(feed_id, perfil, limite=200)
+                    #
+                    #     # Guardar cambios
+                    #     perfiles[feed_id] = perfil
+                    #     perfiles_path = os.path.join(BASE_DIR, 'feeds', 'perfiles_audiencia.json')
+                    #     with open(perfiles_path, 'w', encoding='utf-8') as f:
+                    #         json.dump(perfiles, f, indent=2, ensure_ascii=False)
+                    #
+                    #     # Mostrar keywords aprendidas
+                    #     ejemplos = list(keywords_nuevas)[:10]
+                    #     if len(keywords_nuevas) > 10:
+                    #         print(f"  🎓 {len(keywords_nuevas)} keywords núcleo aprendidas: {', '.join(ejemplos)}... (+{len(keywords_nuevas)-10} más)", flush=True)
+                    #     else:
+                    #         print(f"  🎓 {len(keywords_nuevas)} keywords núcleo aprendidas: {', '.join(ejemplos)}", flush=True)
+                    #     print(f"  📊 Total keywords activas: {len(perfil['keywords'])}/200", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
