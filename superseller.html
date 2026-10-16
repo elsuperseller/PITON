@@ -728,7 +728,7 @@ img[data-src]:not(.loaded) {
     <button onclick="cargarFeedGlobal(false, 'promocional')" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">🔍 Ofertas</button>
     <button onclick="cargarFeedGlobal(false, 'novedades')" class="btn" style="background:#3b82f6;color:white;font-size:12px;padding:8px 14px;">🆕 Novedades</button>
 
-    <button id="btnDetener" onclick="detenerProceso()" style="display:inline-block;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
+    <button id="btnDetener" onclick="detenerProceso()" style="display:inline-block;" class="btn btn-danger">⏹ DETENER</button>
 
     <!-- Menú desplegable de búsqueda por fuente -->
     <select id="buscarPorFuente" onchange="ejecutarBusquedaPorFuente()" style="padding:8px 12px;border:2px solid #22c55e;border-radius:6px;font-size:13px;font-weight:600;color:#16a34a;background:white;cursor:pointer;">
@@ -2663,7 +2663,10 @@ function copiarLista() {
 let _abortController = null
 
 function mostrarBtnDetener(show) {
-  document.getElementById("btnDetener").style.display = show ? "inline-flex" : "none"
+  const btn = document.getElementById("btnDetener")
+  // El botón siempre está visible, solo cambia la animación
+  btn.style.animation = show ? "pulseDetener 1.5s infinite" : "none"
+  btn.disabled = !show  // Deshabilitado cuando no hay nada que detener
   document.getElementById("btnBuscar").disabled = show
 }
 
