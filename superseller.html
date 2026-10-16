@@ -728,8 +728,7 @@ img[data-src]:not(.loaded) {
     <button onclick="cargarFeedGlobal(false, 'promocional')" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">🔍 Ofertas</button>
     <button onclick="cargarFeedGlobal(false, 'novedades')" class="btn" style="background:#3b82f6;color:white;font-size:12px;padding:8px 14px;">🆕 Novedades</button>
 
-    <button id="btnDetener" onclick="detenerProceso()" style="display:none;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
-    <button id="btnDescartarSeleccionados" onclick="descartarSeleccionados()" style="display:inline-block;" class="btn btn-danger">👎 Descartar</button>
+    <button id="btnDetener" onclick="detenerProceso()" style="display:inline-block;animation:pulseDetener 1.5s infinite;" class="btn btn-danger">⏹ DETENER</button>
 
     <!-- Menú desplegable de búsqueda por fuente -->
     <select id="buscarPorFuente" onchange="ejecutarBusquedaPorFuente()" style="padding:8px 12px;border:2px solid #22c55e;border-radius:6px;font-size:13px;font-weight:600;color:#16a34a;background:white;cursor:pointer;">
@@ -2157,7 +2156,6 @@ async function buscar() {
   document.getElementById("btnBuscar").disabled = true
   document.getElementById("results").style.display = "none"
   document.getElementById("exportBar").style.display = "none"
-  document.getElementById("btnDescartarSeleccionados").style.display = "none"
   document.getElementById("filtro-fuente").style.display = "none"
   document.getElementById("agregar-manual").style.display = "none"
   // NO borrar currentFeedId - mantener la audiencia seleccionada
@@ -3048,21 +3046,53 @@ function quitarRelampagos() {
   setStatus(`⚡ ${count} Lightning Deals deseleccionados`, "done")
 }
 
-function quitarRepetidos() {
-  let count = 0
-  document.querySelectorAll(".product-card").forEach(card => {
-    if (card.style.display === "none") return
-    const score = parseFloat(card.dataset.novedad ?? "1")
-    if (score < 1.0) {
-      // Ocultar el producto en lugar de solo desmarcarlo
-      card.style.display = "none"
-      const chk = card.querySelector(".card-checkbox")
-      if (chk) { chk.checked = false; card.classList.remove("selected") }
-      count++
-    }
-  })
-  updateCount()
-  setStatus(`🔁 ${count} productos ya publicados ocultados`, "done")
+async function quitarRepetidos() {
+  // Verificar contra el historial EN TIEMPO REAL, no contra el novedad_score del card
+  const feedId = audienciaActual
+  if (!feedId) {
+    setStatus("⚠️ No hay feed seleccionado", "error")
+    return
+  }
+
+  setStatus("🔍 Verificando historial...", "loading")
+
+  try {
+    // Obtener el historial actual del backend
+    const res = await fetch(`/feeds/${feedId}/historial`)
+    if (!res.ok) throw new Error(`Error al cargar historial: ${res.status}`)
+    const historial = await res.json()
+
+    const DIAS_LIMITE = 15  // Solo ocultar productos publicados en los últimos 15 días
+    const ahora = new Date()
+    let count = 0
+
+    document.querySelectorAll(".product-card").forEach(card => {
+      if (card.style.display === "none") return
+
+      const asin = card.dataset.asin
+      if (!asin) return
+
+      // Si el ASIN existe en el historial, verificar fecha
+      if (historial[asin]) {
+        const ultimaVez = new Date(historial[asin].ultima_vez)
+        const diasTranscurridos = (ahora - ultimaVez) / (1000 * 60 * 60 * 24)
+
+        // Solo ocultar si fue publicado en los últimos 15 días
+        if (diasTranscurridos <= DIAS_LIMITE) {
+          card.style.display = "none"
+          const chk = card.querySelector(".card-checkbox")
+          if (chk) { chk.checked = false; card.classList.remove("selected") }
+          count++
+        }
+      }
+    })
+
+    updateCount()
+    setStatus(`🔁 ${count} productos publicados en <15 días ocultados`, "done")
+  } catch (err) {
+    console.error("Error al verificar historial:", err)
+    setStatus(`❌ Error al verificar historial: ${err.message}`, "error")
+  }
 }
 
 function verTodasLasOfertas() {
@@ -3634,9 +3664,8 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
       document.getElementById("filtro-fuente").style.display = "block"
     }
 
-    // Mostrar input de agregar manual y botón de descarte masivo
+    // Mostrar input de agregar manual
     document.getElementById("agregar-manual").style.display = "block"
-    document.getElementById("btnDescartarSeleccionados").style.display = "inline-block"
 
     const modoLabel = modo === 'novedades' ? 'Novedades' : 'Ofertas'
     setStatus(`✅ ${modoLabel} "${audienciaId}": ${allItems.length} productos ${data.from_cache ? '(caché)' : '(actualizado)'}`, "done")
@@ -4071,7 +4100,6 @@ window.addEventListener('DOMContentLoaded', function() {
     if (window.currentFeedId && window.allItems && window.allItems.length > 0) {
       try {
         document.getElementById("agregar-manual").style.display = "block";
-        document.getElementById("btnDescartarSeleccionados").style.display = "inline-block";
         document.getElementById("filtro-fuente").style.display = "block";
       } catch(e) {
         console.error("Error mostrando elementos de feed:", e);

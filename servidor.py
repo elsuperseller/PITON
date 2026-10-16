@@ -4235,6 +4235,22 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        # ==================== ENDPOINT: HISTORIAL ====================
+        elif m and m.group(1) == "/feeds/" and self.path.count("/") == 3 and self.path.endswith("/historial"):
+            # GET /feeds/{feed_id}/historial
+            try:
+                feed_id = self.path.split("/")[2]
+                historial = cargar_historial_feed(feed_id)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps(historial).encode())
+            except Exception as e:
+                print(f"❌ Error al cargar historial: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+
         # ==================== FIN ENDPOINTS DE FEEDS ====================
 
         else:
