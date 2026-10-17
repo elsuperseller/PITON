@@ -731,7 +731,7 @@ img[data-src]:not(.loaded) {
     <button id="btnDetener" onclick="detenerProceso()" style="display:inline-block;" class="btn btn-danger">⏹ DETENER</button>
 
     <!-- Menú desplegable de búsqueda por fuente -->
-    <select id="buscarPorFuente" onchange="ejecutarBusquedaPorFuente()" style="padding:8px 12px;border:2px solid #22c55e;border-radius:6px;font-size:13px;font-weight:600;color:#16a34a;background:white;cursor:pointer;">
+    <select id="buscarPorFuente" style="padding:8px 12px;border:2px solid #22c55e;border-radius:6px;font-size:13px;font-weight:600;color:#16a34a;background:white;cursor:pointer;">
       <option value="">🔍 Buscar por...</option>
       <option value="telegram">📱 Telegram</option>
       <option value="urls">🔗 URLs Fijas</option>
@@ -976,6 +976,24 @@ img[data-src]:not(.loaded) {
           </div>
           <textarea id="lista-texto" readonly></textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- Amazon URL Temporal -->
+    <div class="sec">
+      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
+        <span><span class="ico">🎬</span>URL Temporal <span class="plat-pill pill-amz">AMZ</span></span>
+        <span class="chev">▼</span>
+      </div>
+      <div class="sec-bd">
+        <p class="hint">Pega una URL de Amazon para eventos/películas específicas. Se enviará al Sheet de la audiencia seleccionada.</p>
+        <textarea id="amz-url-temporal" class="inp" style="height:80px;font-size:11px;" placeholder="https://www.amazon.com.mx/s?k=funko+dune+2&#10;https://www.amazon.com.mx/deal/..."></textarea>
+        <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+          <button onclick="buscarAmazonUrlTemporal()" class="btn btn-amz" style="flex:1;justify-content:center;font-size:11px;">🎬 Buscar en URL</button>
+          <label style="font-size:10px;color:var(--t3);white-space:nowrap;">Págs.</label>
+          <input type="number" id="amz-url-pages" min="1" max="10" value="2" class="inp" style="width:48px;padding:4px 6px;font-size:11px;text-align:center;">
+        </div>
+        <div id="amz-url-status" class="inline-st"></div>
       </div>
     </div>
 
@@ -3415,6 +3433,88 @@ async function procesarHTMLAmazonDeals() {
   }
 }
 
+// ── AMAZON URL TEMPORAL ─────────────────────────────────────────────
+async function buscarAmazonUrlTemporal() {
+  const statusEl = document.getElementById("amz-url-status")
+  const raw = document.getElementById("amz-url-temporal").value.trim()
+  const urls = raw.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"))
+
+  if (!urls.length) {
+    alert("Pega al menos una URL de Amazon")
+    return
+  }
+
+  const audienciaId = window.currentFeedId
+  if (!audienciaId) {
+    alert("⚠️ Selecciona una audiencia primero")
+    return
+  }
+
+  const pages = parseInt(document.getElementById("amz-url-pages").value) || 2
+
+  // Extraer keywords de las URLs
+  const keywords = []
+  for (const url of urls) {
+    try {
+      const urlObj = new URL(url)
+      const k = urlObj.searchParams.get("k")
+      if (k) {
+        keywords.push(decodeURIComponent(k).replace(/\+/g, ' '))
+      }
+    } catch(e) {
+      console.error("Error parseando URL:", url, e)
+    }
+  }
+
+  if (!keywords.length) {
+    alert("No se encontraron keywords en las URLs (parámetro k=)")
+    return
+  }
+
+  statusEl.textContent = `⏳ Buscando ${keywords.length} keyword(s), ${pages} página(s)...`
+  statusEl.style.display = "block"
+  statusEl.style.color = "#ff9900"
+  setStatus("⏳ Buscando productos en URL temporal...", "running")
+  mostrarBtnDetener(true)
+  _abortController = new AbortController()
+
+  try {
+    const r = await fetch("/feeds/url-temporal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        audiencia_id: audienciaId,
+        keywords_temp: keywords,
+        max_pages: pages
+      }),
+      signal: _abortController.signal
+    })
+
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error || "Error buscando productos")
+
+    allItems = d.productos || []
+    renderResults(allItems)
+    updateCount()
+
+    statusEl.textContent = `✅ ${allItems.length} productos encontrados`
+    statusEl.style.color = "#10b981"
+    setStatus(`✅ ${allItems.length} productos desde URL temporal`, "done")
+
+  } catch(e) {
+    if (e.name === "AbortError") {
+      statusEl.textContent = "⏹ Búsqueda detenida"
+      statusEl.style.color = "#6b7280"
+      return
+    }
+    statusEl.textContent = "❌ " + e.message
+    statusEl.style.color = "#ef4444"
+    setStatus("❌ Error: " + e.message, "error")
+  } finally {
+    mostrarBtnDetener(false)
+  }
+}
+
 // ── MERCADO LIBRE ──────────────────────────────────────────────────
 async function _llamarML(body, statusEl) {
   statusEl.style.display = "block"
@@ -3631,8 +3731,18 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
   descartadosEnSesion.clear()
 
   try {
+    // Obtener fuente seleccionada del dropdown
+    const fuenteSeleccionada = document.getElementById("buscarPorFuente").value
+
     const endpoint = modo === 'novedades' ? 'novedades' : 'feeds'
-    const url = `/${endpoint}/${audienciaId}${refresh ? '?refresh=true' : ''}`
+    let url = `/${endpoint}/${audienciaId}`
+
+    // Agregar parámetros de query
+    const params = []
+    if (refresh) params.push('refresh=true')
+    if (fuenteSeleccionada) params.push(`fuente=${fuenteSeleccionada}`)
+    if (params.length > 0) url += '?' + params.join('&')
+
     const data = await apiCall(url, { signal: feedAbortController.signal })
 
     if (!data.ok) throw new Error(data.error)
