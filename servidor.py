@@ -2985,6 +2985,88 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
+        elif self.path == "/feeds/url-temporal":
+            """Endpoint para búsquedas temporales por URL de Amazon"""
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+
+                audiencia_id = body.get("audiencia_id", "")
+                keywords_temp = body.get("keywords_temp", [])
+                max_pages = body.get("max_pages", 2)
+
+                if not audiencia_id:
+                    raise ValueError("audiencia_id requerido")
+                if not keywords_temp:
+                    raise ValueError("keywords_temp requerido")
+
+                perfiles = cargar_perfiles()
+                if audiencia_id not in perfiles:
+                    raise ValueError("Audiencia no encontrada")
+
+                perfil = perfiles[audiencia_id]
+                filtros = perfil.get('filtros_ofertas', perfil.get('filtros', {}))
+                minSavingPercent = filtros.get('minSavingPercent', 10)
+
+                print(f"\n🎬 URL Temporal: {audiencia_id}", flush=True)
+                print(f"   Keywords: {keywords_temp}", flush=True)
+                print(f"   Páginas: {max_pages}, Min descuento: {minSavingPercent}%", flush=True)
+
+                productos = []
+                for keyword in keywords_temp:
+                    print(f"   🔍 Buscando: {keyword}", flush=True)
+                    items = buscar_productos_amazon(
+                        keyword=keyword,
+                        minSavingPercent=minSavingPercent,
+                        maxPages=max_pages
+                    )
+
+                    # Filtrar por keyword en el título
+                    keywords_lower = keyword.lower().split()
+                    items_filtrados = 0
+
+                    for item in items:
+                        p = parsear_item(item)
+                        if p:
+                            titulo_lower = p.get('title', '').lower()
+
+                            # Verificar que TODAS las palabras clave estén en el título
+                            # (ignorar palabras comunes como "de", "la", "el", etc.)
+                            palabras_importantes = [w for w in keywords_lower if w not in ['de', 'la', 'el', 'en', 'y', 'a', 'un', 'una']]
+
+                            # Al menos el 70% de las palabras importantes deben estar
+                            palabras_encontradas = sum(1 for palabra in palabras_importantes if palabra in titulo_lower)
+                            porcentaje_match = palabras_encontradas / len(palabras_importantes) if palabras_importantes else 0
+
+                            if porcentaje_match >= 0.7:
+                                p['source'] = 'url_temporal'
+                                p['source_type'] = 'url_temporal'
+                                p['keyword_match'] = f"🎬 {keyword}"
+                                productos.append(p)
+                            else:
+                                items_filtrados += 1
+
+                    print(f"   ✅ {len([p for p in productos if p.get('keyword_match') == f'🎬 {keyword}'])} productos (filtrados: {items_filtrados})", flush=True)
+
+                print(f"✅ Total final: {len(productos)} productos", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "productos": productos,
+                    "total": len(productos),
+                    "audiencia": audiencia_id
+                }).encode())
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print(f"❌ Error en URL temporal: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -3255,6 +3337,18 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError("audiencia_id requerido")
 
                 refresh = 'refresh=true' in path
+
+                # Extraer parámetro de fuente (telegram, urls, keywords)
+                fuente_filtro = None
+                if '?' in path and 'fuente=' in path:
+                    try:
+                        query_params = path.split('?')[1]
+                        for param in query_params.split('&'):
+                            if param.startswith('fuente='):
+                                fuente_filtro = param.split('=')[1]
+                    except:
+                        pass
+
                 perfiles = cargar_perfiles()
 
                 if audiencia_id not in perfiles:
@@ -3364,6 +3458,17 @@ class Handler(BaseHTTPRequestHandler):
                                         producto['novedad_score'] = score
                                     else:
                                         producto['novedad_score'] = 1.0
+
+                                # Aplicar filtro por fuente si se especificó
+                                if fuente_filtro:
+                                    productos_antes = len(productos_filtrados)
+                                    if fuente_filtro == 'telegram':
+                                        productos_filtrados = [p for p in productos_filtrados if p.get('source_type') == 'telegram']
+                                    elif fuente_filtro == 'urls':
+                                        productos_filtrados = [p for p in productos_filtrados if p.get('source_type') == 'url_fija']
+                                    elif fuente_filtro == 'keywords':
+                                        productos_filtrados = [p for p in productos_filtrados if p.get('source_type') == 'keyword']
+                                    print(f"  🔍 Filtrado por fuente '{fuente_filtro}': {productos_antes} → {len(productos_filtrados)}", flush=True)
 
                                 ya_vistos_cache = sum(1 for p in productos_filtrados if p.get('novedad_score', 1.0) < 1.0)
                                 print(f"📊 /feeds/{audiencia_id} → {len(productos_filtrados)} productos (cache, {ya_vistos_cache} ya vistos, válido {horas_restantes}h)", flush=True)
@@ -4236,7 +4341,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
         # ==================== ENDPOINT: HISTORIAL ====================
-        elif m and m.group(1) == "/feeds/" and self.path.count("/") == 3 and self.path.endswith("/historial"):
+        elif self.path.startswith("/feeds/") and self.path.count("/") == 3 and self.path.endswith("/historial"):
             # GET /feeds/{feed_id}/historial
             try:
                 feed_id = self.path.split("/")[2]
