@@ -3883,6 +3883,17 @@ class Handler(BaseHTTPRequestHandler):
                 tasa_aprobacion = (stats_filtrado['aceptados'] / stats_filtrado['total_procesados'] * 100) if stats_filtrado['total_procesados'] > 0 else 0
                 print(f"\n  📈 Tasa de aprobación: {tasa_aprobacion:.1f}%", flush=True)
 
+                # Aplicar filtro por fuente si se especificó
+                if fuente_filtro:
+                    productos_antes = len(productos_finales)
+                    if fuente_filtro == 'telegram':
+                        productos_finales = [p for p in productos_finales if p.get('source_type') == 'telegram']
+                    elif fuente_filtro == 'urls':
+                        productos_finales = [p for p in productos_finales if p.get('source_type') == 'url_fija']
+                    elif fuente_filtro == 'keywords':
+                        productos_finales = [p for p in productos_finales if p.get('source_type') == 'keyword']
+                    print(f"  🔍 Filtrado por fuente '{fuente_filtro}': {productos_antes} → {len(productos_finales)}", flush=True)
+
                 print(f"\n✅ Feed '{audiencia_id}' generado: {len(productos_finales)} productos únicos", flush=True)
 
                 self.send_response(200); self._cors()
@@ -3915,6 +3926,18 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError("audiencia_id requerido")
 
                 refresh = 'refresh=true' in path
+
+                # Extraer parámetro de fuente (telegram, urls, keywords)
+                fuente_filtro = None
+                if '?' in path and 'fuente=' in path:
+                    try:
+                        query_params = path.split('?')[1]
+                        for param in query_params.split('&'):
+                            if param.startswith('fuente='):
+                                fuente_filtro = param.split('=')[1]
+                    except:
+                        pass
+
                 perfiles = cargar_perfiles()
 
                 if audiencia_id not in perfiles:
@@ -4006,6 +4029,17 @@ class Handler(BaseHTTPRequestHandler):
                                         producto['novedad_score'] = score
                                     else:
                                         producto['novedad_score'] = 1.0
+
+                                # Aplicar filtro por fuente si se especificó
+                                if fuente_filtro:
+                                    productos_antes = len(productos_filtrados)
+                                    if fuente_filtro == 'telegram':
+                                        productos_filtrados = [p for p in productos_filtrados if p.get('source_type') == 'telegram']
+                                    elif fuente_filtro == 'urls':
+                                        productos_filtrados = [p for p in productos_filtrados if p.get('source_type') == 'url_fija']
+                                    elif fuente_filtro == 'keywords':
+                                        productos_filtrados = [p for p in productos_filtrados if p.get('source_type') == 'keyword']
+                                    print(f"  🔍 Filtrado por fuente '{fuente_filtro}': {productos_antes} → {len(productos_filtrados)}", flush=True)
 
                                 ya_vistos_cache = sum(1 for p in productos_filtrados if p.get('novedad_score', 1.0) < 1.0)
                                 print(f"📊 /novedades/{audiencia_id} → {len(productos_filtrados)} productos (cache, {ya_vistos_cache} ya vistos, válido {horas_restantes}h)", flush=True)
@@ -4209,6 +4243,17 @@ class Handler(BaseHTTPRequestHandler):
                     'timestamp': dt.now().isoformat()
                 }
                 guardar_feed_cache(cache)
+
+                # Aplicar filtro por fuente si se especificó
+                if fuente_filtro:
+                    productos_antes = len(productos)
+                    if fuente_filtro == 'telegram':
+                        productos = [p for p in productos if p.get('source_type') == 'telegram']
+                    elif fuente_filtro == 'urls':
+                        productos = [p for p in productos if p.get('source_type') == 'url_fija']
+                    elif fuente_filtro == 'keywords':
+                        productos = [p for p in productos if p.get('source_type') == 'keyword']
+                    print(f"  🔍 Filtrado por fuente '{fuente_filtro}': {productos_antes} → {len(productos)}", flush=True)
 
                 print(f"✅ /novedades/{audiencia_id} → {len(productos)} productos generados (SIN filtro de descuento)", flush=True)
 
