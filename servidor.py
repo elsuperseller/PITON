@@ -182,7 +182,8 @@ def parsear_item(item):
         ean  = eans[0] if eans else ""
 
         return {
-            "asin": asin, "source": "amazon", "link": link, "title": title, "img": img,
+            "asin": asin, "source": "amazon", "platform": "amazon", "platform_name": "Amazon",
+            "link": link, "title": title, "img": img,
             "price_original": po, "price_discounted": pd_, "descuento_pct": desc,
             "vigencia": vigencia, "tipo": tipo, "badge": badge, "access_type": acc,
             "start_time": start, "end_time": end, "pct_claimed": deal.get("percentageClaimed"),
@@ -1434,6 +1435,11 @@ class Handler(BaseHTTPRequestHandler):
                     pages=paginas,
                 )
 
+                # Marcar todos los items como Mercado Libre
+                for item in items:
+                    item['platform'] = 'mercadolibre'
+                    item['platform_name'] = 'Mercado Libre'
+
                 if _HV_OK:
                     total_antes = len(items)
                     if feed_id:
@@ -1467,6 +1473,11 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 items, total_raw = _ml.scrape_html_texto(html_txt, min_discount=min_disc)
+
+                # Marcar todos los items como Mercado Libre
+                for item in items:
+                    item['platform'] = 'mercadolibre'
+                    item['platform_name'] = 'Mercado Libre'
 
                 log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
                 print(f"📦 {log_prefix}/procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
@@ -4232,6 +4243,25 @@ class Handler(BaseHTTPRequestHandler):
 
                     except Exception as e:
                         print(f"  ⚠️  Error buscando '{keyword}': {e}", flush=True)
+
+                # Deduplicar por ASIN antes de aplicar scoring
+                productos_unicos = {}
+                for p in productos:
+                    asin = p.get('asin')
+                    if asin:
+                        # Si ya existe, mantener el que tenga mayor descuento
+                        if asin in productos_unicos:
+                            if p.get('discount', 0) > productos_unicos[asin].get('discount', 0):
+                                productos_unicos[asin] = p
+                        else:
+                            productos_unicos[asin] = p
+                    else:
+                        # Sin ASIN, agregar siempre (usar título como fallback)
+                        key = p.get('title', str(id(p)))
+                        productos_unicos[key] = p
+
+                productos = list(productos_unicos.values())
+                print(f"  🔄 Deduplicados: {len(productos)} productos únicos", flush=True)
 
                 # Aplicar novedad_score
                 productos = aplicar_novedad_score_feed(productos, audiencia_id)
