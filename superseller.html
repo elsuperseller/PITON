@@ -1965,8 +1965,9 @@ const ProductosState = {
   // ── SETTERS ───────────────────────────
   setItems(items) {
     this._items = items
-    // NO limpiamos _selected aquí para preservar selección entre búsquedas
-    // Si el usuario quiere limpiar, debe llamar clearSeleccion()
+    // ✅ Limpiar selección en cada búsqueda nueva
+    // Los checkboxes se marcan automáticamente en renderResults()
+    this._selected.clear()
   },
 
   setFeedId(id) {
@@ -2507,12 +2508,16 @@ function renderResults(items) {
 
   // ✅ SINCRONIZAR ProductosState con checkboxes del DOM
   setTimeout(() => {
+    // Ya se limpió en setItems() - solo sincronizar checkboxes marcados
     items.forEach((p) => {
       const chk = document.querySelector(`.select-chk[data-asin="${p.asin}"]`)
       if (chk && chk.checked) {
         ProductosState.toggleSeleccion(p.asin)
       }
     })
+
+    // Actualizar contador
+    updateCount()
   }, 0)
 
   updateCount()
@@ -2654,6 +2659,12 @@ async function exportarSheetsFeed(items, feedId) {
     const endpoint = "http://localhost:8765/feeds/export-sheets"
     const payload = { feed_id: feedId, items: items }
     console.log("📤 Payload FEED:", payload)
+    console.log("🔍 Primeros 3 items - platform:", items.slice(0, 3).map(i => ({
+      asin: i.asin,
+      source: i.source,
+      platform: i.platform,
+      platform_name: i.platform_name
+    })))
 
     const r = await fetchConTimeout(endpoint, {
       method: "POST",
@@ -2704,6 +2715,12 @@ async function exportarSheetsDirecto(items) {
     const endpoint = "http://localhost:8765/exportar-sheets"
     const payload = { items: items }
     console.log("📤 Payload DIRECTO:", payload)
+    console.log("🔍 Primeros 3 items - platform:", items.slice(0, 3).map(i => ({
+      asin: i.asin,
+      source: i.source,
+      platform: i.platform,
+      platform_name: i.platform_name
+    })))
 
     const r = await fetchConTimeout(endpoint, {
       method: "POST",
@@ -3503,7 +3520,7 @@ function selectAllPromos(v) {
 // Fetch con timeout largo para operaciones Playwright (scraping puede tardar 3-5 min)
 async function fetchConTimeout(url, opts, timeoutMs = 600000) {
   const ctrl = new AbortController()
-  _abortController = ctrl  // permite "Detener" del usuario
+  // ⚠️ NO sobrescribir _abortController aquí - solo para búsquedas principales
   const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   try {
     const r = await fetch(url, { ...opts, signal: ctrl.signal })
