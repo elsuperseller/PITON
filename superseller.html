@@ -853,66 +853,7 @@ img[data-src]:not(.loaded) {
       </div>
     </div>
 
-    <!-- Vigencia -->
-    <div class="sec">
-      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">⏱</span>Vigencia de Ofertas <span class="plat-pill pill-amz">AMZ</span></span>
-        <span class="chev">▼</span>
-      </div>
-      <div class="sec-bd">
-        <div class="chk-r"><input type="checkbox" id="f_solo_perm"><label for="f_solo_perm">Solo permanentes ⭐</label></div>
-        <div class="chk-r"><input type="checkbox" id="f_solo_fecha"><label for="f_solo_fecha">Solo con fecha de fin</label></div>
-        <div class="chk-r"><input type="checkbox" id="f_excl_rel"><label for="f_excl_rel" class="warn-lbl">Excluir ⚡ Lightning Deals</label></div>
-        <div class="chk-r"><input type="checkbox" id="f_solo_rel"><label for="f_solo_rel" class="warn-lbl">Solo ⚡ Lightning Deals</label></div>
-        <div class="chk-r">
-          <input type="checkbox" id="f_hrs_activo">
-          <label for="f_hrs_activo">Mín. hrs restantes:</label>
-          <input type="number" id="f_hrs_min" value="6" min="1" max="72" class="inp inp-n">
-          <span class="lbl">h</span>
-        </div>
-        <div class="chk-r">
-          <input type="checkbox" id="f_con_inicio">
-          <label for="f_con_inicio">Solo con fecha de inicio ▶</label>
-        </div>
-        <div id="campo-fecha-inicio" style="margin-top:8px;">
-          <div class="fecha-fld">
-            <span class="lbl">▶ Inicio:</span>
-            <input type="text" id="f_fecha_especifica" placeholder="dd/mm/aa" class="inp" style="flex:1;">
-            <button onclick="usarFechaEspecifica()" class="btn-xs red" style="padding:4px 8px;">📌</button>
-          </div>
-          <div class="fecha-fld">
-            <span class="lbl">⏹ Fin:</span>
-            <input type="text" id="f_fecha_fin" placeholder="dd/mm/aa" class="inp" style="flex:1;">
-            <button onclick="usarFechaFin()" class="btn-xs" style="padding:4px 8px;">📌</button>
-          </div>
-        </div>
-        <div class="chk-r" style="margin-top:4px;flex-wrap:wrap;gap:6px;">
-          <input type="checkbox" id="f_badge_activo">
-          <label for="f_badge_activo">Solo badge:</label>
-          <input type="text" id="f_badge_texto" placeholder="ej. Oferta de Primavera" class="inp" style="flex:1;min-width:100px;font-size:11px;padding:4px 8px;">
-        </div>
-        <div id="badges-detectados"></div>
-      </div>
-    </div>
-
-    <!-- Tendencia -->
-    <div class="sec">
-      <div class="sec-hd" onclick="this.parentElement.classList.toggle('open')">
-        <span><span class="ico">🔥</span>Tendencia y Prime <span class="plat-pill pill-amz">AMZ</span></span>
-        <span class="chev">▼</span>
-      </div>
-      <div class="sec-bd">
-        <div class="chk-r">
-          <input type="checkbox" id="f_trending">
-          <label for="f_trending">En tendencia ≥</label>
-          <input type="number" id="f_tpct" value="50" min="10" max="99" class="inp inp-n">
-          <span class="lbl">%</span>
-        </div>
-        <div class="chk-r"><input type="checkbox" id="f_prime_e"><label for="f_prime_e">Prime Early Access</label></div>
-        <div class="chk-r"><input type="checkbox" id="f_prime_x"><label for="f_prime_x">Prime Exclusive (solo Prime)</label></div>
-        <div class="chk-r"><input type="checkbox" id="f_scarce"><label for="f_scarce" class="warn-lbl">⚠️ Poco inventario</label></div>
-      </div>
-    </div>
+    <!-- Secciones Vigencia y Tendencia/Prime eliminadas -->
 
     <!-- Amazon Deals — páginas scrapeadas con Playwright -->
     <div class="sec">
@@ -2164,6 +2105,72 @@ const RenderModule = {
   }
 }
 
+// ========== MÓDULO: BÚSQUEDA (FUNCIONES PURAS) ==========
+/**
+ * Funciones puras de búsqueda - retornan datos sin modificar estado
+ *
+ * OBJETIVO: Separar la lógica de fetch del manejo de estado/UI
+ *
+ * ANTES: buscar() mezclaba fetch + estado + UI
+ * AHORA: _buscarXxxPuro() solo hace fetch, buscar() coordina
+ */
+
+/**
+ * Búsqueda pura de Amazon - solo fetch, sin efectos secundarios
+ * @returns {Promise<{ok: boolean, items: Array, error?: string}>}
+ */
+async function _buscarAmazonPuro(categorias, filtros, paginas, sortBy, feedId = null, signal = null) {
+  const payload = {
+    categorias,
+    paginas,
+    filtros,
+    sortBy
+  }
+
+  if (feedId) {
+    payload.feed_id = feedId
+  }
+
+  const r = await fetch("http://localhost:8765/buscar", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(payload),
+    signal
+  })
+
+  return await r.json()
+}
+
+/**
+ * Búsqueda pura de Mercado Libre
+ */
+async function _buscarMLPuro(params, signal = null) {
+  const r = await fetch("http://localhost:8765/buscar-ml", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(params),
+    signal
+  })
+
+  return await r.json()
+}
+
+/**
+ * Carga pura de feed (Ofertas/Novedades)
+ */
+async function _cargarFeedPuro(audienciaId, modo = 'promocional', refresh = false, fuente = null, signal = null) {
+  const endpoint = modo === 'novedades' ? 'novedades' : 'feeds'
+  let url = `/${endpoint}/${audienciaId}`
+
+  const params = []
+  if (refresh) params.push('refresh=true')
+  if (fuente) params.push(`fuente=${fuente}`)
+  if (params.length > 0) url += '?' + params.join('&')
+
+  const r = await fetch(`http://localhost:8765${url}`, { signal })
+  return await r.json()
+}
+
 // ========== API HELPERS ==========
 const API_BASE = "http://localhost:8765"
 
@@ -2388,82 +2395,76 @@ async function buscarSoloKeywords() {
   }
 }
 
+// ✅ REFACTORIZADA - Usa función pura _buscarAmazonPuro()
 async function buscar() {
+  // 1. Validación y preparación
   const subcats = getSelectedSubcats()
   const maincats = getSelectedCats()
   const cats = Object.keys(subcats).length > 0 ? subcats : maincats
-  if (!Object.keys(cats).length) { alert("Selecciona al menos una categoría"); return }
+  if (!Object.keys(cats).length) {
+    alert("Selecciona al menos una categoría")
+    return
+  }
 
+  const filtros = {
+    descuento_min: parseInt(document.getElementById("descMin").value) || 0,
+    precio_min: parseFloat(document.getElementById("precioMin").value) || 0,
+    precio_max: parseFloat(document.getElementById("precioMax").value) || 0,
+  }
+
+  const paginas = parseInt(document.getElementById("paginas").value) || 3
+  const sortBy = document.getElementById("sortBy").value
+  const feedId = currentFeedId || window.currentFeedId
+
+  // 2. UI: Estado inicial
   setStatus("Conectando a Amazon Creators API...", "running")
   document.getElementById("btnBuscar").disabled = true
   document.getElementById("results").style.display = "none"
   document.getElementById("exportBar").style.display = "none"
   document.getElementById("filtro-fuente").style.display = "none"
   document.getElementById("agregar-manual").style.display = "none"
-  // NO borrar currentFeedId - mantener la audiencia seleccionada
-
-  const filtros = {
-    solo_permanentes: document.getElementById("f_solo_perm").checked,
-    solo_con_fecha:   document.getElementById("f_solo_fecha").checked,
-    excluir_relampago:document.getElementById("f_excl_rel").checked,
-    solo_relampago:   document.getElementById("f_solo_rel").checked,
-    hrs_activo:       document.getElementById("f_hrs_activo").checked,
-    hrs_min:          parseInt(document.getElementById("f_hrs_min").value) || 6,
-    trending:         document.getElementById("f_trending").checked,
-    tpct:             parseInt(document.getElementById("f_tpct").value) || 50,
-    prime_e:          document.getElementById("f_prime_e").checked,
-    prime_x:          document.getElementById("f_prime_x").checked,
-    scarce:           document.getElementById("f_scarce").checked,
-    descuento_min:    parseInt(document.getElementById("descMin").value) || 0,
-    precio_min:       parseFloat(document.getElementById("precioMin").value) || 0,
-    precio_max:       parseFloat(document.getElementById("precioMax").value) || 0,
-    badge:            document.getElementById("f_badge_activo").checked ? document.getElementById("f_badge_texto").value.trim() : "",
-  }
 
   try {
+    // 3. Búsqueda (función pura)
     mostrarBtnDetener(true)
     _abortController = new AbortController()
     setStatus(`Buscando en ${Object.keys(cats).length} categorías...`, "running")
     window._ultimosFiltros = filtros
-    // Incluir feed_id si hay audiencia seleccionada
-    const feedId = currentFeedId || window.currentFeedId
-    const payload = {
-      categorias: cats,
-      paginas: parseInt(document.getElementById("paginas").value) || 3,
-      filtros,
-      sortBy: document.getElementById("sortBy").value
-    }
-    if (feedId) {
-      payload.feed_id = feedId
-      console.log(`🎯 Búsqueda con audiencia: ${feedId}`)
-    }
 
-    const r = await fetch("http://localhost:8765/buscar", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload),
-      signal: _abortController.signal
-    })
-    const data = await r.json()
+    if (feedId) console.log(`🎯 Búsqueda con audiencia: ${feedId}`)
+
+    const data = await _buscarAmazonPuro(
+      cats,
+      filtros,
+      paginas,
+      sortBy,
+      feedId,
+      _abortController.signal
+    )
+
     if (!data.ok) throw new Error(data.error)
 
-    // ✅ SINCRONIZAR ProductosState
+    // 4. Actualizar estado
     allItems = data.items
     ProductosState.setItems(allItems)
     ProductosState.setFeedId(feedId || null)
 
+    // 5. Renderizar
     renderResults(allItems)
     setStatus(`✅ ${allItems.length} productos encontrados`, "done")
     mostrarResumen(cats, window._ultimosFiltros || filtros, allItems.length)
+
   } catch(e) {
     if (e.name === 'AbortError') {
       setStatus("⏹ Búsqueda cancelada por el usuario", "")
     } else {
       setStatus(`❌ Error: ${e.message} — ¿El servidor está corriendo?`, "error")
     }
+  } finally {
+    // 6. Limpiar UI
+    mostrarBtnDetener(false)
+    document.getElementById("btnBuscar").disabled = false
   }
-  mostrarBtnDetener(false)
-  document.getElementById("btnBuscar").disabled = false
 }
 
 function renderResults(items) {
@@ -3824,32 +3825,32 @@ async function buscarAmazonUrlTemporal() {
 }
 
 // ── MERCADO LIBRE ──────────────────────────────────────────────────
+// ✅ REFACTORIZADA - Usa función pura _buscarMLPuro()
 async function _llamarML(body, statusEl) {
+  // 1. UI inicial
   statusEl.style.display = "block"
   statusEl.style.color = "#3483fa"
   setStatus("⏳ Buscando en Mercado Libre...", "running")
   mostrarBtnDetener(true)
   _abortController = new AbortController()
+
   try {
-    const r = await fetch("http://localhost:8765/buscar-ml", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: _abortController.signal
-    })
-    const d = await r.json()
+    // 2. Búsqueda (función pura)
+    const d = await _buscarMLPuro(body, _abortController.signal)
     if (!d.ok) throw new Error(d.error)
 
-    // ✅ SINCRONIZAR ProductosState
+    // 3. Actualizar estado
     allItems = d.items
     ProductosState.setItems(allItems)
-    ProductosState.setFeedId(null)  // ML directo, sin feed
+    ProductosState.setFeedId(null)
 
+    // 4. Renderizar
     renderResults(d.items)
     updateCount()
     statusEl.textContent = `✅ ${d.total} productos`
     statusEl.style.color = "#10b981"
     setStatus(`✅ ${d.total} ofertas de Mercado Libre`, "done")
+
   } catch(e) {
     if (e.name === "AbortError") return
     statusEl.textContent = "❌ " + e.message
@@ -3998,7 +3999,9 @@ async function cargarFeedGlobal(refresh = false, modo = 'promocional') {
   return cargarFeed(refresh, modo)
 }
 
+// ✅ REFACTORIZADA - Usa función pura _cargarFeedPuro()
 async function cargarFeed(refresh = false, modo = 'promocional') {
+  // 1. Validación
   const audienciaId = document.getElementById("audienciaSelect").value || document.getElementById("audienciaGlobalSelect").value
   if (!audienciaId) {
     alert("Selecciona una audiencia primero")
@@ -4014,10 +4017,9 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
     return
   }
 
-  // Crear nuevo AbortController
+  // 2. UI: Preparar botones de detener
   feedAbortController = new AbortController()
 
-  // Cambiar botones relevantes a modo "Detener"
   const botonesOfertas = document.querySelectorAll('button[onclick*="\'promocional\'"]')
   const botonesNovedades = document.querySelectorAll('button[onclick*="\'novedades\'"]')
 
@@ -4039,33 +4041,26 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
     }
   })
 
-  // Cerrar modal y mostrar loading en área principal
   cerrarFeeds()
   const modoTexto = modo === 'novedades' ? 'novedades' : 'ofertas'
   setStatus(`Cargando ${modoTexto} "${audienciaId}"...`, "running")
   document.getElementById("results").style.display = "none"
-
-  // Limpiar productos descartados de sesión anterior (cada feed es independiente)
   descartadosEnSesion.clear()
 
   try {
-    // Obtener fuente seleccionada del dropdown
+    // 3. Búsqueda (función pura)
     const fuenteSeleccionada = document.getElementById("buscarPorFuente").value
-
-    const endpoint = modo === 'novedades' ? 'novedades' : 'feeds'
-    let url = `/${endpoint}/${audienciaId}`
-
-    // Agregar parámetros de query
-    const params = []
-    if (refresh) params.push('refresh=true')
-    if (fuenteSeleccionada) params.push(`fuente=${fuenteSeleccionada}`)
-    if (params.length > 0) url += '?' + params.join('&')
-
-    const data = await apiCall(url, { signal: feedAbortController.signal })
+    const data = await _cargarFeedPuro(
+      audienciaId,
+      modo,
+      refresh,
+      fuenteSeleccionada,
+      feedAbortController.signal
+    )
 
     if (!data.ok) throw new Error(data.error)
 
-    // Actualizar audiencia activa
+    // 4. Actualizar estado global
     currentFeedId = audienciaId
     window.currentFeedId = audienciaId
 
@@ -4082,24 +4077,19 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
       }
     }
 
-    // Convertir productos del feed al formato de la app
-    // Mapear productos usando función helper centralizada
+    // 5. Procesar y almacenar productos
     allItems = data.productos.map(mapearProductoFeed)
-
-    // ✅ SINCRONIZAR ProductosState
     ProductosState.setItems(allItems)
     ProductosState.setFeedId(audienciaId)
 
-    // Renderizar en grid principal (igual que búsquedas normales)
+    // 6. Renderizar
     renderResults(allItems)
 
-    // Mostrar filtro de fuentes si hay productos de diferentes tipos
+    // 7. Mostrar controles adicionales
     const tiposFuente = [...new Set(allItems.map(p => p.source_type).filter(Boolean))]
     if (tiposFuente.length > 0) {
       document.getElementById("filtro-fuente").style.display = "block"
     }
-
-    // Mostrar input de agregar manual
     document.getElementById("agregar-manual").style.display = "block"
 
     const modoLabel = modo === 'novedades' ? 'Novedades' : 'Ofertas'
