@@ -3418,8 +3418,6 @@ class Handler(BaseHTTPRequestHandler):
 
                             # Si el cache sigue válido, retornarlo
                             if cache_valido:
-                                horas_restantes = int((timedelta(hours=expiracion_horas) - tiempo_transcurrido).total_seconds() / 3600)
-
                                 # Filtrar productos bloqueados del caché
                                 productos_cache = cache_data.get('productos', [])
                                 productos_filtrados = [

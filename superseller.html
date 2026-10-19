@@ -1940,6 +1940,229 @@ let allItems = []
 let currentFeedId = null
 let descartadosEnSesion = new Set()
 
+// ========== MÓDULO: ESTADO DE PRODUCTOS ==========
+/**
+ * ProductosState: Gestión centralizada del estado de productos
+ *
+ * OBJETIVO: Desacoplar la exportación, selección y filtrado del DOM
+ *
+ * ANTES (acoplado):
+ * - allItems es global, todos lo modifican
+ * - Selección vive en DOM (índices cambian con filtros)
+ * - Exportar lee del DOM (si filtro oculta algo, no se exporta)
+ *
+ * AHORA (desacoplado):
+ * - ProductosState es única fuente de verdad
+ * - Selección por ASIN (invariante ante filtros)
+ * - Exportar lee de ProductosState (independiente del DOM)
+ */
+const ProductosState = {
+  // Estado privado
+  _items: [],
+  _selected: new Set(),  // Set de ASINs seleccionados
+  _feedId: null,
+
+  // ── SETTERS ───────────────────────────
+  setItems(items) {
+    this._items = items
+    // NO limpiamos _selected aquí para preservar selección entre búsquedas
+    // Si el usuario quiere limpiar, debe llamar clearSeleccion()
+  },
+
+  setFeedId(id) {
+    this._feedId = id
+  },
+
+  clearSeleccion() {
+    this._selected.clear()
+  },
+
+  // ── GETTERS ───────────────────────────
+  getItems() {
+    return this._items
+  },
+
+  getFeedId() {
+    return this._feedId
+  },
+
+  getSeleccionCount() {
+    return this._selected.size
+  },
+
+  /**
+   * Retorna productos seleccionados (objetos completos, NO índices)
+   * INDEPENDIENTE del DOM - lee directamente de _items
+   */
+  getSeleccionados() {
+    return this._items.filter(item => this._selected.has(item.asin))
+  },
+
+  /**
+   * Retorna productos VISIBLES y SELECCIONADOS
+   * Usado por exportación para respetar filtros activos
+   */
+  getSeleccionadosVisibles() {
+    const visibles = new Set()
+    document.querySelectorAll('.result-item:not([style*="display: none"]) .select-chk').forEach(chk => {
+      const asin = chk.getAttribute('data-asin')
+      if (asin) visibles.add(asin)
+    })
+    return this._items.filter(item =>
+      this._selected.has(item.asin) && visibles.has(item.asin)
+    )
+  },
+
+  // ── SELECCIÓN ─────────────────────────
+  isSelected(asin) {
+    return this._selected.has(asin)
+  },
+
+  toggleSeleccion(asin) {
+    if (this._selected.has(asin)) {
+      this._selected.delete(asin)
+    } else {
+      this._selected.add(asin)
+    }
+  },
+
+  seleccionarTodos() {
+    this._items.forEach(item => this._selected.add(item.asin))
+  },
+
+  deseleccionarTodos() {
+    this._selected.clear()
+  },
+
+  /**
+   * Selecciona solo productos VISIBLES en el DOM
+   * Usado por "Seleccionar visible"
+   */
+  seleccionarVisibles() {
+    document.querySelectorAll('.result-item:not([style*="display: none"]) .select-chk').forEach(chk => {
+      const asin = chk.getAttribute('data-asin')
+      if (asin) this._selected.add(asin)
+    })
+  },
+
+  // ── DEBUG ─────────────────────────────
+  getEstado() {
+    return {
+      items: this._items.length,
+      selected: this._selected.size,
+      feedId: this._feedId,
+      selectedAsins: Array.from(this._selected)
+    }
+  }
+}
+
+// ========== MÓDULO: RENDER ==========
+/**
+ * RenderModule: Generación de HTML de productos
+ *
+ * OBJETIVO: Separar la generación de UI del estado global
+ *
+ * ANTES (acoplado):
+ * - renderResults() mezcla lógica de filtrado + UI + estado
+ * - Usa variables globales (currentFeedId, descartadosEnSesion)
+ * - Difícil de testear
+ *
+ * AHORA (desacoplado):
+ * - Funciones puras que generan HTML
+ * - Reciben datos como parámetros
+ * - Testeable sin DOM completo
+ */
+const RenderModule = {
+  /**
+   * Genera HTML de un producto individual
+   * Función pura: mismo producto → mismo HTML
+   */
+  generarProductoHTML(producto, index, opciones = {}) {
+    const {
+      feedId = null,
+      descartadosSet = new Set()
+    } = opciones
+
+    const p = producto
+    const i = index
+
+    return `
+    <div class="product-card card-wrap result-item" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
+      <input class="card-checkbox select-chk" type="checkbox" id="chk_${i}" data-asin="${p.asin}" checked onchange="toggleProducto('${p.asin}')">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:160px;object-fit:cover;">
+      <div class="product-info">
+        <div class="product-title">${p.title}</div>
+        <div class="product-prices">
+          <span class="price-disc">$${p.price_discounted.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
+          ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
+        </div>
+        ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
+        ${p.cross_platform_dup
+          ? `<span title="Mismo producto publicado en ${p.cross_platform_dup === 'amazon' ? 'Amazon' : 'Mercado Libre'}" style="background:rgba(239,68,68,.1);color:#ef4444;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(239,68,68,.25);">🔀 Ya en ${p.cross_platform_dup === 'amazon' ? 'Amazon' : 'ML'}</span>`
+          : (p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0)
+            ? `<span title="Score: ${p.novedad_score}" style="background:rgba(107,114,128,.12);color:#9ca3af;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(107,114,128,.2);">🔁 ${p.novedad_score === 0 ? 'Publicado <7d' : p.novedad_score <= 0.3 ? 'Publicado 7-14d' : p.novedad_score <= 0.6 ? 'Publicado 14-21d' : 'Publicado +21d'}</span>`
+            : ""}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+          <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||(p.vigencia&&p.vigencia.includes('relámpago'))?'relampago':p.vigencia==='permanente'?'permanente':''}">${this.getPromoLabel(p)}</span>
+          ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
+          ${p.badge && p.badge.includes('🎯') ? `<span style="background:rgba(168,85,247,.12);color:#9333ea;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;border:1.5px solid rgba(168,85,247,.3);">${p.badge}</span>` : p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
+          ${p.source_type ? `<span style="background:${p.source_type==='telegram'?'rgba(34,197,94,.12)':p.source_type==='url_fija'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${p.source_type==='telegram'?'#16a34a':p.source_type==='url_fija'?'#2563eb':'#6b7280'};font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${p.source_type==='telegram'?'rgba(34,197,94,.3)':p.source_type==='url_fija'?'rgba(59,130,246,.3)':'rgba(156,163,175,.3)'};" title="${p.source_channel||''}">${p.source_type==='telegram'?'📱':'📍'} ${p.source_channel||p.source_type||''}</span>` : p.source_channel ? `<span style="background:rgba(99,102,241,.12);color:#6366f1;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,.3);">${p.source_channel}</span>` : ''}
+          ${p.telegram_published ? `<span style="background:rgba(156,163,175,.08);color:#6b7280;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(156,163,175,.2);" title="Publicado en Telegram">📅 ${new Date(p.telegram_published).toLocaleDateString('es-MX', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>` : ''}
+        </div>
+        ${feedId ? `<button onclick="descartarProducto('${p.asin}', '${(p.title||'').replace(/'/g, "\\'")}', ${i}, event)" style="margin-top:8px;padding:4px 8px;font-size:11px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.3);border-radius:4px;cursor:pointer;width:100%;" title="Descartar este producto y aprender a evitar similares">👎 Descartar</button>` : ''}
+        <div style="margin-top:4px;font-size:10px;color:#415f7a;line-height:1.7;">
+          ${p.badge && p.badge.includes('🎯') ? `<div><strong style="color:#9333ea;">Keyword match:</strong> <span style="color:#6b21a8;font-weight:500;">${p.badge.replace('🎯 ', '')}</span></div>` : p.badge && !p.badge.includes('🎯') ? `<div>🏷️ <span style="color:#f59e0b;">${p.badge}</span></div>` : ''}
+          ${p.access_type && p.access_type !== 'ALL' ? `<div>🔒 <span style="color:#7090ff;">${p.access_type === 'PRIME_EXCLUSIVE' ? 'Prime Exclusive' : 'Prime Early Access'}</span></div>` : ''}
+          ${p.start_time ? `<div>▶ Inicio: ${new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
+          ${p.end_time ? `<div>⏹ Fin: ${new Date(p.end_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
+        </div>
+        <a class="btn-ver" href="${p.link}" target="_blank" onclick="event.stopPropagation()">Ver en Amazon →</a>
+      </div>
+    </div>
+    `
+  },
+
+  /**
+   * Genera HTML de badges detectados
+   */
+  generarBadgesHTML(items) {
+    const badgesSet = new Set(items.map(p => p.badge).filter(Boolean))
+    return [...badgesSet].map(b =>
+      `<span onclick="filtrarPorBadge('${b}')" style="cursor:pointer;background:rgba(233,69,96,.08);color:#c73652;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid rgba(233,69,96,.22);">${b}</span>`
+    ).join("")
+  },
+
+  /**
+   * Renderiza grid completo de productos
+   * Lee feedId de ProductosState en lugar de global
+   */
+  renderGrid(items, opciones = {}) {
+    const feedId = ProductosState.getFeedId()
+    const descartadosSet = descartadosEnSesion  // Por ahora lee de global, en futura refactor será parámetro
+
+    const grid = document.getElementById("product-grid")
+    grid.innerHTML = items.map((p, i) =>
+      this.generarProductoHTML(p, i, { feedId, descartadosSet })
+    ).join("")
+  },
+
+  /**
+   * Helper: Obtener label de promoción
+   */
+  getPromoLabel(p) {
+    if (p.tipo === 'LIGHTNING_DEAL' || p.vigencia === 'relampago' || (p.vigencia && p.vigencia.includes('relámpago'))) {
+      return '⚡ Relámpago'
+    }
+    if (p.vigencia === 'permanente') {
+      return '♾️ Permanente'
+    }
+    if (p.vigencia) {
+      return p.vigencia
+    }
+    return 'Oferta'
+  }
+}
+
 // ========== API HELPERS ==========
 const API_BASE = "http://localhost:8765"
 
@@ -2222,7 +2445,12 @@ async function buscar() {
     })
     const data = await r.json()
     if (!data.ok) throw new Error(data.error)
+
+    // ✅ SINCRONIZAR ProductosState
     allItems = data.items
+    ProductosState.setItems(allItems)
+    ProductosState.setFeedId(feedId || null)
+
     renderResults(allItems)
     setStatus(`✅ ${allItems.length} productos encontrados`, "done")
     mostrarResumen(cats, window._ultimosFiltros || filtros, allItems.length)
@@ -2260,47 +2488,12 @@ function renderResults(items) {
     items = items.filter(p => p.start_time && p.start_time !== "")
   }
 
-  const badgesSet = new Set(items.map(p => p.badge).filter(Boolean))
+  // ✅ MÓDULO INDEPENDIENTE - Usa RenderModule
   const badgesEl = document.getElementById("badges-detectados")
-  badgesEl.innerHTML = [...badgesSet].map(b =>
-    `<span onclick="filtrarPorBadge('${b}')" style="cursor:pointer;background:rgba(233,69,96,.08);color:#c73652;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid rgba(233,69,96,.22);">${b}</span>`
-  ).join("")
+  badgesEl.innerHTML = RenderModule.generarBadgesHTML(items)
 
-  const grid = document.getElementById("product-grid")
-  grid.innerHTML = items.map((p, i) => `
-    <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
-      <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:160px;object-fit:cover;">
-      <div class="product-info">
-        <div class="product-title">${p.title}</div>
-        <div class="product-prices">
-          <span class="price-disc">$${p.price_discounted.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
-          ${p.price_original > p.price_discounted ? `<span class="price-orig">$${p.price_original.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>` : ""}
-        </div>
-        ${p.descuento_pct > 0 ? `<span class="discount-badge">-${p.descuento_pct}%</span>` : ""}
-        ${p.cross_platform_dup
-          ? `<span title="Mismo producto publicado en ${p.cross_platform_dup === 'amazon' ? 'Amazon' : 'Mercado Libre'}" style="background:rgba(239,68,68,.1);color:#ef4444;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(239,68,68,.25);">🔀 Ya en ${p.cross_platform_dup === 'amazon' ? 'Amazon' : 'ML'}</span>`
-          : (p.novedad_score !== undefined && p.novedad_score !== null && p.novedad_score < 1.0)
-            ? `<span title="Score: ${p.novedad_score}" style="background:rgba(107,114,128,.12);color:#9ca3af;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(107,114,128,.2);">🔁 ${p.novedad_score === 0 ? 'Publicado <7d' : p.novedad_score <= 0.3 ? 'Publicado 7-14d' : p.novedad_score <= 0.6 ? 'Publicado 14-21d' : 'Publicado +21d'}</span>`
-            : ""}
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
-          <span class="vigencia-badge ${p.tipo==='LIGHTNING_DEAL'||p.vigencia==='relampago'||(p.vigencia&&p.vigencia.includes('relámpago'))?'relampago':p.vigencia==='permanente'?'permanente':''}">${getPromoLabel(p)}</span>
-          ${p.pct_claimed ? `<span style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(245,158,11,.2);">🔥 ${p.pct_claimed}% reclamado</span>` : ''}
-          ${p.badge && p.badge.includes('🎯') ? `<span style="background:rgba(168,85,247,.12);color:#9333ea;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;border:1.5px solid rgba(168,85,247,.3);">${p.badge}</span>` : p.badge ? `<span style="background:rgba(14,165,233,.08);color:#6898b8;font-size:10px;padding:2px 6px;border-radius:4px;">${p.badge}</span>` : ''}
-          ${p.source_type ? `<span style="background:${p.source_type==='telegram'?'rgba(34,197,94,.12)':p.source_type==='url_fija'?'rgba(59,130,246,.12)':'rgba(156,163,175,.12)'};color:${p.source_type==='telegram'?'#16a34a':p.source_type==='url_fija'?'#2563eb':'#6b7280'};font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid ${p.source_type==='telegram'?'rgba(34,197,94,.3)':p.source_type==='url_fija'?'rgba(59,130,246,.3)':'rgba(156,163,175,.3)'};" title="${p.source_channel||''}">${p.source_type==='telegram'?'📱':'📍'} ${p.source_channel||p.source_type||''}</span>` : p.source_channel ? `<span style="background:rgba(99,102,241,.12);color:#6366f1;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,.3);">${p.source_channel}</span>` : ''}
-          ${p.telegram_published ? `<span style="background:rgba(156,163,175,.08);color:#6b7280;font-size:10px;padding:2px 6px;border-radius:4px;border:1px solid rgba(156,163,175,.2);" title="Publicado en Telegram">📅 ${new Date(p.telegram_published).toLocaleDateString('es-MX', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</span>` : ''}
-        </div>
-        ${currentFeedId ? `<button onclick="descartarProducto('${p.asin}', '${(p.title||'').replace(/'/g, "\\'")}', ${i}, event)" style="margin-top:8px;padding:4px 8px;font-size:11px;background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.3);border-radius:4px;cursor:pointer;width:100%;" title="Descartar este producto y aprender a evitar similares">👎 Descartar</button>` : ''}
-        <div style="margin-top:4px;font-size:10px;color:#415f7a;line-height:1.7;">
-          ${p.badge && p.badge.includes('🎯') ? `<div><strong style="color:#9333ea;">Keyword match:</strong> <span style="color:#6b21a8;font-weight:500;">${p.badge.replace('🎯 ', '')}</span></div>` : p.badge && !p.badge.includes('🎯') ? `<div>🏷️ <span style="color:#f59e0b;">${p.badge}</span></div>` : ''}
-          ${p.access_type && p.access_type !== 'ALL' ? `<div>🔒 <span style="color:#7090ff;">${p.access_type === 'PRIME_EXCLUSIVE' ? 'Prime Exclusive' : 'Prime Early Access'}</span></div>` : ''}
-          ${p.start_time ? `<div>▶ Inicio: ${new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
-          ${p.end_time ? `<div>⏹ Fin: ${new Date(p.end_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</div>` : ''}
-        </div>
-        <a class="btn-ver" href="${p.link}" target="_blank" onclick="event.stopPropagation()">Ver en Amazon →</a>
-      </div>
-    </div>
-  `).join("")
+  // ✅ Renderizar grid usando RenderModule
+  RenderModule.renderGrid(items)
 
   // Ocultar productos descartados en esta sesión (después de renderizar)
   setTimeout(() => {
@@ -2312,6 +2505,16 @@ function renderResults(items) {
     })
   }, 0)
 
+  // ✅ SINCRONIZAR ProductosState con checkboxes del DOM
+  setTimeout(() => {
+    items.forEach((p) => {
+      const chk = document.querySelector(`.select-chk[data-asin="${p.asin}"]`)
+      if (chk && chk.checked) {
+        ProductosState.toggleSeleccion(p.asin)
+      }
+    })
+  }, 0)
+
   updateCount()
   document.getElementById("results").style.display = "block"
   document.getElementById("exportBar").style.display = "flex"
@@ -2319,14 +2522,29 @@ function renderResults(items) {
   // Lazy loading desactivado - imágenes cargan normalmente con src=""
 }
 
-function toggleCard(i) {
-  const chk = document.getElementById("chk_"+i)
-  const card = document.getElementById("card_"+i)
-  card.classList.toggle("selected", chk.checked)
+// ✅ MÓDULO INDEPENDIENTE - Actualiza ProductosState
+function toggleProducto(asin) {
+  ProductosState.toggleSeleccion(asin)
+
+  // Actualizar UI
+  const chk = document.querySelector(`.select-chk[data-asin="${asin}"]`)
+  if (chk) {
+    const card = chk.closest('.product-card')
+    if (card) {
+      card.classList.toggle("selected", ProductosState.isSelected(asin))
+    }
+  }
   updateCount()
 }
 
 function selectAll(v) {
+  if (v) {
+    ProductosState.seleccionarTodos()
+  } else {
+    ProductosState.deseleccionarTodos()
+  }
+
+  // Actualizar UI
   allItems.forEach((_, i) => {
     const chk = document.getElementById("chk_"+i)
     const card = document.getElementById("card_"+i)
@@ -2338,13 +2556,15 @@ function selectAll(v) {
   updateCount()
 }
 
+// ✅ MÓDULO INDEPENDIENTE - Lee de ProductosState
 function updateCount() {
-  const sel = allItems.filter((_, i) => document.getElementById("chk_"+i) && document.getElementById("chk_"+i).checked).length
-  document.getElementById("results-count").textContent = `${allItems.length} productos  •  ${sel} seleccionados`
+  const total = allItems.length
+  const sel = ProductosState.getSeleccionCount()
+
+  document.getElementById("results-count").textContent = `${total} productos  •  ${sel} seleccionados`
   document.getElementById("exportInfo").textContent = `${sel} seleccionados para exportar`
 
   // Update metrics strip
-  const total = allItems.length
   document.getElementById("m-total").textContent = total > 0 ? total.toLocaleString('es-MX') : "—"
   document.getElementById("m-sel").textContent = sel > 0 ? sel.toLocaleString('es-MX') : "—"
   if (total > 0) {
@@ -2379,34 +2599,45 @@ function exportCSV() {
 // Variable global para controlar el timeout del botón
 let btnSheetsTimeout = null
 
-async function exportarSheets() {
-  // IMPORTANTE: Solo exportar productos VISIBLES y seleccionados
+// ========== MÓDULO DE EXPORTACIÓN A SHEETS ==========
+// Independiente de feeds, filtros, scores, etc.
+
+function obtenerProductosSeleccionadosVisibles() {
+  // IMPORTANTE: Solo productos VISIBLES y seleccionados
   const selected = []
   document.querySelectorAll(".product-card").forEach((card, i) => {
     const chk = document.getElementById("chk_"+i)
-    // Solo incluir si está visible (no oculto por filtros) Y seleccionado
     if (card.style.display !== "none" && chk?.checked && allItems[i]) {
       selected.push(allItems[i])
     }
   })
+  return selected
+}
 
-  if (!selected.length) { alert("Selecciona al menos un producto VISIBLE"); return }
+async function exportarSheets() {
+  // ✅ MÓDULO INDEPENDIENTE - Lee de ProductosState, NO del DOM
+  const selected = ProductosState.getSeleccionadosVisibles()
 
-  // Debug: mostrar valor actual
-  console.log("🔍 exportarSheets - currentFeedId:", currentFeedId)
-  console.log("🔍 exportarSheets - window.currentFeedId:", window.currentFeedId)
-  console.log("🔍 exportarSheets - select value:", document.getElementById("audienciaGlobalSelect")?.value)
-
-  // Validar que haya una audiencia seleccionada
-  if (!currentFeedId && !window.currentFeedId) {
-    alert("⚠️ Debes seleccionar una audiencia antes de exportar a Sheets.\n\nUsa el selector de 'Audiencia Activa' en la barra superior.\n\nDebug: currentFeedId = " + currentFeedId)
+  if (!selected.length) {
+    alert("Selecciona al menos un producto VISIBLE")
     return
   }
 
-  // Usar window.currentFeedId si currentFeedId es null
-  const feedIdToUse = currentFeedId || window.currentFeedId
-  console.log("✅ Usando feedId:", feedIdToUse)
+  const feedId = ProductosState.getFeedId()
 
+  // DECISIÓN: ¿Es búsqueda de feed o búsqueda directa?
+  if (feedId) {
+    // Tiene audiencia → usar endpoint de feeds
+    console.log("📊 Exportando vía FEED:", feedId)
+    return exportarSheetsFeed(selected, feedId)
+  } else {
+    // NO tiene audiencia → búsqueda directa (ML, Amazon sin feed)
+    console.log("📊 Exportando vía DIRECTO (sin audiencia)")
+    return exportarSheetsDirecto(selected)
+  }
+}
+
+async function exportarSheetsFeed(items, feedId) {
   const btn = document.getElementById("btnSheets")
 
   // Cancelar timeout anterior si existe
@@ -2420,10 +2651,9 @@ async function exportarSheets() {
   btn.disabled = true
 
   try {
-    // SIEMPRE usar el endpoint de feeds con la audiencia activa
     const endpoint = "http://localhost:8765/feeds/export-sheets"
-    const payload = { feed_id: feedIdToUse, items: selected }
-    console.log("📤 Payload:", payload)
+    const payload = { feed_id: feedId, items: items }
+    console.log("📤 Payload FEED:", payload)
 
     const r = await fetchConTimeout(endpoint, {
       method: "POST",
@@ -2456,6 +2686,58 @@ async function exportarSheets() {
     alert("Error al exportar: " + e.message)
   }
 }
+
+async function exportarSheetsDirecto(items) {
+  const btn = document.getElementById("btnSheets")
+
+  // Cancelar timeout anterior si existe
+  if (btnSheetsTimeout) {
+    clearTimeout(btnSheetsTimeout)
+    btnSheetsTimeout = null
+  }
+
+  // Resetear botón al estado inicial
+  btn.textContent = "⏳ Enviando…"
+  btn.disabled = true
+
+  try {
+    const endpoint = "http://localhost:8765/exportar-sheets"
+    const payload = { items: items }
+    console.log("📤 Payload DIRECTO:", payload)
+
+    const r = await fetchConTimeout(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }, 90000)
+    const d = await r.json()
+    if (!d.ok) throw new Error(d.error)
+
+    btn.textContent = `✅ ${d.rows} filas`
+    btn.style.background = "#10b981"
+
+    btnSheetsTimeout = setTimeout(() => {
+      btn.textContent = "📊 → Sheets"
+      btn.style.background = "#1a7f4b"
+      btn.disabled = false
+      btnSheetsTimeout = null
+    }, 3000)
+  } catch(e) {
+    btn.textContent = "❌ Error"
+    btn.style.background = "#ef4444"
+
+    btnSheetsTimeout = setTimeout(() => {
+      btn.textContent = "📊 → Sheets"
+      btn.style.background = "#1a7f4b"
+      btn.disabled = false
+      btnSheetsTimeout = null
+    }, 3000)
+
+    alert("Error al exportar: " + e.message)
+  }
+}
+
+// ========== FIN MÓDULO DE EXPORTACIÓN ==========
 
 // verFeeds() OBSOLETA - eliminada (consultaba feeds de Amazon API)
 
@@ -3540,7 +3822,12 @@ async function _llamarML(body, statusEl) {
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
+
+    // ✅ SINCRONIZAR ProductosState
     allItems = d.items
+    ProductosState.setItems(allItems)
+    ProductosState.setFeedId(null)  // ML directo, sin feed
+
     renderResults(d.items)
     updateCount()
     statusEl.textContent = `✅ ${d.total} productos`
@@ -3593,7 +3880,12 @@ async function procesarHTMLML() {
     })
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
+
+    // ✅ SINCRONIZAR ProductosState
     allItems = d.items
+    ProductosState.setItems(allItems)
+    ProductosState.setFeedId(null)  // ML directo, sin feed
+
     renderResults(d.items)
     updateCount()
     statusEl.textContent = `✅ ${d.items.length} productos de ${d.total_raw} en el HTML`
@@ -3776,6 +4068,10 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
     // Convertir productos del feed al formato de la app
     // Mapear productos usando función helper centralizada
     allItems = data.productos.map(mapearProductoFeed)
+
+    // ✅ SINCRONIZAR ProductosState
+    ProductosState.setItems(allItems)
+    ProductosState.setFeedId(audienciaId)
 
     // Renderizar en grid principal (igual que búsquedas normales)
     renderResults(allItems)
