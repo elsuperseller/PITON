@@ -1717,25 +1717,7 @@ function mostrarResumen(cats, filtros, total) {
   }
   lineas.push(`💰 ${precioStr}`)
 
-  const vigencia = []
-  if (filtros.solo_permanentes) vigencia.push("Solo permanentes ⭐")
-  if (filtros.solo_con_fecha) vigencia.push("Solo con fecha de fin")
-  if (filtros.excluir_relampago) vigencia.push("Excluir ⚡ Lightning")
-  if (filtros.solo_relampago) vigencia.push("Solo ⚡ Lightning")
-  if (filtros.hrs_activo) vigencia.push(`Mín. ${filtros.hrs_min}h restantes`)
-  if (document.getElementById("f_con_inicio").checked) vigencia.push("Solo con fecha de inicio ▶")
-  if (vigencia.length) lineas.push(`⏱ <b>Vigencia:</b> ${vigencia.join(", ")}`)
-
-  const tend = []
-  if (filtros.trending) tend.push(`En tendencia ≥ ${filtros.tpct}% reclamado`)
-  if (filtros.prime_e) tend.push("Prime Early Access")
-  if (filtros.prime_x) tend.push("Prime Exclusive")
-  if (filtros.scarce) tend.push("Poco inventario")
-  if (tend.length) lineas.push(`🔥 <b>Tendencia:</b> ${tend.join(", ")}`)
-
-  if (document.getElementById("f_badge_activo").checked && document.getElementById("f_badge_texto").value) {
-    lineas.push(`🏷️ <b>Badge:</b> "${document.getElementById("f_badge_texto").value}"`)
-  }
+  // Filtros de Vigencia, Tendencia y Badge eliminados
 
   lineas.push(`✅ <b>Resultado:</b> ${total} productos encontrados`)
 
@@ -1744,11 +1726,7 @@ function mostrarResumen(cats, filtros, total) {
   el.style.display = "block"
 }
 
-function filtrarPorBadge(badge) {
-  document.getElementById("f_badge_activo").checked = true
-  document.getElementById("f_badge_texto").value = badge
-  renderResults(allItems)
-}
+// filtrarPorBadge() eliminada - badge filter ya no existe
 
 function toggleAll(v) {
   Object.keys(CATS).forEach(n => {
@@ -1968,6 +1946,11 @@ const ProductosState = {
     }
   },
 
+  // Agregar sin alternar (para sincronización inicial)
+  agregarSeleccion(asin) {
+    this._selected.add(asin)
+  },
+
   seleccionarTodos() {
     this._items.forEach(item => this._selected.add(item.asin))
   },
@@ -2070,7 +2053,7 @@ const RenderModule = {
   generarBadgesHTML(items) {
     const badgesSet = new Set(items.map(p => p.badge).filter(Boolean))
     return [...badgesSet].map(b =>
-      `<span onclick="filtrarPorBadge('${b}')" style="cursor:pointer;background:rgba(233,69,96,.08);color:#c73652;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid rgba(233,69,96,.22);">${b}</span>`
+      `<span style="background:rgba(233,69,96,.08);color:#c73652;font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid rgba(233,69,96,.22);">${b}</span>`
     ).join("")
   },
 
@@ -2483,12 +2466,7 @@ function renderResults(items) {
       }
     }, 500)
   }
-  // El filtro de badge ahora se aplica en el servidor
-  const filtroInicio = document.getElementById("f_con_inicio").checked
-
-  if (filtroInicio) {
-    items = items.filter(p => p.start_time && p.start_time !== "")
-  }
+  // Filtro de inicio eliminado (formaba parte de "Vigencia" que ya no existe)
 
   // ✅ MÓDULO INDEPENDIENTE - Usa RenderModule
   const badgesEl = document.getElementById("badges-detectados")
@@ -2509,11 +2487,11 @@ function renderResults(items) {
 
   // ✅ SINCRONIZAR ProductosState con checkboxes del DOM
   setTimeout(() => {
-    // Ya se limpió en setItems() - solo sincronizar checkboxes marcados
+    // Ya se limpió en setItems() - solo agregar checkboxes marcados
     items.forEach((p) => {
       const chk = document.querySelector(`.select-chk[data-asin="${p.asin}"]`)
       if (chk && chk.checked) {
-        ProductosState.toggleSeleccion(p.asin)
+        ProductosState.agregarSeleccion(p.asin)
       }
     })
 
