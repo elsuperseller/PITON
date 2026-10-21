@@ -1928,9 +1928,20 @@ const ProductosState = {
       const asin = chk.getAttribute('data-asin')
       if (asin) visibles.add(asin)
     })
-    return this._items.filter(item =>
+
+    console.log("📊 getSeleccionadosVisibles:")
+    console.log("  Items totales:", this._items.length)
+    console.log("  Visibles en DOM:", visibles.size)
+    console.log("  Seleccionados en State:", this._selected.size)
+    console.log("  ASINs seleccionados:", Array.from(this._selected))
+
+    const resultado = this._items.filter(item =>
       this._selected.has(item.asin) && visibles.has(item.asin)
     )
+
+    console.log("  Resultado final:", resultado.length)
+
+    return resultado
   },
 
   // ── SELECCIÓN ─────────────────────────
@@ -2510,7 +2521,10 @@ function renderResults(items) {
 
 // ✅ MÓDULO INDEPENDIENTE - Actualiza ProductosState
 function toggleProducto(asin) {
+  console.log("🔄 toggleProducto:", asin)
   ProductosState.toggleSeleccion(asin)
+  console.log("  ✅ ProductosState._selected.size:", ProductosState.getSeleccionCount())
+  console.log("  ✅ isSelected:", ProductosState.isSelected(asin))
 
   // Actualizar UI
   const chk = document.querySelector(`.select-chk[data-asin="${asin}"]`)
