@@ -92,7 +92,39 @@ def marcar_publicado(item_id, source="", title="", ean="", modelo=""):
 def marcar_varios(items):
     """Marca una lista de objetos oferta como publicados en un solo write."""
     historial = _cargar()
-    ahora     = datetime.now(timezone.utc).isoformat()
+    ahora_dt  = datetime.now(timezone.utc)
+    ahora     = ahora_dt.isoformat()
+
+    # ✅ AUTO-LIMPIEZA: Eliminar entradas de más de 3 meses
+    hace_3_meses = ahora_dt - timedelta(days=90)
+    historial_limpio = {}
+    eliminados = 0
+
+    for key, entry in historial.items():
+        last_pub = entry.get("last_published")
+        if last_pub:
+            try:
+                dt = datetime.fromisoformat(last_pub)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                # Mantener solo últimos 3 meses
+                if dt >= hace_3_meses:
+                    historial_limpio[key] = entry
+                else:
+                    eliminados += 1
+            except:
+                # Si hay error parseando fecha, eliminar
+                eliminados += 1
+        else:
+            # Si no tiene last_published, eliminar
+            eliminados += 1
+
+    historial = historial_limpio
+
+    if eliminados > 0:
+        print(f"  🧹 Auto-limpieza: {eliminados} entradas antiguas eliminadas", flush=True)
+
+    # Marcar nuevos items
     for p in items:
         key = str(p.get("id") or p.get("asin") or "")
         if not key:

@@ -943,23 +943,43 @@ def enriquecer_asins(asins, minSavingPercent=1):
                 timeout=20
             )
             if r.status_code != 200:
+                print(f"  ⚠️  Batch retornó status {r.status_code}", flush=True)
                 return []
 
-            items_api = r.json().get("itemsResult", {}).get("items", [])
+            response_data = r.json()
+            items_api = response_data.get("itemsResult", {}).get("items", [])
+
+            # 🔍 LOG DETALLADO: Ver qué ASINs NO retornó la API
+            asins_recibidos = {item.get('asin') for item in items_api if item.get('asin')}
+            asins_faltantes = [asin for asin in batch if asin not in asins_recibidos]
+
+            if asins_faltantes:
+                print(f"  ⚠️  API no retornó {len(asins_faltantes)}/{len(batch)} ASINs: {', '.join(asins_faltantes[:3])}{'...' if len(asins_faltantes) > 3 else ''}", flush=True)
+
+                # Revisar si hay errores en la respuesta
+                errors = response_data.get("itemsResult", {}).get("errors", [])
+                if errors:
+                    print(f"  ❌ Errores de API: {errors[:2]}", flush=True)
+
             return items_api
         except Exception as e:
             print(f"  ❌ Error enriqueciendo batch: {e}", flush=True)
             return []
 
-    # Dividir en batches de 10
+    # ✅ OPTIMIZADO: Dividir en batches de 10, sleep reducido
     batches = [asins[i:i+10] for i in range(0, len(asins), 10)]
     all_items = []
 
-    for batch in batches:
+    print(f"  📦 Enriqueciendo {len(asins)} ASINs en {len(batches)} batches...", flush=True)
+
+    for i, batch in enumerate(batches, 1):
         items = _enriquecer_batch(batch)
         all_items.extend(items)
-        time.sleep(0.3)  # Rate limiting
+        if i % 5 == 0:  # Log cada 5 batches
+            print(f"  ⏳ Progreso: {i}/{len(batches)} batches ({len(all_items)} items)", flush=True)
+        time.sleep(0.5)  # ✅ Aumentado a 0.5s para respetar rate limit
 
+    print(f"  ✅ Enriquecimiento completo: {len(all_items)} items de {len(asins)} ASINs", flush=True)
     return all_items
 
 # ==================== FIN FEEDS ====================
@@ -1228,6 +1248,50 @@ class Handler(BaseHTTPRequestHandler):
                 self._cors()
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
+        elif self.path == "/buscar-asins-batch":
+            # ✅ OPTIMIZADO: Búsqueda de múltiples ASINs en batch
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(length))
+                asins = body.get("asins", [])
+                minSavingPercent = body.get("minSavingPercent", 0)
+
+                if not asins or not isinstance(asins, list):
+                    raise ValueError("Se requiere una lista de ASINs")
+
+                print(f"🔍 Búsqueda batch de {len(asins)} ASINs...", flush=True)
+
+                # Usar función batch optimizada
+                items = enriquecer_asins(asins, minSavingPercent)
+
+                # Parsear items
+                productos = []
+                for item in items:
+                    try:
+                        producto = parsear_item(item)
+                        if producto:
+                            productos.append(producto)
+                    except:
+                        pass
+
+                print(f"✅ Batch completado: {len(productos)} productos de {len(asins)} ASINs", flush=True)
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({
+                    "ok": True,
+                    "items": productos,
+                    "total": len(productos),
+                    "asins_requested": len(asins)
+                }).encode())
+
+            except Exception as e:
+                print(f"❌ Error en /buscar-asins-batch: {e}", flush=True)
+                traceback.print_exc()
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
                 self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
 
         elif self.path == "/buscar-directo":
@@ -3429,44 +3493,8 @@ class Handler(BaseHTTPRequestHandler):
                                 if bloqueados_filtrados > 0:
                                     print(f"  🚫 {bloqueados_filtrados} productos descartados filtrados del caché", flush=True)
 
-                                # RECALCULAR novedad_score con historial actualizado
-                                # (el historial puede haber cambiado desde que se creó el cache)
-                                historial_feed = cargar_historial_feed(audiencia_id)
-                                from datetime import datetime as fecha_dt, timezone
-                                now_recalc = fecha_dt.now(timezone.utc)
-
-                                for producto in productos_filtrados:
-                                    asin = producto.get('asin')
-                                    title = producto.get('title', '')
-
-                                    # Extraer modelo usando la función del CORE
-                                    modelo = _hv._extraer_modelo(title) if _HV_OK and hasattr(_hv, '_extraer_modelo') else ""
-
-                                    # Buscar en historial del feed
-                                    item_id = asin or modelo
-                                    if item_id and item_id in historial_feed:
-                                        registro = historial_feed[item_id]
-                                        ultima_vez = registro.get('ultima_vez', '')
-
-                                        try:
-                                            ultima_fecha = fecha_dt.fromisoformat(ultima_vez.replace('Z', '+00:00'))
-                                            dias = (now_recalc - ultima_fecha).days
-
-                                            # Scoring de novedad
-                                            if dias > 14:
-                                                score = 0.8
-                                            elif dias > 7:
-                                                score = 0.5
-                                            elif dias > 3:
-                                                score = 0.2
-                                            else:
-                                                score = 0.0
-                                        except:
-                                            score = 0.5
-
-                                        producto['novedad_score'] = score
-                                    else:
-                                        producto['novedad_score'] = 1.0
+                                # ✅ MÓDULO UNIFICADO - Recalcular con función centralizada
+                                productos_filtrados = aplicar_novedad_score_feed(productos_filtrados, audiencia_id)
 
                                 # Aplicar filtro por fuente si se especificó
                                 if fuente_filtro:
@@ -4005,39 +4033,8 @@ class Handler(BaseHTTPRequestHandler):
                                     if not esta_bloqueado(audiencia_id, p.get('asin', ''))
                                 ]
 
-                                # Recalcular novedad_score
-                                historial_feed = cargar_historial_feed(audiencia_id)
-                                from datetime import datetime as fecha_dt, timezone
-                                now_recalc = fecha_dt.now(timezone.utc)
-
-                                for producto in productos_filtrados:
-                                    asin = producto.get('asin')
-                                    title = producto.get('title', '')
-                                    modelo = _hv._extraer_modelo(title) if _HV_OK and hasattr(_hv, '_extraer_modelo') else ""
-
-                                    item_id = asin or modelo
-                                    if item_id and item_id in historial_feed:
-                                        registro = historial_feed[item_id]
-                                        ultima_vez = registro.get('ultima_vez', '')
-
-                                        try:
-                                            ultima_fecha = fecha_dt.fromisoformat(ultima_vez.replace('Z', '+00:00'))
-                                            dias = (now_recalc - ultima_fecha).days
-
-                                            if dias > 14:
-                                                score = 0.8
-                                            elif dias > 7:
-                                                score = 0.5
-                                            elif dias > 3:
-                                                score = 0.2
-                                            else:
-                                                score = 0.0
-                                        except:
-                                            score = 0.5
-
-                                        producto['novedad_score'] = score
-                                    else:
-                                        producto['novedad_score'] = 1.0
+                                # ✅ MÓDULO UNIFICADO - Usar función centralizada
+                                productos_filtrados = aplicar_novedad_score_feed(productos_filtrados, audiencia_id)
 
                                 # Aplicar filtro por fuente si se especificó
                                 if fuente_filtro:
