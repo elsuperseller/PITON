@@ -2470,7 +2470,9 @@ function renderResults(items) {
 
   // ✅ MÓDULO INDEPENDIENTE - Usa RenderModule
   const badgesEl = document.getElementById("badges-detectados")
-  badgesEl.innerHTML = RenderModule.generarBadgesHTML(items)
+  if (badgesEl) {
+    badgesEl.innerHTML = RenderModule.generarBadgesHTML(items)
+  }
 
   // ✅ Renderizar grid usando RenderModule
   RenderModule.renderGrid(items)
@@ -2631,13 +2633,15 @@ async function exportarSheetsFeed(items, feedId) {
   }
 
   // Resetear botón al estado inicial
-  btn.textContent = "⏳ Enviando…"
+  btn.textContent = `⏳ Enviando ${items.length} items…`
   btn.disabled = true
 
   try {
     const endpoint = "http://localhost:8765/feeds/export-sheets"
     const payload = { feed_id: feedId, items: items }
     console.log("📤 Payload FEED:", payload)
+    console.log("🔍 Feed ID:", feedId)
+    console.log("🔍 Items a exportar:", items.length)
     console.log("🔍 Primeros 3 items - platform:", items.slice(0, 3).map(i => ({
       asin: i.asin,
       source: i.source,
@@ -2645,11 +2649,13 @@ async function exportarSheetsFeed(items, feedId) {
       platform_name: i.platform_name
     })))
 
+    console.log("🌐 Iniciando fetch a:", endpoint)
     const r = await fetchConTimeout(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }, 90000)
+    }, 300000)  // ✅ 5 minutos (antes: 90 segundos)
+    console.log("✅ Fetch completado, status:", r.status)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
 
@@ -2663,6 +2669,10 @@ async function exportarSheetsFeed(items, feedId) {
       btnSheetsTimeout = null
     }, 3000)
   } catch(e) {
+    console.error("❌ Error en exportación FEED:", e)
+    console.error("  Tipo de error:", e.name)
+    console.error("  Mensaje:", e.message)
+
     btn.textContent = "❌ Error"
     btn.style.background = "#ef4444"
 
@@ -2673,7 +2683,11 @@ async function exportarSheetsFeed(items, feedId) {
       btnSheetsTimeout = null
     }, 3000)
 
-    alert("Error al exportar: " + e.message)
+    if (e.name === "AbortError") {
+      alert("Error al exportar: Operación cancelada (timeout de 5 minutos)")
+    } else {
+      alert("Error al exportar: " + e.message)
+    }
   }
 }
 
@@ -2687,13 +2701,14 @@ async function exportarSheetsDirecto(items) {
   }
 
   // Resetear botón al estado inicial
-  btn.textContent = "⏳ Enviando…"
+  btn.textContent = `⏳ Enviando ${items.length} items…`
   btn.disabled = true
 
   try {
     const endpoint = "http://localhost:8765/exportar-sheets"
     const payload = { items: items }
     console.log("📤 Payload DIRECTO:", payload)
+    console.log("🔍 Items a exportar:", items.length)
     console.log("🔍 Primeros 3 items - platform:", items.slice(0, 3).map(i => ({
       asin: i.asin,
       source: i.source,
@@ -2701,11 +2716,13 @@ async function exportarSheetsDirecto(items) {
       platform_name: i.platform_name
     })))
 
+    console.log("🌐 Iniciando fetch a:", endpoint)
     const r = await fetchConTimeout(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }, 90000)
+    }, 300000)  // ✅ 5 minutos (antes: 90 segundos)
+    console.log("✅ Fetch completado, status:", r.status)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
 
@@ -2719,6 +2736,10 @@ async function exportarSheetsDirecto(items) {
       btnSheetsTimeout = null
     }, 3000)
   } catch(e) {
+    console.error("❌ Error en exportación DIRECTA:", e)
+    console.error("  Tipo de error:", e.name)
+    console.error("  Mensaje:", e.message)
+
     btn.textContent = "❌ Error"
     btn.style.background = "#ef4444"
 
@@ -2729,7 +2750,11 @@ async function exportarSheetsDirecto(items) {
       btnSheetsTimeout = null
     }, 3000)
 
-    alert("Error al exportar: " + e.message)
+    if (e.name === "AbortError") {
+      alert("Error al exportar: Operación cancelada (timeout de 5 minutos)")
+    } else {
+      alert("Error al exportar: " + e.message)
+    }
   }
 }
 
@@ -2755,48 +2780,58 @@ async function buscarDirecto() {
   statusEl.style.color = "#e94560"
   document.getElementById("results").style.display = "block"
 
+  // ✅ OPTIMIZADO: Usar endpoint batch en lugar de loop uno por uno
   if (esListaASINs) {
-    statusEl.textContent = "🔍 Buscando " + lineas.length + " ASINs..."
+    statusEl.textContent = "🔍 Buscando " + lineas.length + " ASINs en batch..."
     setStatus("Buscando lista de " + lineas.length + " ASINs...", "running")
     mostrarBtnDetener(true)
     _abortController = new AbortController()
-    const todosItems = []
-    let sinOferta = 0
-    for (let i = 0; i < lineas.length; i++) {
-      const asin = lineas[i]
-      statusEl.textContent = "🔍 ASIN " + (i+1) + "/" + lineas.length + ": " + asin
-      try {
-        const r = await fetch("http://localhost:8765/buscar-directo", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: asin }),
-          signal: _abortController.signal
-        })
-        const d = await r.json()
-        if (d.ok && d.items && d.items.length > 0) todosItems.push(...d.items)
-        else sinOferta++
-      } catch(e) {
-        if (e.name === "AbortError") { mostrarBtnDetener(false); return }
-        sinOferta++
+
+    try {
+      const r = await fetch("http://localhost:8765/buscar-asins-batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          asins: lineas,
+          minSavingPercent: descMin
+        }),
+        signal: _abortController.signal
+      })
+      const d = await r.json()
+
+      if (!d.ok) throw new Error(d.error)
+
+      mostrarBtnDetener(false)
+
+      // Aplicar filtros de precio
+      let items = d.items.filter(p => {
+        if (precioMin > 0 && p.price_discounted < precioMin) return false
+        if (precioMax > 0 && p.price_discounted > precioMax) return false
+        return true
+      })
+
+      const sinOferta = lineas.length - d.total
+      const diagMsg = `${lineas.length} ASINs → API devolvió ${d.total} (${sinOferta} sin oferta) → filtro dejó ${items.length}`
+
+      allItems = items
+      ProductosState.setItems(allItems)
+      ProductosState.setFeedId(null)
+
+      renderResults(items)
+      setStatus("✅ " + diagMsg, "done")
+      statusEl.textContent = "✅ " + diagMsg
+      statusEl.style.color = "#10b981"
+
+    } catch(e) {
+      mostrarBtnDetener(false)
+      if (e.name === "AbortError") {
+        setStatus("⏹ Búsqueda cancelada", "")
+      } else {
+        setStatus("❌ Error: " + e.message, "error")
+        statusEl.textContent = "❌ " + e.message
+        statusEl.style.color = "#ef4444"
       }
     }
-    mostrarBtnDetener(false)
-    const apiRetorno = todosItems.length
-    const vistos = new Set()
-    let items = todosItems.filter(p => { if (vistos.has(p.asin)) return false; vistos.add(p.asin); return true })
-    items = items.filter(p => {
-      if (precioMin > 0 && p.price_discounted < precioMin) return false
-      if (precioMax > 0 && p.price_discounted > precioMax) return false
-      if (p.descuento_pct < descMin) return false
-      return true
-    })
-    const diagMsg = lineas.length + " ASINs → API devolvió " + apiRetorno + " (" + sinOferta + " sin oferta) → filtro dejó " + items.length
-    allItems = items
-    renderResults(items)
-    updateCount()
-    setStatus("✅ " + diagMsg, "done")
-    statusEl.textContent = "✅ " + diagMsg
-    statusEl.style.color = "#10b981"
     return
   }
 
