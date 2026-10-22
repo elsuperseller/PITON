@@ -2503,6 +2503,14 @@ function renderResults(items) {
     console.log("🔄 Sincronizando checkboxes con ProductosState")
     console.log("  Items a sincronizar:", items.length)
 
+    // 🔍 DEBUG: Ver ASINs únicos
+    const asinsUnicos = new Set(items.map(p => p.asin))
+    console.log("  ASINs únicos:", asinsUnicos.size)
+    if (asinsUnicos.size < items.length) {
+      console.warn("  ⚠️ HAY ASINs DUPLICADOS!")
+      console.log("  Primeros 3 items:", items.slice(0, 3).map(p => ({ id: p.id, asin: p.asin, title: p.title?.substring(0, 30) })))
+    }
+
     let sincronizados = 0
     // Ya se limpió en setItems() - solo agregar checkboxes marcados
     items.forEach((p) => {
