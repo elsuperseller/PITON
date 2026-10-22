@@ -2496,21 +2496,29 @@ function renderResults(items) {
         card.style.display = 'none'
       }
     })
-  }, 0)
+  }, 50)  // ✅ Primero oculta descartados, luego sincroniza checkboxes
 
   // ✅ SINCRONIZAR ProductosState con checkboxes del DOM
   setTimeout(() => {
+    console.log("🔄 Sincronizando checkboxes con ProductosState")
+    console.log("  Items a sincronizar:", items.length)
+
+    let sincronizados = 0
     // Ya se limpió en setItems() - solo agregar checkboxes marcados
     items.forEach((p) => {
       const chk = document.querySelector(`.select-chk[data-asin="${p.asin}"]`)
       if (chk && chk.checked) {
         ProductosState.agregarSeleccion(p.asin)
+        sincronizados++
       }
     })
 
+    console.log("  Checkboxes sincronizados:", sincronizados)
+    console.log("  ProductosState._selected.size:", ProductosState.getSeleccionCount())
+
     // Actualizar contador
     updateCount()
-  }, 0)
+  }, 100)  // ✅ Aumentado de 0ms a 100ms para dar tiempo al DOM
 
   updateCount()
   document.getElementById("results").style.display = "block"
@@ -4305,6 +4313,30 @@ async function descartarProducto(asin, title, cardIndex, event) {
 
 // Filtrar por fuente
 function filtrarPorFuente(sourceType) {
+  if (!allItems) return
+
+  // ✅ USAR RenderModule en lugar de re-render manual
+  const items = sourceType === 'all'
+    ? allItems
+    : allItems.filter(p => p.source_type === sourceType)
+
+  // Usar el mismo sistema de renderizado que el resto de la app
+  RenderModule.renderGrid(items)
+
+  // Sincronizar checkboxes con ProductosState (igual que en renderResults)
+  setTimeout(() => {
+    items.forEach((p) => {
+      const chk = document.querySelector(`.select-chk[data-asin="${p.asin}"]`)
+      if (chk && chk.checked && !ProductosState.isSelected(p.asin)) {
+        ProductosState.agregarSeleccion(p.asin)
+      }
+    })
+    updateCount()
+  }, 0)
+}
+
+// ✅ FUNCIÓN OBSOLETA - Ya no se usa, reemplazada por filtrarPorFuente arriba
+function filtrarPorFuente_OLD(sourceType) {
   if (!allItems) return
 
   const grid = document.getElementById("product-grid")
