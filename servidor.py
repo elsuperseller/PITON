@@ -1499,10 +1499,13 @@ class Handler(BaseHTTPRequestHandler):
                     pages=paginas,
                 )
 
-                # Marcar todos los items como Mercado Libre
+                # Marcar todos los items como Mercado Libre y normalizar id→asin
                 for item in items:
                     item['platform'] = 'mercadolibre'
                     item['platform_name'] = 'Mercado Libre'
+                    # ✅ NORMALIZACIÓN: ML usa 'id', frontend usa 'asin' como key
+                    if 'id' in item and not item.get('asin'):
+                        item['asin'] = item['id']
 
                 if _HV_OK:
                     total_antes = len(items)
@@ -1538,10 +1541,13 @@ class Handler(BaseHTTPRequestHandler):
                     pass
                 items, total_raw = _ml.scrape_html_texto(html_txt, min_discount=min_disc)
 
-                # Marcar todos los items como Mercado Libre
+                # Marcar todos los items como Mercado Libre y normalizar id→asin
                 for item in items:
                     item['platform'] = 'mercadolibre'
                     item['platform_name'] = 'Mercado Libre'
+                    # ✅ NORMALIZACIÓN: ML usa 'id', frontend usa 'asin' como key
+                    if 'id' in item and not item.get('asin'):
+                        item['asin'] = item['id']
 
                 log_prefix = f"[Feed: {feed_id}] " if feed_id else ""
                 print(f"📦 {log_prefix}/procesar-html-ml → {total_raw} raw → {len(items)} con ≥{min_disc}%", flush=True)
@@ -2019,6 +2025,13 @@ class Handler(BaseHTTPRequestHandler):
                 if not items:
                     raise ValueError("Sin items para exportar")
                 print(f"📊 /exportar-sheets → {len(items)} items", flush=True)
+
+                # 🔍 DEBUG: Ver plataformas de los items
+                plataformas = {}
+                for item in items:
+                    p = item.get('platform') or item.get('source') or 'unknown'
+                    plataformas[p] = plataformas.get(p, 0) + 1
+                print(f"  📦 Plataformas: {plataformas}", flush=True)
                 # Marcar como publicados en historial ANTES de exportar
                 # Así si falla la exportación, al menos ya están marcados
                 if _HV_OK:
