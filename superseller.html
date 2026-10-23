@@ -2025,7 +2025,7 @@ const RenderModule = {
     return `
     <div class="product-card card-wrap result-item" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox select-chk" type="checkbox" id="chk_${i}" data-asin="${p.asin}" checked onchange="toggleProducto('${p.asin}')">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:160px;object-fit:cover;">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=Sin+imagen'" style="width:100%;height:200px;object-fit:contain;background:#f5f5f5;">
       <div class="product-info">
         <div class="product-title">${p.title}</div>
         <div class="product-prices">
@@ -2818,12 +2818,17 @@ async function buscarDirecto() {
     _abortController = new AbortController()
 
     try {
+      // ✅ Enviar feed_id para historial y filtros del feed
+      const feedSeleccionado = document.getElementById("audienciaSelect")?.value ||
+                               document.getElementById("audienciaGlobalSelect")?.value || ""
+
       const r = await fetch("http://localhost:8765/buscar-asins-batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           asins: lineas,
-          minSavingPercent: descMin
+          minSavingPercent: descMin,
+          feed_id: feedSeleccionado
         }),
         signal: _abortController.signal
       })
@@ -2845,7 +2850,8 @@ async function buscarDirecto() {
 
       allItems = items
       ProductosState.setItems(allItems)
-      ProductosState.setFeedId(null)
+      // ✅ Mantener feedId si hay uno seleccionado (ya declarado arriba)
+      ProductosState.setFeedId(feedSeleccionado || null)
 
       renderResults(items)
       setStatus("✅ " + diagMsg, "done")
@@ -2870,10 +2876,17 @@ async function buscarDirecto() {
   setStatus("Buscando: " + query, "running")
 
   try {
+    // ✅ Enviar feed_id para que use historial del feed correcto
+    const feedSeleccionado = document.getElementById("audienciaSelect")?.value ||
+                             document.getElementById("audienciaGlobalSelect")?.value || ""
+
     const r = await fetch("http://localhost:8765/buscar-directo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: query })
+      body: JSON.stringify({
+        query: query,
+        feed_id: feedSeleccionado
+      })
     })
     const d = await r.json()
     if (!d.ok) {
@@ -4357,7 +4370,7 @@ function filtrarPorFuente_OLD(sourceType) {
     return `
     <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x160?text=Sin+imagen'" style="width:100%;height:160px;object-fit:cover;">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=Sin+imagen'" style="width:100%;height:200px;object-fit:contain;background:#f5f5f5;">
       <div class="product-info">
         <div class="product-title">${p.title}</div>
         <div class="product-prices">
