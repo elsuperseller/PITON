@@ -350,7 +350,8 @@
       "Street Fighter",
       "QAHEART",
       "Tech Deck",
-      "LEGO ICONS"
+      "LEGO ICONS",
+      "Barbie Signature"
     ],
     "links_ofertas": [
       {
@@ -569,7 +570,7 @@
       "VideoGames",
       "Sports Collectibles"
     ],
-    "frecuencia_actualizacion": "diaria",
+    "frecuencia_actualizacion": "cada_3_horas",
     "paginas_default": 1,
     "paginas_keywords": 3
   },

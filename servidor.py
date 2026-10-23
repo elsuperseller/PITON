@@ -105,7 +105,8 @@ def parsear_item(item):
     try:
         title = item["itemInfo"]["title"]["displayValue"]
         link = item.get("detailPageURL", "")
-        img = re.sub(r'\._SL\d+_', '._SL500_',
+        # ✅ Imagen CUADRADA 1000x1000 para WhatsApp/Telegram (_SS = Square Scale)
+        img = re.sub(r'\._[A-Z_]{2,10}\d+_', '._SS1000_',
                      item.get("images",{}).get("primary",{}).get("medium",{}).get("url",""))
         asin = re.search(r'/dp/([A-Z0-9]{10})', link)
         asin = asin.group(1) if asin else ""
@@ -1276,7 +1277,24 @@ class Handler(BaseHTTPRequestHandler):
                     except:
                         pass
 
+                # ✅ Aplicar filtro de descuento mínimo
+                if minSavingPercent > 0:
+                    antes_filtro = len(productos)
+                    productos = [p for p in productos if p.get('descuento_pct', 0) >= minSavingPercent]
+                    print(f"  🔍 Filtro descuento ≥{minSavingPercent}%: {antes_filtro} → {len(productos)} productos", flush=True)
+
                 print(f"✅ Batch completado: {len(productos)} productos de {len(asins)} ASINs", flush=True)
+
+                # ✅ Aplicar historial (igual que buscar-directo)
+                feed_id = body.get("feed_id", "") or body.get("audiencia_id", "")
+                if _HV_OK and productos:
+                    if feed_id:
+                        productos = aplicar_novedad_score_feed(productos, feed_id)
+                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in productos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+                    else:
+                        productos = _hv.aplicar_scores(productos)
+                        ya_vistos = sum(1 for i in productos if i.get('novedad_score',1)<1.0)
+                        print(f"  📚 Historial global aplicado: {ya_vistos} ya vistos", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -3482,11 +3500,12 @@ class Handler(BaseHTTPRequestHandler):
                                 horas_restantes = 999999
                             else:
                                 # Expiración por HORAS EXACTAS (cada_12_horas, cada_6_horas, etc.)
+                                # ✅ REDUCIDO: Caché más fresca para evitar ofertas publicadas
                                 expiracion_horas = {
-                                    'cada_12_horas': 12,
-                                    'cada_6_horas': 6,
-                                    'cada_3_horas': 3
-                                }.get(frecuencia, 24)
+                                    'cada_12_horas': 3,   # Reducido de 12h → 3h
+                                    'cada_6_horas': 1.5,  # Reducido de 6h → 1.5h
+                                    'cada_3_horas': 1     # Reducido de 3h → 1h
+                                }.get(frecuencia, 6)      # Default: 6h (antes 24h)
 
                                 tiempo_transcurrido = now - cache_timestamp
                                 cache_valido = tiempo_transcurrido < timedelta(hours=expiracion_horas)
@@ -4028,11 +4047,12 @@ class Handler(BaseHTTPRequestHandler):
                                 cache_valido = True
                                 horas_restantes = 999999
                             else:
+                                # ✅ REDUCIDO: Caché más fresca para evitar ofertas publicadas
                                 expiracion_horas = {
-                                    'cada_12_horas': 12,
-                                    'cada_6_horas': 6,
-                                    'cada_3_horas': 3
-                                }.get(frecuencia, 24)
+                                    'cada_12_horas': 3,   # Reducido de 12h → 3h
+                                    'cada_6_horas': 1.5,  # Reducido de 6h → 1.5h
+                                    'cada_3_horas': 1     # Reducido de 3h → 1h
+                                }.get(frecuencia, 6)      # Default: 6h (antes 24h)
 
                                 tiempo_transcurrido = now - cache_timestamp
                                 cache_valido = tiempo_transcurrido < timedelta(hours=expiracion_horas)

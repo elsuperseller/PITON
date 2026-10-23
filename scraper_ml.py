@@ -24,7 +24,8 @@ except ImportError:
 # ── CONFIG ──────────────────────────────────────────────────────────
 ML_BASE     = "https://www.mercadolibre.com.mx"
 ML_API_BASE = "https://api.mercadolibre.com/sites/MLM/search"
-IMG_TPL     = "https://http2.mlstatic.com/D_NQ_NP_{pic_id}-F.webp"
+# ✅ Formato 2X = imagen cuadrada ~1000x1000 para Telegram (antes: -F.webp)
+IMG_TPL     = "https://http2.mlstatic.com/D_NQ_NP_{pic_id}-2X.webp"
 
 # Perfil de Chrome persistente con sesión de ML
 ML_BROWSER_PROFILE = os.path.expanduser('~/Desktop/SUPERSELLER/.ml_browser_profile')
@@ -274,8 +275,9 @@ def _normalizar_api_item(item):
     link       = item.get("permalink", "")
     thumbnail  = item.get("thumbnail", "")
 
-    # Mejora resolución: thumbnail _I_.jpg → _F_.webp
-    img = re.sub(r'-[A-Z]\.(jpg|webp)', '-F.webp', thumbnail) if thumbnail else ""
+    # ✅ Imagen CUADRADA para Telegram: 2X = ~1000x1000 (antes: -F.webp rectangular)
+    # Formato 2X es cuadrado y de buena calidad para Telegram
+    img = re.sub(r'-[A-Z0-9]+\.(jpg|webp)$', '-2X.webp', thumbnail) if thumbnail else ""
 
     desc_pct = 0.0
     if price_orig > price_disc > 0:
