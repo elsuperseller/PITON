@@ -19,6 +19,9 @@ feeds/*/keyword_stats.json
 feeds/*/performance_stats.json
 feeds/*_backup_*.json
 
+# Cache de imágenes procesadas
+cache_imagenes/
+
 # macOS
 .DS_Store
 
