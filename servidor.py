@@ -14,6 +14,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# ✅ Módulo de procesamiento de imágenes (separado para modularidad)
+import imagenes
+
 # Sistema de jobs en background
 import threading
 import uuid
@@ -105,9 +108,10 @@ def parsear_item(item):
     try:
         title = item["itemInfo"]["title"]["displayValue"]
         link = item.get("detailPageURL", "")
-        # ✅ Imagen CUADRADA 1000x1000 para WhatsApp/Telegram (_SS = Square Scale)
-        img = re.sub(r'\._[A-Z_]{2,10}\d+_', '._SS1000_',
-                     item.get("images",{}).get("primary",{}).get("medium",{}).get("url",""))
+        # ✅ Usar módulo de imágenes (centralizado y modular)
+        img = imagenes.transformar_imagen_amazon(
+            item.get("images",{}).get("primary",{}).get("medium",{}).get("url","")
+        )
         asin = re.search(r'/dp/([A-Z0-9]{10})', link)
         asin = asin.group(1) if asin else ""
 
@@ -529,6 +533,51 @@ def buscar_productos_amazon(keyword, minSavingPercent=10, maxPages=5):
             print(f"⚠️  Error buscando '{keyword}' página {pagina}: {e}", flush=True)
             break
     return productos
+
+def obtener_asins_keyword(keyword, sort_by='Featured', max_pages=5):
+    """
+    Obtiene solo ASINs usando paginación (requests mínimos)
+
+    Args:
+        keyword: Palabra clave a buscar
+        sort_by: Ordenamiento ('Featured', 'NewestArrivals', 'Price:LowToHigh', 'AvgCustomerReviews')
+        max_pages: Máximo de páginas (5 páginas × 10 items = 50 ASINs máximo)
+
+    Returns:
+        Lista de ASINs únicos
+    """
+    asins = []
+
+    for page in range(1, max_pages + 1):
+        try:
+            # Buscar con request mínimo (solo ASINs)
+            items = buscar(
+                search_index="All",
+                pagina=page,
+                sort_by=sort_by,
+                min_saving=0,  # Sin filtro de descuento (se filtra después)
+                keywords=keyword
+            )
+
+            if not items:
+                break  # No más resultados
+
+            # Extraer solo ASINs
+            page_asins = [item.get('asin', '') for item in items if item.get('asin')]
+            asins.extend(page_asins)
+
+            # Parar si obtuvimos menos de 10 (última página)
+            if len(page_asins) < 10:
+                break
+
+            time.sleep(0.5)  # Rate limiting
+
+        except Exception as e:
+            print(f"⚠️  Error obteniendo ASINs de '{keyword}' página {page}: {e}", flush=True)
+            break
+
+    # Retornar ASINs únicos
+    return list(set(asins))
 
 def es_categoria_coleccionable(item):
     """
@@ -967,7 +1016,8 @@ def enriquecer_asins(asins, minSavingPercent=1):
             print(f"  ❌ Error enriqueciendo batch: {e}", flush=True)
             return []
 
-    # ✅ OPTIMIZADO: Dividir en batches de 10, sleep reducido
+    # ✅ LÍMITE DE API: Amazon acepta máximo 10 ASINs por request
+    # Batches de 20 causan error 400
     batches = [asins[i:i+10] for i in range(0, len(asins), 10)]
     all_items = []
 
@@ -976,9 +1026,10 @@ def enriquecer_asins(asins, minSavingPercent=1):
     for i, batch in enumerate(batches, 1):
         items = _enriquecer_batch(batch)
         all_items.extend(items)
-        if i % 5 == 0:  # Log cada 5 batches
-            print(f"  ⏳ Progreso: {i}/{len(batches)} batches ({len(all_items)} items)", flush=True)
-        time.sleep(0.5)  # ✅ Aumentado a 0.5s para respetar rate limit
+        # Mostrar progreso cada 5 batches
+        if i % 5 == 0 or i == len(batches):
+            print(f"  ⏳ Progreso: {i}/{len(batches)} batches ({len(all_items)} items) - {int((i/len(batches))*100)}% completado", flush=True)
+        time.sleep(0.3)  # Reducido a 0.3s para mayor velocidad (cuidado con rate limiting)
 
     print(f"  ✅ Enriquecimiento completo: {len(all_items)} items de {len(asins)} ASINs", flush=True)
     return all_items
@@ -1262,7 +1313,9 @@ class Handler(BaseHTTPRequestHandler):
                 if not asins or not isinstance(asins, list):
                     raise ValueError("Se requiere una lista de ASINs")
 
-                print(f"🔍 Búsqueda batch de {len(asins)} ASINs...", flush=True)
+                # Tiempo estimado para feedback
+                tiempo_estimado_min = (len(asins) // 10) * 15 // 60
+                print(f"🔍 Búsqueda batch de {len(asins)} ASINs (tiempo estimado: ~{tiempo_estimado_min} min)...", flush=True)
 
                 # Usar función batch optimizada
                 items = enriquecer_asins(asins, minSavingPercent)
@@ -3361,6 +3414,39 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json"); self.end_headers()
             self.wfile.write(json.dumps({"ok": True, "msg": "Servidor activo"}).encode())
 
+        elif path == "/imagen_procesada":
+            # Procesa una imagen de Amazon para export (1000x1000 cuadrada)
+            url = params.get("url", [""])[0]
+            if not url:
+                self.send_response(400); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": "URL requerida"}).encode())
+                return
+
+            try:
+                # Procesar imagen
+                ruta_procesada = imagenes.imagen_cuadrada_producto(url, size=1000, producto_objetivo=0.90)
+
+                if not ruta_procesada or not os.path.exists(ruta_procesada):
+                    raise Exception("Error al procesar imagen")
+
+                # Servir imagen procesada
+                with open(ruta_procesada, 'rb') as f:
+                    img_data = f.read()
+
+                self.send_response(200); self._cors()
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Content-Length", str(len(img_data)))
+                self.send_header("Cache-Control", "public, max-age=86400")  # Cache 24h
+                self.end_headers()
+                self.wfile.write(img_data)
+
+            except Exception as e:
+                print(f"❌ Error procesando imagen: {e}", flush=True)
+                self.send_response(500); self._cors()
+                self.send_header("Content-Type", "application/json"); self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "error": str(e)}).encode())
+
         elif path == "/subcategorias":
             cat = params.get("cat", [""])[0]
             subs = SUBCATS_POR_CAT.get(cat, [])
@@ -3444,14 +3530,17 @@ class Handler(BaseHTTPRequestHandler):
 
                 refresh = 'refresh=true' in path
 
-                # Extraer parámetro de fuente (telegram, urls, keywords)
+                # Extraer parámetros de fuente y ordenamiento
                 fuente_filtro = None
-                if '?' in path and 'fuente=' in path:
+                sort_by = 'Featured'  # Default
+                if '?' in path:
                     try:
                         query_params = path.split('?')[1]
                         for param in query_params.split('&'):
                             if param.startswith('fuente='):
                                 fuente_filtro = param.split('=')[1]
+                            elif param.startswith('sort_by='):
+                                sort_by = param.split('=')[1]
                     except:
                         pass
 
@@ -3466,9 +3555,13 @@ class Handler(BaseHTTPRequestHandler):
                 perfil = perfiles[audiencia_id]
                 cache = cargar_feed_cache()
 
+                # ✅ Clave de caché SIEMPRE incluye sort_by para diferenciar ordenamientos
+                cache_key = f"{audiencia_id}_{sort_by}"
+                print(f"  🔑 Cache key: {cache_key}", flush=True)
+
                 # Si tiene cache y no es refresh, verificar expiración
-                if not refresh and audiencia_id in cache:
-                    cache_data = cache[audiencia_id]
+                if not refresh and cache_key in cache:
+                    cache_data = cache[cache_key]
                     from datetime import datetime as dt, timedelta
 
                     # Obtener timestamp del cache
@@ -3581,9 +3674,9 @@ class Handler(BaseHTTPRequestHandler):
                     }
                 }
 
-                # 0. SCRAPE TELEGRAM (si está configurado)
+                # 0. SCRAPE TELEGRAM (si está configurado Y si se seleccionó o no hay filtro)
                 telegram_sources = perfil.get('telegram_sources', [])
-                if telegram_sources:
+                if telegram_sources and (not fuente_filtro or fuente_filtro == 'telegram'):
                     print(f"  📱 Scrapeando {len(telegram_sources)} canal(es) de Telegram...", flush=True)
                     try:
                         import telegram_utils
@@ -3647,11 +3740,11 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception as e:
                         print(f"  ⚠️  Error scrapeando Telegram: {e}", flush=True)
 
-                # 1. PROCESAR URLS FIJAS (si existen)
+                # 1. PROCESAR URLS FIJAS (si existen Y si se seleccionó o no hay filtro)
                 # OFERTAS: usar links_ofertas si existe, sino usar urls_fijas (retrocompatibilidad)
                 urls_fijas = perfil.get('links_ofertas', perfil.get('urls_fijas', []))
 
-                if urls_fijas and _AZ_OK:
+                if urls_fijas and _AZ_OK and (not fuente_filtro or fuente_filtro == 'urls'):
                     print(f"  🔗 Procesando {len(urls_fijas)} URLs fijas primero...", flush=True)
                     for url_config in urls_fijas:
                         try:
@@ -3742,26 +3835,42 @@ class Handler(BaseHTTPRequestHandler):
                             print(f"  ⚠️  Error con URL fija '{desc}': {e}", flush=True)
                             continue
 
-                # 2. PROCESAR KEYWORDS
+                # 2. PROCESAR KEYWORDS (solo si se seleccionó o no hay filtro)
                 keywords_procesados = 0
 
                 # OFERTAS: usar keywords_ofertas si existe, sino usar keywords (retrocompatibilidad)
                 keywords = perfil.get('keywords_ofertas', perfil.get('keywords', []))
 
-                print(f"  🔎 Procesando {len(keywords)} keywords...", flush=True)
+                # Solo procesar keywords si no hay filtro de fuente o si se seleccionó keywords
+                if not fuente_filtro or fuente_filtro == 'keywords':
+                    print(f"  🔎 Procesando {len(keywords)} keywords...", flush=True)
+                else:
+                    print(f"  ⏭️  Saltando keywords (fuente seleccionada: {fuente_filtro})", flush=True)
+                    keywords = []  # Vaciar lista para no procesarlas
 
                 for keyword in keywords:
                     try:
                         # OFERTAS: usar filtros_ofertas si existe, sino usar filtros legacy
                         filtros_ofertas = perfil.get('filtros_ofertas', perfil.get('filtros', {}))
 
-                        items = buscar_productos_amazon(
+                        # ✅ PAGINACIÓN: Obtener ASINs primero (máx 50), luego enriquecer
+                        print(f"    🔎 '{keyword}': Buscando con ordenamiento '{sort_by}'...", flush=True)
+                        asins_keyword = obtener_asins_keyword(
                             keyword=keyword,
-                            minSavingPercent=filtros_ofertas.get('minSavingPercent', 10),
-                            maxPages=2
+                            sort_by=sort_by,
+                            max_pages=5  # 5 páginas × 10 = 50 ASINs máx
                         )
 
-                        print(f"    🔎 '{keyword}': {len(items)} items de Amazon", flush=True)
+                        if not asins_keyword:
+                            print(f"      ⚠️ No se encontraron ASINs para '{keyword}'", flush=True)
+                            continue
+
+                        print(f"      📦 {len(asins_keyword)} ASINs encontrados, enriqueciendo...", flush=True)
+
+                        # Enriquecer ASINs con info completa
+                        items = enriquecer_asins(asins_keyword, filtros_ofertas.get('minSavingPercent', 10))
+
+                        print(f"    ✅ '{keyword}': {len(items)} items enriquecidos", flush=True)
 
                         # Filtrar según perfil
                         items_validos = 0
@@ -3917,13 +4026,14 @@ class Handler(BaseHTTPRequestHandler):
                     x.get('discount', 0)          # Prioridad 2: descuento
                 ), reverse=True)
 
-                # Guardar en cache
+                # Guardar en cache (con sort_by en la clave)
                 from datetime import datetime as dt
                 now = dt.now()
-                cache[audiencia_id] = {
+                cache[cache_key] = {
                     "fecha": now.strftime('%Y-%m-%d'),
                     "timestamp": now.isoformat(),  # Timestamp preciso para expiración
-                    "productos": productos_finales
+                    "productos": productos_finales,
+                    "sort_by": sort_by  # Guardar qué ordenamiento se usó
                 }
                 guardar_feed_cache(cache)
 
@@ -3996,14 +4106,17 @@ class Handler(BaseHTTPRequestHandler):
 
                 refresh = 'refresh=true' in path
 
-                # Extraer parámetro de fuente (telegram, urls, keywords)
+                # Extraer parámetros de fuente y ordenamiento
                 fuente_filtro = None
-                if '?' in path and 'fuente=' in path:
+                sort_by = 'Featured'  # Default
+                if '?' in path:
                     try:
                         query_params = path.split('?')[1]
                         for param in query_params.split('&'):
                             if param.startswith('fuente='):
                                 fuente_filtro = param.split('=')[1]
+                            elif param.startswith('sort_by='):
+                                sort_by = param.split('=')[1]
                     except:
                         pass
 
@@ -4018,8 +4131,10 @@ class Handler(BaseHTTPRequestHandler):
                 perfil = perfiles[audiencia_id]
 
                 # IMPORTANTE: Para novedades usamos un cache separado con sufijo "_novedades"
+                # ✅ SIEMPRE incluir sort_by en la clave para diferenciar ordenamientos
                 cache = cargar_feed_cache()
-                cache_key = f"{audiencia_id}_novedades"
+                cache_key = f"{audiencia_id}_novedades_{sort_by}"
+                print(f"  🔑 Cache key: {cache_key}", flush=True)
 
                 # Si tiene cache y no es refresh, verificar expiración
                 if not refresh and cache_key in cache:
@@ -4221,16 +4336,26 @@ class Handler(BaseHTTPRequestHandler):
                 # NOVEDADES: usar filtros_novedades si existe, sino usar filtros legacy
                 filtros_novedades = perfil.get('filtros_novedades', perfil.get('filtros', {}))
 
-                print(f"  🔎 Procesando {len(keywords)} keywords...", flush=True)
+                print(f"  🔎 Procesando {len(keywords)} keywords con ordenamiento '{sort_by}'...", flush=True)
                 for keyword in keywords:
                     try:
-                        items = buscar_productos_amazon(
+                        # ✅ PAGINACIÓN: Obtener ASINs primero (máx 50), luego enriquecer
+                        asins_keyword = obtener_asins_keyword(
                             keyword=keyword,
-                            minSavingPercent=filtros_novedades.get('minSavingPercent', 0),
-                            maxPages=2
+                            sort_by=sort_by,
+                            max_pages=5  # 5 páginas × 10 = 50 ASINs máx
                         )
 
-                        print(f"    🔎 '{keyword}': {len(items)} items", flush=True)
+                        if not asins_keyword:
+                            print(f"      ⚠️ No se encontraron ASINs para '{keyword}'", flush=True)
+                            continue
+
+                        print(f"      📦 {len(asins_keyword)} ASINs encontrados, enriqueciendo...", flush=True)
+
+                        # Enriquecer ASINs con info completa
+                        items = enriquecer_asins(asins_keyword, filtros_novedades.get('minSavingPercent', 0))
+
+                        print(f"    ✅ '{keyword}': {len(items)} items enriquecidos", flush=True)
 
                         for item in items:
                             titulo = item.get("itemInfo", {}).get("title", {}).get("displayValue", "")
@@ -4298,7 +4423,8 @@ class Handler(BaseHTTPRequestHandler):
                 from datetime import datetime as dt
                 cache[cache_key] = {
                     'productos': productos,
-                    'timestamp': dt.now().isoformat()
+                    'timestamp': dt.now().isoformat(),
+                    'sort_by': sort_by  # Guardar qué ordenamiento se usó
                 }
                 guardar_feed_cache(cache)
 

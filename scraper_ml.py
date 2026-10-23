@@ -14,6 +14,9 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 import requests
 from bs4 import BeautifulSoup
 
+# ✅ Módulo de procesamiento de imágenes
+import imagenes
+
 _PLAYWRIGHT_OK = False
 try:
     from playwright.sync_api import sync_playwright as _sync_playwright
@@ -275,9 +278,8 @@ def _normalizar_api_item(item):
     link       = item.get("permalink", "")
     thumbnail  = item.get("thumbnail", "")
 
-    # ✅ Imagen CUADRADA para Telegram: 2X = ~1000x1000 (antes: -F.webp rectangular)
-    # Formato 2X es cuadrado y de buena calidad para Telegram
-    img = re.sub(r'-[A-Z0-9]+\.(jpg|webp)$', '-2X.webp', thumbnail) if thumbnail else ""
+    # ✅ Usar módulo de imágenes (centralizado y modular)
+    img = imagenes.transformar_imagen_ml(thumbnail)
 
     desc_pct = 0.0
     if price_orig > price_disc > 0:

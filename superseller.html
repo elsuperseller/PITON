@@ -489,8 +489,8 @@ input[type=file] {
 /* ── PRODUCT GRID ──────────────────────────────────── */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 250px));
+  gap: 10px;
   padding: 4px;
 }
 
@@ -518,15 +518,15 @@ input[type=file] {
 
 .product-card img {
   width: 100%;
-  height: 180px;
-  object-fit: contain;
-  background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
-  padding: 16px;
+  aspect-ratio: 1/1;
+  object-fit: contain;  /* No recorta, muestra imagen completa */
+  background: #fff;
   transition: var(--transition-base);
+  border-radius: 8px 8px 0 0;
 }
 
 .product-card:hover img {
-  transform: scale(1.02);
+  transform: scale(1.02);  /* Ligero zoom en hover */
 }
 
 .product-info {
@@ -736,6 +736,14 @@ img[data-src]:not(.loaded) {
       <option value="telegram">📱 Telegram</option>
       <option value="urls">🔗 URLs Fijas</option>
       <option value="keywords">🔤 Keywords</option>
+    </select>
+
+    <!-- Selector de ordenamiento (solo visible con Keywords) -->
+    <select id="sortByKeywords" style="display:none;padding:8px 12px;border:2px solid #3b82f6;border-radius:6px;font-size:13px;font-weight:600;color:#2563eb;background:white;cursor:pointer;">
+      <option value="Featured">⭐ Destacados</option>
+      <option value="NewestArrivals">🆕 Más recientes</option>
+      <option value="Price:LowToHigh">💰 Más baratos</option>
+      <option value="AvgCustomerReviews">⭐ Mejor valorados</option>
     </select>
 
     <button class="btn btn-primary" id="btnBuscar" onclick="buscar()">🔍 Buscar</button>
@@ -1091,7 +1099,8 @@ img[data-src]:not(.loaded) {
 <div id="exportBar">
   <button class="btn btn-ghost" onclick="selectAll(true)" style="font-size:11px;padding:5px 11px;">✅ Sel. todos</button>
   <button class="btn btn-ghost" onclick="selectAll(false)" style="font-size:11px;padding:5px 11px;">⬜ Ninguno</button>
-  <button class="btn btn-primary" onclick="exportCSV()" style="font-size:11px;padding:5px 13px;">⬇️ Exportar</button>
+  <button class="btn btn-primary" onclick="exportCSV()" style="font-size:11px;padding:5px 13px;">⬇️ Exportar CSV</button>
+  <button class="btn btn-primary" onclick="descargarImagenesProcesadas()" style="font-size:11px;padding:5px 13px;background:#8b5cf6;">📥 Descargar Imágenes</button>
   <button id="btnSheets" onclick="exportarSheets()" style="background:#1a7f4b;color:#fff;border:none;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">📊 → Sheets</button>
   <button id="btnFiltroSuper" onclick="aplicarFiltroSuperseller()" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">🧹 Filtro Superseller</button>
   <button onclick="quitarRelampagos()" style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;border-radius:6px;padding:5px 13px;font-size:11px;font-weight:700;cursor:pointer;">⚡ Quitar Relámpagos</button>
@@ -2025,7 +2034,7 @@ const RenderModule = {
     return `
     <div class="product-card card-wrap result-item" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox select-chk" type="checkbox" id="chk_${i}" data-asin="${p.asin}" checked onchange="toggleProducto('${p.asin}')">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=Sin+imagen'" style="width:100%;height:200px;object-fit:contain;background:#f5f5f5;">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/1000x1000?text=Sin+imagen'" style="width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;border-radius:8px 8px 0 0;">
       <div class="product-info">
         <div class="product-title">${p.title}</div>
         <div class="product-prices">
@@ -2152,13 +2161,14 @@ async function _buscarMLPuro(params, signal = null) {
 /**
  * Carga pura de feed (Ofertas/Novedades)
  */
-async function _cargarFeedPuro(audienciaId, modo = 'promocional', refresh = false, fuente = null, signal = null) {
+async function _cargarFeedPuro(audienciaId, modo = 'promocional', refresh = false, fuente = null, sortBy = null, signal = null) {
   const endpoint = modo === 'novedades' ? 'novedades' : 'feeds'
   let url = `/${endpoint}/${audienciaId}`
 
   const params = []
   if (refresh) params.push('refresh=true')
   if (fuente) params.push(`fuente=${fuente}`)
+  if (sortBy) params.push(`sort_by=${sortBy}`)
   if (params.length > 0) url += '?' + params.join('&')
 
   const r = await fetch(`http://localhost:8765${url}`, { signal })
@@ -2391,12 +2401,21 @@ async function buscarSoloKeywords() {
 
 // ✅ REFACTORIZADA - Usa función pura _buscarAmazonPuro()
 async function buscar() {
-  // 1. Validación y preparación
+  // 0. Si hay feed seleccionado, usar flujo de feeds en lugar de categorías
+  const feedSeleccionado = document.getElementById("audienciaGlobalSelect")?.value
+  if (feedSeleccionado) {
+    // Usuario tiene feed seleccionado → usar flujo de feeds
+    console.log("🎯 Feed seleccionado, usando flujo de feeds:", feedSeleccionado)
+    await cargarFeedGlobal(false, 'promocional')  // Siempre promocional (ofertas)
+    return
+  }
+
+  // 1. Validación y preparación (flujo normal de categorías)
   const subcats = getSelectedSubcats()
   const maincats = getSelectedCats()
   const cats = Object.keys(subcats).length > 0 ? subcats : maincats
   if (!Object.keys(cats).length) {
-    alert("Selecciona al menos una categoría")
+    alert("Selecciona al menos una categoría o un feed")
     return
   }
 
@@ -2594,7 +2613,7 @@ function updateCount() {
 function exportCSV() {
   const selected = allItems.filter((_, i) => document.getElementById("chk_"+i) && document.getElementById("chk_"+i).checked)
   if (!selected.length) { alert("Selecciona al menos un producto"); return }
-  const cols = ["img","link","title","price_original","price_discounted","tipo","vigencia_export","start_time_fmt","end_time_fmt"]
+  const cols = ["img","img_procesada","link","title","price_original","price_discounted","tipo","vigencia_export","start_time_fmt","end_time_fmt"]
   selected.forEach(p => {
     let vig = ""
     if (p.badge) vig = p.badge
@@ -2603,6 +2622,8 @@ function exportCSV() {
     p.vigencia_export = vig
     p.start_time_fmt = p.start_time ? new Date(p.start_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}) : ""
     p.end_time_fmt   = p.end_time   ? new Date(p.end_time).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})   : ""
+    // URL de imagen procesada (1000x1000 cuadrada, producto 90%)
+    p.img_procesada = `http://localhost:8765/imagen_procesada?url=${encodeURIComponent(p.img)}`
   })
   const rows = [cols.join(","), ...selected.map(p => cols.map(c => `"${(p[c]||"").toString().replace(/"/g,'""')}"`).join(","))]
   const blob = new Blob([rows.join("\n")], {type:"text/csv;charset=utf-8;"})
@@ -2610,6 +2631,56 @@ function exportCSV() {
   const a    = document.createElement("a"); a.href=url
   a.download = `superseller_${new Date().toISOString().slice(0,16).replace(/[T:]/g,"-")}.csv`
   a.click(); URL.revokeObjectURL(url)
+}
+
+async function descargarImagenesProcesadas() {
+  const selected = allItems.filter((_, i) => document.getElementById("chk_"+i) && document.getElementById("chk_"+i).checked)
+  if (!selected.length) {
+    alert("Selecciona al menos un producto")
+    return
+  }
+
+  const total = selected.length
+  let descargadas = 0
+
+  alert(`🎯 Descargando ${total} imágenes procesadas...\n\nLas imágenes se guardarán una por una.\nEsto puede tardar unos minutos.`)
+
+  for (let i = 0; i < selected.length; i++) {
+    const p = selected[i]
+    const urlProcesada = `http://localhost:8765/imagen_procesada?url=${encodeURIComponent(p.img)}`
+
+    try {
+      // Descargar imagen procesada
+      const response = await fetch(urlProcesada)
+      if (!response.ok) throw new Error(`Error ${response.status}`)
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+
+      // Generar nombre de archivo limpio
+      const asin = p.asin || `producto_${i+1}`
+      const nombreArchivo = `${asin}_1000x1000.jpg`
+
+      // Descargar
+      const a = document.createElement("a")
+      a.href = url
+      a.download = nombreArchivo
+      a.click()
+      URL.revokeObjectURL(url)
+
+      descargadas++
+      console.log(`✅ ${descargadas}/${total}: ${nombreArchivo}`)
+
+      // Pequeño delay entre descargas para no saturar
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+    } catch (error) {
+      console.error(`❌ Error descargando imagen ${i+1}:`, error)
+      alert(`Error descargando imagen ${i+1}/${total}\nContinuando...`)
+    }
+  }
+
+  alert(`✅ Descarga completa!\n\n${descargadas}/${total} imágenes procesadas guardadas.`)
 }
 
 // Variable global para controlar el timeout del botón
@@ -4106,11 +4177,13 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
   try {
     // 3. Búsqueda (función pura)
     const fuenteSeleccionada = document.getElementById("buscarPorFuente").value
+    const sortBySeleccionado = document.getElementById("sortByKeywords").value
     const data = await _cargarFeedPuro(
       audienciaId,
       modo,
       refresh,
       fuenteSeleccionada,
+      sortBySeleccionado,
       feedAbortController.signal
     )
 
@@ -4370,7 +4443,7 @@ function filtrarPorFuente_OLD(sourceType) {
     return `
     <div class="product-card card-wrap" id="card_${i}" data-novedad="${p.novedad_score ?? 1}" data-crossdup="${p.cross_platform_dup || ''}">
       <input class="card-checkbox" type="checkbox" id="chk_${i}" checked onchange="toggleCard(${i})">
-      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/200x200?text=Sin+imagen'" style="width:100%;height:200px;object-fit:contain;background:#f5f5f5;">
+      <img src="${p.img}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/1000x1000?text=Sin+imagen'" style="width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;border-radius:8px 8px 0 0;">
       <div class="product-info">
         <div class="product-title">${p.title}</div>
         <div class="product-prices">
@@ -5280,6 +5353,17 @@ function renderStats(items) {
   html += `</div>`
   statsDiv.innerHTML = html
 }
+
+// ========== MOSTRAR/OCULTAR SELECTOR DE ORDENAMIENTO ==========
+document.getElementById('buscarPorFuente').addEventListener('change', function() {
+  const sortBySelect = document.getElementById('sortByKeywords')
+
+  if (this.value === 'keywords') {
+    sortBySelect.style.display = 'inline-block'  // Mostrar cuando se selecciona Keywords
+  } else {
+    sortBySelect.style.display = 'none'  // Ocultar para otras fuentes
+  }
+})
 
 </script>
 
