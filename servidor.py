@@ -2732,9 +2732,9 @@ class Handler(BaseHTTPRequestHandler):
                                             "browseNodeInfo.browseNodes"]
                             }
 
-                            # Agregar filtros si están configurados
-                            if min_saving > 0:
-                                body["minSavingPercent"] = min_saving
+                            # NO agregar minSavingPercent al request inicial
+                            # Amazon filtra antes de devolver → 0 resultados si no hay ofertas
+                            # En su lugar, filtraremos después de recibir todos los productos
 
                             r = requests.post(
                                 "https://creatorsapi.amazon/catalog/v1/searchItems",
@@ -2747,6 +2747,13 @@ class Handler(BaseHTTPRequestHandler):
 
                             if r.status_code == 200:
                                 data = r.json()
+
+                                # Debug: ver estructura completa de respuesta
+                                if pag == 1 and keyword == keywords[0]:  # Solo primera keyword, primera página
+                                    print(f"    🔍 DEBUG - Keys en respuesta: {list(data.keys())}", flush=True)
+                                    if "errors" in data:
+                                        print(f"    🔍 DEBUG - Errors: {data['errors']}", flush=True)
+
                                 items = data.get("itemsResult", {}).get("items", [])
                                 print(f"    📦 Items en respuesta: {len(items)}", flush=True)
 
