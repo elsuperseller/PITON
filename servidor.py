@@ -2680,7 +2680,8 @@ class Handler(BaseHTTPRequestHandler):
                 if not perfil:
                     raise ValueError(f"Feed '{audiencia_id}' no encontrado")
 
-                keywords = perfil.get('keywords', [])
+                # Usar keywords_ofertas si existe, sino keywords (retrocompatibilidad)
+                keywords = perfil.get('keywords_ofertas', perfil.get('keywords', []))
                 if not keywords:
                     self.send_response(200); self._cors()
                     self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -2719,6 +2720,7 @@ class Handler(BaseHTTPRequestHandler):
                             body = {
                                 "partnerTag": CREDS["partner_tag"],
                                 "marketplace": "www.amazon.com.mx",
+                                "searchIndex": "All",  # ✅ REQUERIDO para búsqueda por keywords
                                 "keywords": keyword,
                                 "itemPage": pag,
                                 "languagesOfPreference": ["es_MX"],
@@ -2741,9 +2743,12 @@ class Handler(BaseHTTPRequestHandler):
                                 timeout=20
                             )
 
+                            print(f"    📡 Status: {r.status_code}", flush=True)
+
                             if r.status_code == 200:
                                 data = r.json()
                                 items = data.get("itemsResult", {}).get("items", [])
+                                print(f"    📦 Items en respuesta: {len(items)}", flush=True)
 
                                 if items:
                                     print(f"    ✓ {len(items)} items", flush=True)
