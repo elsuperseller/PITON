@@ -1933,7 +1933,7 @@ const ProductosState = {
    */
   getSeleccionadosVisibles() {
     const visibles = new Set()
-    document.querySelectorAll('.result-item:not([style*="display: none"]) .select-chk').forEach(chk => {
+    document.querySelectorAll('.product-card:not([style*="display: none"]) .select-chk').forEach(chk => {
       const asin = chk.getAttribute('data-asin')
       if (asin) visibles.add(asin)
     })
@@ -1984,7 +1984,7 @@ const ProductosState = {
    * Usado por "Seleccionar visible"
    */
   seleccionarVisibles() {
-    document.querySelectorAll('.result-item:not([style*="display: none"]) .select-chk').forEach(chk => {
+    document.querySelectorAll('.product-card:not([style*="display: none"]) .select-chk').forEach(chk => {
       const asin = chk.getAttribute('data-asin')
       if (asin) this._selected.add(asin)
     })
@@ -2298,10 +2298,9 @@ async function buscarSoloTelegram() {
       source_channel: p.source_channel || 'Telegram'
     }))
 
-    // Limpiar ProductosState antes de renderizar
+    // ✅ Actualizar ProductosState con los nuevos items
     if (window.ProductosState) {
-      ProductosState._items = []
-      ProductosState._selected.clear()
+      ProductosState.setItems(allItems)
     }
 
     renderResults(allItems)
@@ -2352,10 +2351,9 @@ async function buscarSoloURLs() {
       source_type: p.source_type || 'url_fija'
     }))
 
-    // Limpiar ProductosState antes de renderizar
+    // ✅ Actualizar ProductosState con los nuevos items
     if (window.ProductosState) {
-      ProductosState._items = []
-      ProductosState._selected.clear()
+      ProductosState.setItems(allItems)
     }
 
     renderResults(allItems)
@@ -2406,10 +2404,9 @@ async function buscarSoloKeywords() {
       source_type: p.source_type || 'keyword'  // Marcar origen
     }))
 
-    // Limpiar ProductosState antes de renderizar
+    // ✅ Actualizar ProductosState con los nuevos items
     if (window.ProductosState) {
-      ProductosState._items = []
-      ProductosState._selected.clear()
+      ProductosState.setItems(allItems)
     }
 
     renderResults(allItems)
