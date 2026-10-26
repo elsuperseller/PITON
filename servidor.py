@@ -2708,11 +2708,11 @@ class Handler(BaseHTTPRequestHandler):
                 }
 
                 # Obtener descuento mínimo del perfil
-                min_saving = perfil['filtros'].get('minSavingPercent', 15)
+                min_saving = perfil['filtros'].get('minSavingPercent', 1)
                 print(f"  💰 Filtro descuento mínimo: {min_saving}%", flush=True)
 
                 all_items = []
-                for keyword in keywords[:50]:  # Limitar a 50 keywords para no saturar
+                for keyword in keywords[:200]:  # Limitar a 200 keywords
                     print(f"  🔍 Buscando: {keyword}", flush=True)
 
                     for pag in range(1, paginas_keywords + 1):
@@ -2754,6 +2754,9 @@ class Handler(BaseHTTPRequestHandler):
 
                                 if items:
                                     print(f"    ✓ {len(items)} items", flush=True)
+                                    # ✅ Marcar cada item con la keyword que lo trajo
+                                    for item in items:
+                                        item['_keyword_match'] = keyword
                                     all_items.extend(items)
                                 else:
                                     # Verificar si hay error en la respuesta
@@ -2771,19 +2774,54 @@ class Handler(BaseHTTPRequestHandler):
 
                 print(f"  ✅ {len(all_items)} items encontrados", flush=True)
 
+                # Cargar historial del feed
+                historial_feed = cargar_historial_feed(audiencia_id)
+                print(f"  📚 Historial: {len(historial_feed)} productos en registro", flush=True)
+
                 # Parsear y filtrar
                 productos = []
                 vistos = set()
+                bloqueados = 0
+                ya_publicados = 0
 
                 for item in all_items:
                     p = parsear_item(item)
                     if p and p['asin'] not in vistos:
+                        asin = p['asin']
+
+                        # ✅ Agregar badge con la keyword que trajo este producto
+                        keyword_match = item.get('_keyword_match', '')
+                        if keyword_match:
+                            p['badge'] = f'🎯 {keyword_match}'
+
+                        # Filtrar bloqueados
+                        if asin in historial_feed:
+                            registro = historial_feed[asin]
+                            if registro.get('blocked', False):
+                                bloqueados += 1
+                                continue
+                            # Filtrar publicados recientemente (menos de 21 días)
+                            ultima_vez = registro.get('ultima_vez', '')
+                            if ultima_vez:
+                                try:
+                                    from datetime import datetime, timezone
+                                    ultima_fecha = datetime.fromisoformat(ultima_vez.replace('Z', '+00:00'))
+                                    if ultima_fecha.tzinfo is None:
+                                        ultima_fecha = ultima_fecha.replace(tzinfo=timezone.utc)
+                                    dias = (datetime.now(timezone.utc) - ultima_fecha).days
+                                    if dias < 21:  # Publicado hace menos de 21 días
+                                        ya_publicados += 1
+                                        continue
+                                except:
+                                    pass  # Si hay error, incluir el producto
+
                         # Aplicar filtros del perfil
                         if p.get('descuento_pct', 0) >= perfil['filtros'].get('minSavingPercent', 0):
-                            vistos.add(p['asin'])
+                            vistos.add(asin)
                             productos.append(p)
 
                 print(f"  ✅ {len(productos)} productos únicos después de filtros", flush=True)
+                print(f"  🚫 {bloqueados} bloqueados, {ya_publicados} publicados recientemente", flush=True)
 
                 self.send_response(200); self._cors()
                 self.send_header("Content-Type", "application/json"); self.end_headers()
