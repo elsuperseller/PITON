@@ -165,6 +165,59 @@ def _es_bot_challenge(html):
     return any(s in html_lower for s in _BOT_SIGNALS)
 
 
+# ── SCRAPING HÍBRIDO: REQUESTS + PLAYWRIGHT FALLBACK ───────────────
+
+def scrape_requests_rapido(url, timeout=5):
+    """
+    Intento rápido de scraping con requests (sin browser).
+
+    Retorna:
+        (asins, estado) donde estado puede ser:
+        - "ok": Éxito, ASINs extraídos
+        - "captcha": Amazon detectó bot
+        - "vacio": Respuesta sin ASINs suficientes
+        - "error": Error de conexión
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    }
+
+    try:
+        r = requests.get(url, headers=headers, timeout=timeout, allow_redirects=True)
+
+        if r.status_code != 200:
+            return [], "error"
+
+        html = r.text
+
+        # Detectar CAPTCHA o bloqueo
+        if _es_bot_challenge(html):
+            return [], "captcha"
+
+        # Extraer ASINs
+        asins = extraer_asins(html)
+
+        # Validar que obtuvo resultados razonables
+        if len(asins) < 5:
+            # Muy pocos ASINs = probablemente bloqueado o página vacía
+            return asins, "vacio"
+
+        return asins, "ok"
+
+    except requests.exceptions.Timeout:
+        return [], "error"
+    except requests.exceptions.RequestException as e:
+        return [], "error"
+    except Exception as e:
+        return [], "error"
+
+
 # ── FETCH CON PLAYWRIGHT ────────────────────────────────────────────
 
 def _extraer_asins_js(page):
@@ -700,12 +753,45 @@ def _zg_scrape_paginas(pg, base_url, pages, all_asins):
         except Exception:
             pass
 
-        # Scroll para disparar lazy-load (acumula en cada paso por si hay virtual scroll)
+        # Scroll para disparar lazy-load (simula comportamiento humano tipo Asin Crawler)
         acumulado = set(_extraer_asins_todos_frames(pg))
-        for _ in range(8):
-            pg.evaluate("window.scrollBy({ top: Math.round(window.innerHeight * 0.8), behavior: 'smooth' })")
-            pg.wait_for_timeout(1200)
+
+        # Scroll humano: variable, irregular, con detección de fin
+        max_scrolls = 15  # Máximo intentos
+        sin_cambios = 0
+
+        for scroll_num in range(max_scrolls):
+            # Movimiento de mouse ocasional (más humano)
+            if random.random() < 0.3:  # 30% de probabilidad
+                try:
+                    pg.mouse.move(
+                        random.randint(100, 800),
+                        random.randint(100, 600)
+                    )
+                except:
+                    pass
+
+            # Scroll variable (60-90% de altura, irregular como humano)
+            scroll_pct = random.uniform(0.6, 0.9)
+            pg.evaluate(f"window.scrollBy({{ top: Math.round(window.innerHeight * {scroll_pct}), behavior: 'smooth' }})")
+
+            # Pausa variable (800ms - 2000ms, irregular)
+            pg.wait_for_timeout(random.randint(800, 2000))
+
+            # Extraer ASINs nuevos
+            antes = len(acumulado)
             acumulado.update(_extraer_asins_todos_frames(pg))
+            despues = len(acumulado)
+            nuevos_en_scroll = despues - antes
+
+            # Detectar fin (como lo hace el usuario: si no hay más productos nuevos)
+            if nuevos_en_scroll == 0:
+                sin_cambios += 1
+                if sin_cambios >= 2:
+                    # 2 scrolls sin nuevos ASINs = fin de página
+                    break
+            else:
+                sin_cambios = 0  # Reset si encontró nuevos
             if len(acumulado) >= 48:
                 break
 
@@ -726,9 +812,88 @@ def _zg_scrape_paginas(pg, base_url, pages, all_asins):
 
 def scrape_zg_batch(urls, pages=2, per_url_limit=50):
     """
-    Scrapea varias URLs de ranking ZG (Best Sellers, New Releases, M&S)
-    reutilizando UN solo browser para todas — evita el overhead de lanzar
-    un browser nuevo por cada URL (ahorra ~3s × N URLs).
+    🔄 VERSIÓN HÍBRIDA: Intenta requests rápido primero, fallback a Playwright.
+
+    Scrapea varias URLs de ranking ZG (Best Sellers, New Releases, M&S).
+    - Intenta scraping rápido con requests
+    - Si detecta CAPTCHA o falla → usa Playwright (seguro pero lento)
+    - Circuit breaker: después de 3 fallos consecutivos → solo Playwright
+
+    per_url_limit: máx ASINs que se conservan por URL (default 50 = top 50 por categoría).
+    """
+    from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
+    all_asins_set = set()
+    all_asins_ordered = []
+
+    # Circuit breaker state
+    fallos_consecutivos = 0
+    UMBRAL_CIRCUIT_BREAKER = 3
+
+    for i, url in enumerate(urls, 1):
+        # Preparar URL base (sin parámetro pg)
+        parsed = urlparse(url)
+        qs = parse_qs(parsed.query, keep_blank_values=True)
+        qs.pop("pg", None)
+        base_url = urlunparse(parsed._replace(query=urlencode(qs, doseq=True)))
+
+        print(f"  📂 URL {i}/{len(urls)}: {base_url[:70]}", flush=True)
+
+        url_asins = []
+
+        # ═══════════════════════════════════════════════════════════
+        # ESTRATEGIA HÍBRIDA
+        # ═══════════════════════════════════════════════════════════
+
+        if fallos_consecutivos >= UMBRAL_CIRCUIT_BREAKER:
+            # Circuit breaker activado → usar solo Playwright
+            print(f"  🔴 Circuit breaker activo ({fallos_consecutivos} fallos) → Playwright", flush=True)
+            asins_pw, _ = _scrape_zg_batch_playwright([base_url], pages=pages, per_url_limit=per_url_limit)
+            url_asins = asins_pw
+
+        else:
+            # Intentar requests rápido primero
+            print(f"  ⚡ Intentando requests rápido...", flush=True)
+            asins_req, estado = scrape_requests_rapido(base_url)
+
+            if estado == "ok":
+                # ✅ Éxito con requests
+                fallos_consecutivos = 0
+                url_asins = asins_req[:per_url_limit] if per_url_limit else asins_req
+                print(f"  ✅ Requests OK: {len(url_asins)} ASINs", flush=True)
+
+            elif estado == "captcha":
+                # ⚠️ CAPTCHA detectado → fallback a Playwright
+                fallos_consecutivos += 1
+                print(f"  ⚠️  CAPTCHA detectado (fallos: {fallos_consecutivos}) → fallback Playwright", flush=True)
+                asins_pw, _ = _scrape_zg_batch_playwright([base_url], pages=pages, per_url_limit=per_url_limit)
+                url_asins = asins_pw
+
+            else:
+                # ⚠️ Error o respuesta vacía → fallback a Playwright
+                fallos_consecutivos += 1
+                print(f"  ⚠️  Requests falló ({estado}, fallos: {fallos_consecutivos}) → fallback Playwright", flush=True)
+                asins_pw, _ = _scrape_zg_batch_playwright([base_url], pages=pages, per_url_limit=per_url_limit)
+                url_asins = asins_pw
+
+        # Agregar ASINs únicos al resultado global
+        for a in url_asins:
+            if a not in all_asins_set:
+                all_asins_set.add(a)
+                all_asins_ordered.append(a)
+
+        # Pausa entre URLs (comportamiento humano)
+        if i < len(urls):
+            time.sleep(random.uniform(1.0, 2.0))
+
+    print(f"  📊 Total: {len(all_asins_ordered)} ASINs únicos de {len(urls)} URLs", flush=True)
+    return all_asins_ordered, "ok"
+
+
+def _scrape_zg_batch_playwright(urls, pages=2, per_url_limit=50):
+    """
+    Versión original con Playwright (fallback seguro).
+    Scrapea varias URLs de ranking ZG reutilizando UN solo browser.
 
     per_url_limit: máx ASINs que se conservan por URL (default 50 = top 50 por categoría).
     """

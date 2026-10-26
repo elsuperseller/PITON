@@ -77,6 +77,34 @@ document.querySelectorAll('.product-card:not([style*="display: none"]) .select-c
 
 ---
 
+## 🔄 SISTEMA HÍBRIDO DE SCRAPING (2026-10-26)
+
+### Implementación
+- **Archivo**: `scraper_amazon.py`
+- **Función**: `scrape_zg_batch()` (línea ~780)
+- **Estrategia**: Intenta requests rápido primero, fallback a Playwright si falla
+
+### Funcionamiento
+```python
+1. Intentar requests (⚡ rápido ~0.5s)
+2. Si CAPTCHA/error → Playwright (🌐 seguro ~3s)
+3. Circuit breaker: 3 fallos → solo Playwright
+4. Si éxito → reset contador
+```
+
+### Estado Actual
+- **Test ejecutado**: 2026-10-26
+- **Resultado**: Amazon bloquea requests (100% fallos)
+- **Comportamiento**: Sistema usa Playwright vía fallback (como antes)
+- **Circuit breaker**: ✅ Funciona correctamente
+
+### Mejoras Pendientes
+- Optimizar headers de requests (ver TAREAS.md)
+- Probar con sesión persistente
+- Considerar proxies si necesario
+
+---
+
 ## 🐛 PROBLEMAS CONOCIDOS Y SOLUCIONES
 
 ### Búsqueda por Keywords
