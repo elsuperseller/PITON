@@ -6,7 +6,17 @@
 
 ## ⏳ PENDIENTES
 
-_No hay tareas pendientes actualmente_
+- [ ] **Optimizar headers de requests para evitar bloqueo Amazon**
+  - **Contexto**: Sistema híbrido implementado pero Amazon bloquea requests simples (100% fallos en test)
+  - **Estado actual**: Funciona con fallback a Playwright (circuit breaker activo)
+  - **Mejoras posibles**:
+    - Agregar sesión persistente con cookies
+    - Incluir Referer headers
+    - Simular navegación previa
+    - Probar proxies rotativos
+  - **Archivos**: `scraper_amazon.py` función `scrape_requests_rapido()` línea ~170
+  - **Test**: `python3 test_hibrido.py`
+  - **Prioridad**: BAJA (sistema funciona, esto es optimización)
 
 ---
 
