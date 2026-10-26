@@ -2299,9 +2299,8 @@ async function buscarSoloTelegram() {
     }))
 
     // ✅ Actualizar ProductosState con los nuevos items
-    if (window.ProductosState) {
-      ProductosState.setItems(allItems)
-    }
+    ProductosState.setFeedId(feedId)
+    ProductosState.setItems(allItems)
 
     renderResults(allItems)
     setStatus(`✅ ${productos.length} ofertas SOLO de Telegram`, "done")
@@ -2352,9 +2351,8 @@ async function buscarSoloURLs() {
     }))
 
     // ✅ Actualizar ProductosState con los nuevos items
-    if (window.ProductosState) {
-      ProductosState.setItems(allItems)
-    }
+    ProductosState.setFeedId(feedId)
+    ProductosState.setItems(allItems)
 
     renderResults(allItems)
     setStatus(`✅ ${productos.length} productos SOLO de URLs`, "done")
@@ -2405,9 +2403,8 @@ async function buscarSoloKeywords() {
     }))
 
     // ✅ Actualizar ProductosState con los nuevos items
-    if (window.ProductosState) {
-      ProductosState.setItems(allItems)
-    }
+    ProductosState.setFeedId(feedId)  // ← Guardar feedId
+    ProductosState.setItems(allItems)
 
     renderResults(allItems)
     setStatus(`✅ ${productos.length} productos SOLO de keywords`, "done")
