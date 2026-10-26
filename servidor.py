@@ -2748,13 +2748,8 @@ class Handler(BaseHTTPRequestHandler):
                             if r.status_code == 200:
                                 data = r.json()
 
-                                # Debug: ver estructura completa de respuesta
-                                if pag == 1 and keyword == keywords[0]:  # Solo primera keyword, primera página
-                                    print(f"    🔍 DEBUG - Keys en respuesta: {list(data.keys())}", flush=True)
-                                    if "errors" in data:
-                                        print(f"    🔍 DEBUG - Errors: {data['errors']}", flush=True)
-
-                                items = data.get("itemsResult", {}).get("items", [])
+                                # ✅ FIX: Amazon devuelve "searchResult" no "itemsResult"
+                                items = data.get("searchResult", {}).get("items", [])
                                 print(f"    📦 Items en respuesta: {len(items)}", flush=True)
 
                                 if items:
