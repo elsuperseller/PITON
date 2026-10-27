@@ -281,4 +281,45 @@ SUPERSELLER/
 
 ---
 
-**Última sesión**: 2026-10-23 - Fix búsqueda keywords, export Google Sheets, filtro historial, badges
+## 🖼️ SISTEMA DE IMÁGENES PROCESADAS (2026-10-26)
+
+### Upload Automático a Google Drive
+
+**Implementación**:
+- **Módulo**: `google_drive_images.py`
+- **Integración**: `servidor.py` línea ~2172
+- **Carpetas**: Shared Drive de Superseller
+  - `superseller`: 13GlMZFroyfoX2-Lns41Mxs1nBFURt0_c
+  - `coleccionistas`: 1puYtN2zN1vI9oozyXD8CuEtIcYToRWmh
+
+**Funcionamiento**:
+```python
+Al exportar a Google Sheets:
+1. Procesar imagen → cuadrada 1000×1000 (imagenes.py)
+2. Subir a Google Drive Shared Drive
+3. Compartir públicamente (anyone with link)
+4. Usar URL pública en export a Sheets
+```
+
+**Configuración**:
+- Credenciales: `google-drive-credentials.json` (Service Account)
+- Service Account: `superseller-images@imagenes-superseller.iam.gserviceaccount.com`
+- Shared Drive ID: `0ALCl4wu6e7kbUk9PVA`
+
+**Scripts**:
+- `test_drive_upload.py` - Probar upload de una imagen
+- `limpiar_imagenes_drive.py` - Limpiar imágenes > 7 días
+
+**Limpieza Automática**:
+- Política: Eliminar imágenes > 7 días
+- Ejecutar: `python3 limpiar_imagenes_drive.py`
+- Recomendado: Cron diario
+
+**NUNCA HACER**:
+- NO commitear `google-drive-credentials.json` (está en .gitignore)
+- NO cambiar IDs de carpetas en `CARPETAS_DRIVE` sin verificar
+- NO usar carpetas de Mi unidad (solo Shared Drive funciona con Service Account)
+
+---
+
+**Última sesión**: 2026-10-26 - Sistema de imágenes procesadas con upload automático a Google Drive

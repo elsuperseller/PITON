@@ -6,6 +6,12 @@
 
 ## ⏳ PENDIENTES
 
+- [ ] **Configurar cron para limpieza automática de imágenes**
+  - **Contexto**: Script `limpiar_imagenes_drive.py` elimina imágenes > 7 días de Google Drive
+  - **Comando**: `python3 limpiar_imagenes_drive.py`
+  - **Recomendado**: Ejecutar diariamente vía cron
+  - **Prioridad**: BAJA (puede ejecutarse manualmente)
+
 - [ ] **Optimizar headers de requests para evitar bloqueo Amazon**
   - **Contexto**: Sistema híbrido implementado pero Amazon bloquea requests simples (100% fallos en test)
   - **Estado actual**: Funciona con fallback a Playwright (circuit breaker activo)
@@ -22,6 +28,14 @@
 
 ## ✅ COMPLETADAS
 
+- [x] **Sistema de imágenes procesadas con upload a Google Drive** (2026-10-26)
+  - Creado módulo `google_drive_images.py` con Google Drive API
+  - Configurado Service Account en Google Cloud (imagenes-superseller)
+  - Creadas carpetas en Shared Drive de Superseller
+  - Integrado en `servidor.py` para procesar automáticamente al exportar
+  - Imágenes cuadradas 1000×1000 subidas a Drive con URLs públicas
+  - Script de limpieza `limpiar_imagenes_drive.py` (retención 7 días)
+  - Actualizado CLAUDE.md con documentación completa
 - [x] Fix búsqueda keywords - API response `searchResult` vs `itemsResult` (2026-10-23)
 - [x] Fix export Google Sheets - ProductosState y selector CSS (2026-10-23)
 - [x] Filtro historial - Productos publicados últimos 21 días (2026-10-23)

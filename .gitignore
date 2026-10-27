@@ -34,3 +34,4 @@ cache_imagenes/
 # Process IDs
 .server.pid
 .sync.pid
+google-drive-credentials.json
