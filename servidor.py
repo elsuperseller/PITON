@@ -2171,6 +2171,21 @@ class Handler(BaseHTTPRequestHandler):
 
                 print(f"  📤 Exportando {len(items)} productos a Google Sheets...", flush=True)
 
+                # Procesar imágenes: Subir a Google Drive y obtener URLs públicas
+                import google_drive_images
+
+                for i, item in enumerate(items, 1):
+                    img_original = item.get('img', '')
+                    if img_original:
+                        print(f"  🖼️  Procesando imagen {i}/{len(items)}...", flush=True)
+                        url_drive = google_drive_images.subir_imagen_procesada(img_original, feed_id)
+
+                        if url_drive:
+                            item['img'] = url_drive
+                            print(f"    ✅ Imagen {i} subida a Drive", flush=True)
+                        else:
+                            print(f"    ⚠️  Imagen {i} - usando URL original", flush=True)
+
                 # Enviar a Google Apps Script
                 r = requests.post(sheets_url, data=json.dumps(items),
                                 headers={"Content-Type": "application/json"},
