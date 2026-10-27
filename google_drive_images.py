@@ -13,8 +13,10 @@ Documentación: https://developers.google.com/drive/api/guides/about-sdk
 """
 
 import os
+import json
 import hashlib
 from datetime import datetime, timedelta
+from pathlib import Path
 import imagenes
 
 try:
@@ -45,6 +47,34 @@ CARPETAS_DRIVE = {
 
 # Días de retención de imágenes en Drive
 DIAS_RETENCION = 7
+
+# Archivo de mapping URL → Drive URL (evita duplicados)
+MAPPING_FILE = os.path.join(os.path.dirname(__file__), 'drive_image_cache.json')
+
+# ==================== CACHE MAPPING ====================
+
+def cargar_mapping():
+    """Carga el mapping de URLs procesadas"""
+    if os.path.exists(MAPPING_FILE):
+        try:
+            with open(MAPPING_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️  Error cargando mapping: {e}", flush=True)
+            return {}
+    return {}
+
+def guardar_mapping(mapping):
+    """Guarda el mapping de URLs procesadas"""
+    try:
+        with open(MAPPING_FILE, 'w') as f:
+            json.dump(mapping, f, indent=2)
+    except Exception as e:
+        print(f"⚠️  Error guardando mapping: {e}", flush=True)
+
+def get_hash_url(url):
+    """Genera hash consistente de una URL"""
+    return hashlib.md5(url.encode()).hexdigest()
 
 # ==================== CLIENTE GOOGLE DRIVE ====================
 
@@ -80,7 +110,7 @@ def get_drive_service():
 
 def subir_imagen_procesada(url_original, audiencia_id):
     """
-    Procesa una imagen y la sube a Google Drive
+    Procesa una imagen y la sube a Google Drive (con cache para evitar duplicados)
 
     Args:
         url_original (str): URL de la imagen original de Amazon
@@ -90,12 +120,24 @@ def subir_imagen_procesada(url_original, audiencia_id):
         str: URL pública de la imagen en Google Drive, o None si falla
 
     Flujo:
-        1. Procesar imagen → cuadrada 1000×1000 (imagenes.py)
-        2. Subir a Google Drive en carpeta de audiencia
-        3. Compartir públicamente (anyone with link)
-        4. Retornar URL compartida
+        1. Verificar cache (si ya fue subida, retornar URL guardada)
+        2. Procesar imagen → cuadrada 1000×1000 (imagenes.py)
+        3. Subir a Google Drive en carpeta de audiencia
+        4. Compartir públicamente (anyone with link)
+        5. Guardar en cache
+        6. Retornar URL compartida
     """
     try:
+        # 0. Verificar cache primero
+        url_hash = get_hash_url(url_original)
+        mapping = cargar_mapping()
+
+        if url_hash in mapping:
+            cached = mapping[url_hash]
+            # Verificar que sea para la misma audiencia
+            if cached.get('audiencia_id') == audiencia_id:
+                print(f"  ♻️  Usando imagen cacheada de Drive (sin re-subir)", flush=True)
+                return cached['drive_url']
         # 1. Procesar imagen localmente
         print(f"  🖼️  Procesando imagen para {audiencia_id}...", flush=True)
         ruta_local = imagenes.imagen_cuadrada_producto(
@@ -165,6 +207,16 @@ def subir_imagen_procesada(url_original, audiencia_id):
         url_publica = f"https://drive.google.com/uc?export=view&id={file_id}"
 
         print(f"  ✅ Imagen subida: {url_publica}", flush=True)
+
+        # 9. Guardar en mapping para evitar duplicados futuros
+        mapping[url_hash] = {
+            'drive_url': url_publica,
+            'drive_file_id': file_id,
+            'audiencia_id': audiencia_id,
+            'original_url': url_original,
+            'created_at': datetime.now().isoformat()
+        }
+        guardar_mapping(mapping)
 
         return url_publica
 

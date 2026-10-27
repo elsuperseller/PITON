@@ -35,3 +35,4 @@ cache_imagenes/
 .server.pid
 .sync.pid
 google-drive-credentials.json
+drive_image_cache.json
