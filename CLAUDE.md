@@ -295,10 +295,19 @@ SUPERSELLER/
 **Funcionamiento**:
 ```python
 Al exportar a Google Sheets:
-1. Procesar imagen → cuadrada 1000×1000 (imagenes.py)
-2. Subir a Google Drive Shared Drive
-3. Compartir públicamente (anyone with link)
-4. Usar URL pública en export a Sheets
+1. Verificar cache (drive_image_cache.json)
+   ✅ Si existe → Reusar URL de Drive (sin re-subir)
+   ❌ Si no existe → Continuar procesamiento
+2. Procesar imagen → cuadrada 1000×1000 (imagenes.py)
+3. Subir a Google Drive Shared Drive
+4. Compartir públicamente (anyone with link)
+5. Guardar en cache mapping
+6. Usar URL pública en export a Sheets
+
+Optimizaciones:
+- Cache local: imagenes.py (evita re-procesar)
+- Cache mapping: drive_image_cache.json (evita re-subir)
+- Procesamiento paralelo: ThreadPoolExecutor (4 workers)
 ```
 
 **Configuración**:
