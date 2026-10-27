@@ -101,7 +101,7 @@ def subir_imagen_procesada(url_original, audiencia_id):
         ruta_local = imagenes.imagen_cuadrada_producto(
             url_original,
             size=1000,
-            producto_objetivo=0.90
+            producto_objetivo=0.88  # Producto ocupa 88% del lienzo (se ve más grande)
         )
 
         if not ruta_local or not os.path.exists(ruta_local):

@@ -14,7 +14,7 @@ from io import BytesIO
 # ==================== CONFIGURACIÓN ====================
 
 # Formato de imagen para Amazon (máxima calidad, no fuerza cuadrado)
-FORMATO_AMAZON = '._SS1000_'  # Square Scale 1000×1000 - imagen cuadrada
+FORMATO_AMAZON = '._SL1500_'  # Scale Longest: escala lado más largo a 1500px, mantiene aspect ratio
 
 # Formato de imagen para Mercado Libre
 FORMATO_ML = '-2X.webp'  # Imagen cuadrada ~1000x1000

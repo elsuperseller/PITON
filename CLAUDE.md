@@ -316,6 +316,12 @@ Al exportar a Google Sheets:
 - Recomendado: Cron diario
 
 **NUNCA HACER**:
+- NO cambiar `FORMATO_AMAZON` de `._SL1500_` a otro formato
+  - `._SL1500_` = Scale Longest (máxima calidad, mantiene aspect ratio) ✅
+  - `._SS1000_` = Square Scale (conserva fondo blanco, NO sirve) ❌
+  - `._AC_UL` = Auto Crop (recorta agresivamente, pixela) ❌
+  - Pipeline correcto: _SL1500_ → trim → recorte → lienzo 1000×1000
+- NO cambiar `producto_objetivo=0.88` sin razón (controla tamaño del producto en lienzo)
 - NO commitear `google-drive-credentials.json` (está en .gitignore)
 - NO cambiar IDs de carpetas en `CARPETAS_DRIVE` sin verificar
 - NO usar carpetas de Mi unidad (solo Shared Drive funciona con Service Account)
