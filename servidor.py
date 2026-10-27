@@ -2171,25 +2171,50 @@ class Handler(BaseHTTPRequestHandler):
 
                 print(f"  📤 Exportando {len(items)} productos a Google Sheets...", flush=True)
 
-                # Procesar imágenes: Subir a Google Drive y obtener URLs públicas
+                # Procesar imágenes EN PARALELO: Subir a Google Drive y obtener URLs públicas
                 import google_drive_images
+                from concurrent.futures import ThreadPoolExecutor, as_completed
 
-                for i, item in enumerate(items, 1):
+                def procesar_imagen_item(item_data):
+                    """Procesa una imagen y retorna (index, item, url_drive)"""
+                    idx, item = item_data
                     img_original = item.get('img', '')
                     if img_original:
-                        print(f"  🖼️  Procesando imagen {i}/{len(items)}...", flush=True)
                         url_drive = google_drive_images.subir_imagen_procesada(img_original, feed_id)
+                        return (idx, item, url_drive)
+                    return (idx, item, None)
+
+                print(f"  🖼️  Procesando {len(items)} imágenes en paralelo (max 4 workers)...", flush=True)
+
+                # Procesar en paralelo (máximo 4 imágenes simultáneas)
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    # Enumerar items para mantener orden
+                    items_enumerados = list(enumerate(items))
+
+                    # Submitear todos los jobs
+                    futures = {
+                        executor.submit(procesar_imagen_item, (i, item)): i
+                        for i, item in items_enumerados
+                    }
+
+                    # Procesar resultados conforme completan
+                    completados = 0
+                    for future in as_completed(futures):
+                        idx, item, url_drive = future.result()
+                        completados += 1
 
                         if url_drive:
                             item['img'] = url_drive
-                            print(f"    ✅ Imagen {i} subida a Drive", flush=True)
+                            print(f"    ✅ Imagen {completados}/{len(items)} subida a Drive", flush=True)
                         else:
-                            print(f"    ⚠️  Imagen {i} - usando URL original", flush=True)
+                            print(f"    ⚠️  Imagen {completados}/{len(items)} - usando URL original", flush=True)
 
-                # Enviar a Google Apps Script
+                print(f"  ✅ Todas las imágenes procesadas", flush=True)
+
+                # Enviar a Google Apps Script (aumentar timeout a 600 seg = 10 min)
                 r = requests.post(sheets_url, data=json.dumps(items),
                                 headers={"Content-Type": "application/json"},
-                                allow_redirects=True, timeout=120)
+                                allow_redirects=True, timeout=600)
                 r.raise_for_status()
                 resp_data = r.json()
 
