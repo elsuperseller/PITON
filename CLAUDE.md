@@ -99,7 +99,7 @@ document.querySelectorAll('.product-card:not([style*="display: none"]) .select-c
 - **Circuit breaker**: ✅ Funciona correctamente
 
 ### Mejoras Pendientes
-- Optimizar headers de requests (ver TAREAS.md)
+- Optimizar headers de requests (ver TAREAS_SUPERSELLER.md)
 - Probar con sesión persistente
 - Considerar proxies si necesario
 
@@ -206,7 +206,7 @@ SUPERSELLER/
 ├── start.sh             # Inicia servidor
 ├── stop.sh              # Detiene servidor
 ├── servidor.log         # Logs del servidor
-├── TAREAS.md            # Pendientes y completadas
+├── TAREAS_SUPERSELLER.md # Pendientes y completadas
 ├── CLAUDE.md            # Este archivo
 ├── feeds/
 │   ├── perfiles_audiencia.json    # Config de feeds
@@ -263,7 +263,7 @@ SUPERSELLER/
 ## 🔗 REFERENCIAS
 
 - Memoria proyecto: `~/.claude/projects/-Users-isaac/memory/project_superceller_setup.md`
-- Tareas: `/Users/isaac/Desktop/SUPERSELLER/TAREAS.md`
+- Tareas: `/Users/isaac/Desktop/SUPERSELLER/TAREAS_SUPERSELLER.md`
 - Google Sheet SUPERSELLER: Ver `superseller_google_sheet.md`
 - Google Sheet Coleccionistas: Ver `coleccionistas_google_sheet.md`
 - ML Lightning API: Ver `ml_lightning_api_endpoint.md`

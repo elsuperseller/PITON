@@ -2779,7 +2779,7 @@ async function exportarSheetsFeed(items, feedId) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }, 300000)  // ✅ 5 minutos (antes: 90 segundos)
+    }, 900000)  // ✅ 15 minutos (antes: 5 min, insuficiente para lotes grandes de imágenes)
     console.log("✅ Fetch completado, status:", r.status)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -2809,7 +2809,7 @@ async function exportarSheetsFeed(items, feedId) {
     }, 3000)
 
     if (e.name === "AbortError") {
-      alert("Error al exportar: Operación cancelada (timeout de 5 minutos)")
+      alert("Error al exportar: Operación cancelada (timeout de 15 minutos)")
     } else {
       alert("Error al exportar: " + e.message)
     }
@@ -2846,7 +2846,7 @@ async function exportarSheetsDirecto(items) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }, 300000)  // ✅ 5 minutos (antes: 90 segundos)
+    }, 900000)  // ✅ 15 minutos (antes: 5 min, insuficiente para lotes grandes de imágenes)
     console.log("✅ Fetch completado, status:", r.status)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -2876,7 +2876,7 @@ async function exportarSheetsDirecto(items) {
     }, 3000)
 
     if (e.name === "AbortError") {
-      alert("Error al exportar: Operación cancelada (timeout de 5 minutos)")
+      alert("Error al exportar: Operación cancelada (timeout de 15 minutos)")
     } else {
       alert("Error al exportar: " + e.message)
     }
