@@ -997,24 +997,46 @@ def enriquecer_asins(asins, minSavingPercent=1):
                  "offersV2.listings.availability",
                  "browseNodeInfo.browseNodes"]
 
-    def _enriquecer_batch(batch):
-        try:
-            r = requests.post(
-                "https://creatorsapi.amazon/catalog/v1/getItems",
-                headers=api_headers,
-                json={"partnerTag": CREDS["partner_tag"],
-                      "marketplace": "www.amazon.com.mx",
-                      "itemIds": batch,
-                      "languagesOfPreference": ["es_MX"],
-                      "currencyOfPreference": "MXN",
-                      "resources": _RECURSOS},
-                timeout=20
-            )
+    def _enriquecer_batch(batch, intentos=4):
+        response_data = None
+        for intento in range(1, intentos + 1):
+            try:
+                r = requests.post(
+                    "https://creatorsapi.amazon/catalog/v1/getItems",
+                    headers=api_headers,
+                    json={"partnerTag": CREDS["partner_tag"],
+                          "marketplace": "www.amazon.com.mx",
+                          "itemIds": batch,
+                          "languagesOfPreference": ["es_MX"],
+                          "currencyOfPreference": "MXN",
+                          "resources": _RECURSOS},
+                    timeout=20
+                )
+            except Exception as e:
+                print(f"  ❌ Error de red en batch (intento {intento}/{intentos}): {e}", flush=True)
+                if intento < intentos:
+                    time.sleep(2 ** intento)
+                    continue
+                return []
+
+            if r.status_code == 429:
+                # Rate limit de Amazon: NO son ASINs sin oferta, hay que reintentar con backoff
+                espera = 2 ** intento  # 2s, 4s, 8s, 16s
+                print(f"  ⏳ Rate limit (429) en batch, reintento {intento}/{intentos} en {espera}s...", flush=True)
+                time.sleep(espera)
+                continue
+
             if r.status_code != 200:
                 print(f"  ⚠️  Batch retornó status {r.status_code}", flush=True)
                 return []
 
             response_data = r.json()
+            break
+        else:
+            print(f"  ❌ Batch agotó {intentos} reintentos por rate limit (429), se descarta", flush=True)
+            return []
+
+        try:
             items_api = response_data.get("itemsResult", {}).get("items", [])
 
             # 🔍 LOG DETALLADO: Ver qué ASINs NO retornó la API
@@ -1047,7 +1069,7 @@ def enriquecer_asins(asins, minSavingPercent=1):
         # Mostrar progreso cada 5 batches
         if i % 5 == 0 or i == len(batches):
             print(f"  ⏳ Progreso: {i}/{len(batches)} batches ({len(all_items)} items) - {int((i/len(batches))*100)}% completado", flush=True)
-        time.sleep(0.3)  # Reducido a 0.3s para mayor velocidad (cuidado con rate limiting)
+        time.sleep(0.6)  # Subido de 0.3s a 0.6s: con 0.3s había demasiados 429 (rate limit) de Amazon
 
     print(f"  ✅ Enriquecimiento completo: {len(all_items)} items de {len(asins)} ASINs", flush=True)
     return all_items
@@ -1337,6 +1359,7 @@ class Handler(BaseHTTPRequestHandler):
 
                 # Usar función batch optimizada
                 items = enriquecer_asins(asins, minSavingPercent)
+                perdidos_api = len(asins) - len(items)  # No volvieron ni de la API (raro, red/429 agotado)
 
                 # Parsear items
                 productos = []
@@ -1347,21 +1370,27 @@ class Handler(BaseHTTPRequestHandler):
                             productos.append(producto)
                     except:
                         pass
+                sin_precio_oferta = len(items) - len(productos)  # La API los devolvió pero sin precio/listing real
 
                 # ✅ Aplicar filtro de descuento mínimo
+                filtrados_por_descuento = 0
                 if minSavingPercent > 0:
                     antes_filtro = len(productos)
                     productos = [p for p in productos if p.get('descuento_pct', 0) >= minSavingPercent]
+                    filtrados_por_descuento = antes_filtro - len(productos)
                     print(f"  🔍 Filtro descuento ≥{minSavingPercent}%: {antes_filtro} → {len(productos)} productos", flush=True)
 
                 print(f"✅ Batch completado: {len(productos)} productos de {len(asins)} ASINs", flush=True)
 
                 # ✅ Aplicar historial (igual que buscar-directo)
                 feed_id = body.get("feed_id", "") or body.get("audiencia_id", "")
+                ocultos_historial = 0
                 if _HV_OK and productos:
+                    antes_historial = len(productos)
                     if feed_id:
                         productos = aplicar_novedad_score_feed(productos, feed_id)
-                        print(f"  📚 Historial del feed '{feed_id}': {sum(1 for i in productos if i.get('novedad_score',1)<1.0)} ya vistos", flush=True)
+                        ocultos_historial = antes_historial - len(productos)
+                        print(f"  📚 Historial del feed '{feed_id}': {ocultos_historial} ocultados (ya publicados)", flush=True)
                     else:
                         productos = _hv.aplicar_scores(productos)
                         ya_vistos = sum(1 for i in productos if i.get('novedad_score',1)<1.0)
@@ -1373,7 +1402,13 @@ class Handler(BaseHTTPRequestHandler):
                     "ok": True,
                     "items": productos,
                     "total": len(productos),
-                    "asins_requested": len(asins)
+                    "asins_requested": len(asins),
+                    "desglose": {
+                        "perdidos_api": perdidos_api,
+                        "sin_precio_oferta": sin_precio_oferta,
+                        "filtrados_por_descuento": filtrados_por_descuento,
+                        "ocultos_historial": ocultos_historial
+                    }
                 }).encode())
 
             except Exception as e:
