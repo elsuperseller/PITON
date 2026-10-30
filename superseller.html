@@ -1866,6 +1866,7 @@ function setStatus(msg, cls="") {
 
 let allItems = []
 let currentFeedId = null
+let currentModo = 'promocional'  // 'promocional' (Ofertas) o 'novedades' — usado por búsquedas manuales por fuente
 let descartadosEnSesion = new Set()
 
 // ========== MÓDULO: ESTADO DE PRODUCTOS ==========
@@ -2365,8 +2366,9 @@ async function buscarSoloURLs() {
 
 async function buscarSoloKeywords() {
   const feedId = currentFeedId || window.currentFeedId
+  const modo = currentModo || window.currentModo || 'promocional'
 
-  setStatus("🔤 Buscando productos por keywords...", "running")
+  setStatus(`🔤 Buscando productos por keywords (${modo === 'novedades' ? 'Novedades' : 'Ofertas'})...`, "running")
   document.getElementById("results").style.display = "none"
   document.getElementById("exportBar").style.display = "none"
 
@@ -2375,7 +2377,8 @@ async function buscarSoloKeywords() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        audiencia_id: feedId
+        audiencia_id: feedId,
+        modo: modo
       })
     })
 
@@ -4216,6 +4219,8 @@ async function cargarFeed(refresh = false, modo = 'promocional') {
     // 4. Actualizar estado global
     currentFeedId = audienciaId
     window.currentFeedId = audienciaId
+    currentModo = modo
+    window.currentModo = modo
 
     // Guardar en localStorage
     const dataAudiencias = await apiCall("/feeds/listar")

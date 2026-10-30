@@ -73,7 +73,6 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         "itemCount": 15,  # Aumentado de 10 a 15 (15×2 páginas = 30 productos/keyword)
         "itemPage": pagina,
         "sortBy": sort_by,
-        "minSavingPercent": min_saving,
         "condition": "New",
         "availability": "Available",
         "languagesOfPreference": ["es_MX"],
@@ -99,6 +98,10 @@ def buscar(search_index, pagina=1, sort_by="NewestArrivals", browse_node_id=None
         body["minPrice"] = int(precio_min * 100)
     if precio_max > 0:
         body["maxPrice"] = int(precio_max * 100)
+    # Amazon exige minSavingPercent >= 1 si se envía; omitirlo del todo (min_saving<=0)
+    # para no exigir descuento (ej. Novedades), en vez de mandar 0 (la API lo rechaza con 400)
+    if min_saving and min_saving > 0:
+        body["minSavingPercent"] = min_saving
     r = requests.post("https://creatorsapi.amazon/catalog/v1/searchItems",
                       headers=headers, json=body, timeout=30)
     r.raise_for_status()
@@ -411,16 +414,23 @@ def marcar_asins_vistos(feed_id, asins_o_items):
     guardar_historial_feed(feed_id, historial)
     return len(asins_o_items)
 
-def aplicar_novedad_score_feed(items, feed_id):
+def aplicar_novedad_score_feed(items, feed_id, ocultar=True):
     """
-    Aplica novedad_score a items basándose en el historial del feed específico.
+    Aplica novedad_score a items basándose en el historial del feed específico
+    y, si ocultar=True (default), OCULTA (filtra) los que ya fueron publicados
+    hace menos de 21 días o están bloqueados — sin importar por qué método
+    (keywords/telegram/urls) se encontraron. ocultar=False se usa solo cuando
+    el caller necesita el score sin filtrar (ej. endpoint /historial con su
+    propio min_score configurable).
     1.0  — nunca visto
-    0.8  — publicado hace ≥21 días
-    0.6  — publicado hace 14-21 días
-    0.3  — publicado hace 7-14 días
-    0.0  — publicado hace <7 días o bloqueado
+    0.8  — publicado hace ≥21 días (se muestra)
+    0.6  — publicado hace 14-21 días (se oculta)
+    0.3  — publicado hace 7-14 días (se oculta)
+    0.0  — publicado hace <7 días o bloqueado (se oculta)
 
-    Actualizado 2026-10-08: Umbrales unificados con historial global (7 días mínimo)
+    Actualizado 2026-10-29: Antes solo reordenaba y mostraba un badge chiquito;
+    ahora oculta de verdad lo publicado hace <21 días para que no se repita
+    sin importar la vía de búsqueda usada.
     """
     from datetime import datetime, timezone
 
@@ -462,6 +472,14 @@ def aplicar_novedad_score_feed(items, feed_id):
                 producto['novedad_score'] = 0.3  # Default a 7-14 días
         else:
             producto['novedad_score'] = 1.0
+
+    # Ocultar lo ya publicado hace <21 días o bloqueado (score < 0.8)
+    if ocultar:
+        items_antes = len(items)
+        items = [p for p in items if p.get('novedad_score', 1.0) >= 0.8]
+        ocultados = items_antes - len(items)
+        if ocultados > 0:
+            print(f"  🙈 Historial feed '{feed_id}': {ocultados} productos ocultados (ya publicados <21 días o bloqueados)", flush=True)
 
     # Ordenar por novedad_score (mayor a menor)
     items.sort(key=lambda p: p.get('novedad_score', 1.0), reverse=True)
@@ -555,7 +573,7 @@ def obtener_asins_keyword(keyword, sort_by='Featured', max_pages=5):
                 search_index="All",
                 pagina=page,
                 sort_by=sort_by,
-                min_saving=0,  # Sin filtro de descuento (se filtra después)
+                min_saving=0,  # Sin filtro de descuento (buscar() ahora omite el parámetro con 0, no lo manda inválido)
                 keywords=keyword
             )
 
@@ -2053,7 +2071,7 @@ class Handler(BaseHTTPRequestHandler):
 
                 if action == "score":
                     if feed_id:
-                        resultado = aplicar_novedad_score_feed(items, feed_id)
+                        resultado = aplicar_novedad_score_feed(items, feed_id, ocultar=False)
                     else:
                         resultado = _hv.aplicar_scores(items)
                     resp = {"ok": True, "items": resultado}
@@ -2061,7 +2079,7 @@ class Handler(BaseHTTPRequestHandler):
                 elif action == "filtrar":
                     min_score = float(body.get("min_score", 0.1))
                     if feed_id:
-                        resultado = aplicar_novedad_score_feed(items, feed_id)
+                        resultado = aplicar_novedad_score_feed(items, feed_id, ocultar=False)
                         resultado = [p for p in resultado if p.get("novedad_score", 1.0) >= min_score]
                     else:
                         resultado = _hv.filtrar(items, min_score=min_score)
@@ -2707,11 +2725,13 @@ class Handler(BaseHTTPRequestHandler):
                 length = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(length))
                 audiencia_id = body.get("audiencia_id", "")
+                modo = body.get("modo", "promocional")  # 'promocional' (Ofertas) o 'novedades'
+                es_novedades = (modo == "novedades")
 
                 if not audiencia_id:
                     raise ValueError("audiencia_id requerido")
 
-                print(f"🔤 Búsqueda SOLO Keywords - Feed: {audiencia_id}", flush=True)
+                print(f"🔤 Búsqueda SOLO Keywords - Feed: {audiencia_id} (modo: {modo})", flush=True)
 
                 # Cargar perfil
                 perfiles = cargar_perfiles()
@@ -2720,8 +2740,15 @@ class Handler(BaseHTTPRequestHandler):
                 if not perfil:
                     raise ValueError(f"Feed '{audiencia_id}' no encontrado")
 
-                # Usar keywords_ofertas si existe, sino keywords (retrocompatibilidad)
-                keywords = perfil.get('keywords_ofertas', perfil.get('keywords', []))
+                # NOVEDADES: usar keywords_novedades y filtros_novedades si existen
+                # OFERTAS: usar keywords_ofertas y filtros (retrocompatibilidad: keywords/filtros legacy)
+                if es_novedades:
+                    keywords = perfil.get('keywords_novedades', perfil.get('keywords', []))
+                    filtros_usar = perfil.get('filtros_novedades', perfil.get('filtros', {}))
+                else:
+                    keywords = perfil.get('keywords_ofertas', perfil.get('keywords', []))
+                    filtros_usar = perfil.get('filtros', {})
+
                 if not keywords:
                     self.send_response(200); self._cors()
                     self.send_header("Content-Type", "application/json"); self.end_headers()
@@ -2747,9 +2774,9 @@ class Handler(BaseHTTPRequestHandler):
                     "x-marketplace": "www.amazon.com.mx"
                 }
 
-                # Obtener descuento mínimo del perfil
-                min_saving = perfil['filtros'].get('minSavingPercent', 1)
-                print(f"  💰 Filtro descuento mínimo: {min_saving}%", flush=True)
+                # Obtener descuento mínimo del perfil (NOVEDADES: sin exigir descuento)
+                min_saving = 0 if es_novedades else filtros_usar.get('minSavingPercent', 1)
+                print(f"  💰 Filtro descuento mínimo: {'sin filtro (novedades)' if es_novedades else f'{min_saving}%'}", flush=True)
 
                 all_items = []
                 for keyword in keywords[:200]:  # Limitar a 200 keywords
@@ -2856,7 +2883,15 @@ class Handler(BaseHTTPRequestHandler):
                                     pass  # Si hay error, incluir el producto
 
                         # Aplicar filtros del perfil
-                        if p.get('descuento_pct', 0) >= perfil['filtros'].get('minSavingPercent', 0):
+                        # NOVEDADES: solo precio min/max, SIN exigir descuento (igual que /novedades/)
+                        # OFERTAS: exige el descuento mínimo configurado
+                        precio = p.get('price_discounted', 0)
+                        min_price = filtros_usar.get('minPrice', 0)
+                        max_price = filtros_usar.get('maxPrice', 999999)
+                        if precio and (precio < min_price or precio > max_price):
+                            continue
+
+                        if es_novedades or p.get('descuento_pct', 0) >= filtros_usar.get('minSavingPercent', 0):
                             vistos.add(asin)
                             productos.append(p)
 
