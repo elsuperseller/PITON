@@ -2782,7 +2782,7 @@ async function exportarSheetsFeed(items, feedId) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }, 900000)  // ✅ 15 minutos (antes: 5 min, insuficiente para lotes grandes de imágenes)
+    }, 1200000)  // ✅ 20 minutos (antes: 15 min, insuficiente para lotes muy grandes)
     console.log("✅ Fetch completado, status:", r.status)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -2812,7 +2812,7 @@ async function exportarSheetsFeed(items, feedId) {
     }, 3000)
 
     if (e.name === "AbortError") {
-      alert("Error al exportar: Operación cancelada (timeout de 15 minutos)")
+      alert("Error al exportar: Operación cancelada (timeout de 20 minutos)")
     } else {
       alert("Error al exportar: " + e.message)
     }
@@ -2849,7 +2849,7 @@ async function exportarSheetsDirecto(items) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
-    }, 900000)  // ✅ 15 minutos (antes: 5 min, insuficiente para lotes grandes de imágenes)
+    }, 1200000)  // ✅ 20 minutos (antes: 15 min, insuficiente para lotes muy grandes)
     console.log("✅ Fetch completado, status:", r.status)
     const d = await r.json()
     if (!d.ok) throw new Error(d.error)
@@ -2879,7 +2879,7 @@ async function exportarSheetsDirecto(items) {
     }, 3000)
 
     if (e.name === "AbortError") {
-      alert("Error al exportar: Operación cancelada (timeout de 15 minutos)")
+      alert("Error al exportar: Operación cancelada (timeout de 20 minutos)")
     } else {
       alert("Error al exportar: " + e.message)
     }
@@ -2943,8 +2943,13 @@ async function buscarDirecto() {
         return true
       })
 
-      const sinOferta = lineas.length - d.total
-      const diagMsg = `${lineas.length} ASINs → API devolvió ${d.total} (${sinOferta} sin oferta) → filtro dejó ${items.length}`
+      const desg = d.desglose || {}
+      const partes = [`${lineas.length} ASINs`]
+      if (desg.perdidos_api) partes.push(`${desg.perdidos_api} sin respuesta de API`)
+      if (desg.sin_precio_oferta) partes.push(`${desg.sin_precio_oferta} sin precio/oferta real`)
+      if (desg.filtrados_por_descuento) partes.push(`${desg.filtrados_por_descuento} bajo el descuento mínimo`)
+      if (desg.ocultos_historial) partes.push(`${desg.ocultos_historial} ya publicados (ocultos)`)
+      const diagMsg = `${partes.join(" | ")} → ${items.length} productos finales`
 
       allItems = items
       ProductosState.setItems(allItems)
