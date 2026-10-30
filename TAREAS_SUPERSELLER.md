@@ -28,6 +28,18 @@
 
 ## ✅ COMPLETADAS
 
+- [x] **Fix: historial no ocultaba ofertas ya publicadas (sin importar el método de búsqueda)** (2026-10-29)
+  - **Problema**: `aplicar_novedad_score_feed()` solo le ponía un badge gris chiquito a los productos ya publicados, pero nunca los ocultaba de los resultados. Por eso en el feed de coleccionables (y en general) seguían apareciendo ofertas ya publicadas sin importar si se buscaban por keyword, Telegram o URL.
+  - **Solución**: la función ahora oculta (filtra) los productos publicados hace <21 días o bloqueados, con un parámetro `ocultar=True` por default. Se desactiva explícitamente (`ocultar=False`) solo en el endpoint genérico `/historial` (acciones `score`/`filtrar`) para no romper su lógica propia de `min_score`.
+  - **Verificación**: probado con el historial real de `coleccionistas` — un ASIN publicado hoy se ocultó, uno nunca visto se mantuvo visible.
+
+- [x] **Fix: keywords de Novedades vacías (feed coleccionables)** (2026-10-29)
+  - **Problema**: la búsqueda de Novedades por keywords (combinada con Telegram y URLs) traía siempre 0 resultados. Causa real: `obtener_asins_keyword()` llamaba a la API de Amazon con `minSavingPercent=0`, y Amazon rechaza ese valor con error 400 ("debe ser ≥1"). El error se tragaba silenciosamente y cortaba la búsqueda en la primera página de cada keyword.
+  - **Solución**: `buscar()` ahora omite el parámetro `minSavingPercent` del todo cuando `min_saving<=0`, en vez de mandarlo inválido. Así Novedades puede pedir productos sin exigir ningún descuento (correcto, porque lo nuevo no siempre tiene oferta), sin que Amazon rechace la petición.
+  - **Keywords de Novedades**: se igualaron a las 100 keywords de Ofertas en el feed `coleccionistas` (antes solo tenía 2: "Street Fighter" y "PROJECT PUNCH").
+  - **Nota**: también se corrigió `/feeds/buscar-keywords` (botón manual "Buscar por fuente → Keywords") para que respete el modo activo (Ofertas/Novedades) en vez de usar siempre `keywords_ofertas`.
+  - **Verificación**: probado en vivo con `obtener_asins_keyword('Funko Pop')` — antes 0 ASINs, después 20. Se limpió la caché vieja de `coleccionistas_novedades_Featured` para forzar la regeneración. Confirmado funcionando por el usuario.
+
 - [x] **Fix timeout de exportación a Google Sheets** (2026-10-29)
   - **Problema**: Al exportar lotes grandes (75 productos), el frontend cancelaba la petición a los 5 minutos con error, aunque el backend seguía procesando. El servidor terminaba el export correctamente pero el navegador ya había abortado la conexión (`Broken pipe` en servidor.log).
   - **Solución**: Aumentado el timeout del fetch en `superseller.html` de 5 a 15 minutos (300000 → 900000 ms), en `exportarSheetsFeed()` y `exportarSheetsDirecto()`.
