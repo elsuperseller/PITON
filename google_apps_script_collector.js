@@ -20,6 +20,8 @@ function doPost(e) {
     // Agregar productos empezando desde columna B
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
+      var platform = (item.platform || item.source || "").toLowerCase();
+      var canal = (platform === "mercadolibre" || platform === "ml") ? "Mercado Libre" : "Amazon";
       var rowData = [
         timestamp,                                      // B: FECHA
         "",                                             // C: ALEATORIO (vacío)
@@ -31,7 +33,7 @@ function doPost(e) {
         (item.descuento_pct || item.discount || 0) + "%", // I: DESCUENTO
         item.link || "",                                // J: LINK AFILIADO
         "",                                             // K: TIPO DE OFERTA (vacío)
-        "Amazon"                                        // L: CANAL
+        canal                                            // L: CANAL
       ];
 
       // Escribir desde columna B (índice 2)
