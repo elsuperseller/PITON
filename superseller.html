@@ -3962,6 +3962,8 @@ async function buscarAmazonUrlTemporal() {
     if (!d.ok) throw new Error(d.error || "Error buscando productos")
 
     allItems = d.productos || []
+    ProductosState.setFeedId(audienciaId)
+    ProductosState.setItems(allItems)
     renderResults(allItems)
     updateCount()
 
