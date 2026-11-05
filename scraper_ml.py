@@ -523,7 +523,9 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
                 if precio_max > 0 and precio > precio_max:
                     continue
 
-                # Normalizar al formato común de ML
+                # Normalizar al formato común de ML (mismo valor que usa _normalizar()
+                # en el resto del módulo — el script de Apps Script de Superseller
+                # compara item.source === "ml" para decidir la columna CANAL)
                 productos.append({
                     'id': p_raw['id'],
                     'title': p_raw['title'],
@@ -532,8 +534,7 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
                     'price_discounted': p_raw['price_discounted'],
                     'price_original': p_raw['price_original'],
                     'descuento_pct': p_raw['descuento_pct'],
-                    'source': 'Mercado Libre',  # Identificar origen
-                    'canal': 'Mercado Libre',    # Para export a Sheets
+                    'source': 'ml',
                 })
 
             print(f"  📊 {len(productos)} con descuento≥{min_discount}%", flush=True)
@@ -706,6 +707,244 @@ def scrape_url(url, min_discount=0, pages=1, precio_min=0, precio_max=0):
             time.sleep(1.2)
 
     return resultados
+
+# ── ENRIQUECER PRODUCTOS INDIVIDUALES (ej. links de Telegram) ───────
+def _enriquecer_via_api(mlm_id):
+    """
+    Intenta obtener los datos de un producto de ML vía API pública (sin scraping),
+    usando el token OAuth compartido con el proyecto Mercado Ads Manager.
+
+    Funciona cuando mlm_id es un ID de producto de catálogo (el caso común en
+    links de "/p/MLM..."): /products/{id} da título e imágenes, y
+    /products/{id}/items da precio y precio original.
+
+    Retorna el dict de producto, o None si la API no puede resolverlo
+    (ej. porque es un listado individual de otro vendedor, no un producto
+    de catálogo — en ese caso el caller debe recurrir a Playwright).
+    """
+    try:
+        import mercadolibre_auth
+        token = mercadolibre_auth.get_valid_token()
+    except Exception as e:
+        print(f"    ⚠️  No se pudo obtener token de MercadoLibre: {e}", flush=True)
+        return None
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    try:
+        r_prod = requests.get(f"https://api.mercadolibre.com/products/{mlm_id}", headers=headers, timeout=15)
+        if r_prod.status_code != 200:
+            return None
+        prod = r_prod.json()
+
+        r_items = requests.get(f"https://api.mercadolibre.com/products/{mlm_id}/items", headers=headers, timeout=15)
+        if r_items.status_code != 200:
+            return None
+        resultados_items = r_items.json().get("results", [])
+        if not resultados_items:
+            return None
+
+        # Tomar el ítem más barato (buy box / mejor precio entre vendedores)
+        mejor = min(resultados_items, key=lambda x: x.get("price", float("inf")))
+        precio_disc = mejor.get("price", 0)
+        precio_orig = mejor.get("original_price") or precio_disc
+        if not precio_disc:
+            return None
+
+        titulo = prod.get("name", "")
+        pics = prod.get("pictures", [])
+        img = pics[0].get("url", "") if pics else ""
+
+        if not titulo:
+            return None
+
+        desc_pct = round((precio_orig - precio_disc) / precio_orig * 100) if precio_orig > precio_disc else 0
+
+        return {
+            "id": mlm_id, "asin": mlm_id, "source": "ml",
+            "title": titulo, "link": "", "img": img,
+            "price_original": precio_orig, "price_discounted": precio_disc,
+            "descuento_pct": desc_pct,
+            "vigencia": "permanente", "tipo": "", "badge": "",
+            "start_time": "", "end_time": "",
+        }
+    except Exception as e:
+        print(f"    ⚠️  Error consultando API de ML para {mlm_id}: {e}", flush=True)
+        return None
+
+
+def _enriquecer_via_playwright(urls):
+    """
+    Respaldo por scraping (Playwright) para URLs que la API no pudo resolver
+    (ej. listados individuales de vendedores que no son producto de catálogo).
+    Abre cada página de producto porque ML bloquea requests simples con un
+    muro de verificación de cuenta ("account-verification").
+    """
+    if not urls or not _PLAYWRIGHT_OK:
+        return []
+
+    resultados = []
+    try:
+        with _sync_playwright() as pw:
+            ctx = pw.chromium.launch_persistent_context(
+                ML_BROWSER_PROFILE,
+                headless=False,  # ML detecta headless
+                channel='chrome',
+                viewport={'width': 1280, 'height': 800},
+                locale='es-MX',
+                args=['--disable-blink-features=AutomationControlled'],
+            )
+            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+
+            for url in urls:
+                try:
+                    print(f"  🎭 Playwright ML (respaldo, sin match en API): {url[:80]}", flush=True)
+                    page.goto(url, wait_until='domcontentloaded', timeout=30000)
+                    page.wait_for_timeout(3500)
+
+                    data = page.evaluate("""() => {
+                        const h1 = document.querySelector('h1');
+                        const title = h1 ? h1.textContent.trim() : '';
+
+                        const priceContainer = document.querySelector('.ui-pdp-price, [class*="ui-pdp-price"]');
+                        const precioElems = priceContainer
+                            ? priceContainer.querySelectorAll('.andes-money-amount__fraction')
+                            : [];
+
+                        let precio = 0, precioOrig = 0;
+                        if (precioElems.length >= 2) {
+                            precioOrig = parseFloat(precioElems[0].textContent.replace(/[^0-9]/g, ''));
+                            precio = parseFloat(precioElems[1].textContent.replace(/[^0-9]/g, ''));
+                        } else if (precioElems.length === 1) {
+                            precio = parseFloat(precioElems[0].textContent.replace(/[^0-9]/g, ''));
+                            precioOrig = precio;
+                        }
+
+                        const imgElem = document.querySelector('.ui-pdp-gallery img, figure img, img');
+                        const img = imgElem ? (imgElem.src || '') : '';
+
+                        return { title, precio, precioOrig, img, url: window.location.href };
+                    }""")
+
+                    if not data.get('title') or not data.get('precio'):
+                        print(f"    ⚠️  Sin título o precio, se descarta: {url[:60]}", flush=True)
+                        continue
+
+                    pid = extraer_mlm_de_url_producto(url) or extraer_mlm_de_url_producto(data.get('url', ''))
+                    if not pid:
+                        print(f"    ⚠️  No se pudo extraer ID de producto: {url[:60]}", flush=True)
+                        continue
+
+                    precio_disc = data['precio']
+                    precio_orig = data['precioOrig'] or precio_disc
+                    desc_pct = round((precio_orig - precio_disc) / precio_orig * 100) if precio_orig > precio_disc else 0
+
+                    resultados.append({
+                        "id": pid, "asin": pid, "source": "ml",
+                        "title": data['title'], "link": data.get('url') or url, "img": data.get('img', ''),
+                        "price_original": precio_orig, "price_discounted": precio_disc,
+                        "descuento_pct": desc_pct,
+                        "vigencia": "permanente", "tipo": "", "badge": "",
+                        "start_time": "", "end_time": "",
+                    })
+                    print(f"    ✅ {data['title'][:50]} — ${precio_disc}", flush=True)
+
+                except Exception as e:
+                    print(f"    ⚠️  Error enriqueciendo producto ML {url[:60]}: {e}", flush=True)
+                    continue
+
+            ctx.close()
+    except Exception as e:
+        print(f"  ❌ Error en _enriquecer_via_playwright: {e}", flush=True)
+
+    return resultados
+
+
+def enriquecer_urls_productos(urls):
+    """
+    Enriquece URLs de productos individuales de ML (ej. extraídas de Telegram).
+
+    Híbrido API + scraping (igual que Amazon): primero intenta resolver cada
+    URL vía la API pública de MercadoLibre (sin abrir navegador). Solo si la
+    API no puede resolverla (ej. no es un producto de catálogo), recurre a
+    Playwright como respaldo — y en ese caso se abre el navegador una sola
+    vez para todos los pendientes, no uno por uno.
+
+    Retorna lista de productos en el mismo formato que _normalizar().
+    """
+    if not urls:
+        return []
+
+    resultados = []
+    urls_pendientes = []  # Requieren respaldo por Playwright
+
+    for url in urls:
+        mlm_id = extraer_mlm_de_url_producto(url)
+        if not mlm_id:
+            print(f"    ⚠️  No se pudo extraer ID de producto: {url[:60]}", flush=True)
+            continue
+
+        producto = _enriquecer_via_api(mlm_id)
+        if producto:
+            producto["link"] = url
+            resultados.append(producto)
+            print(f"    ✅ (API) {producto['title'][:50]} — ${producto['price_discounted']}", flush=True)
+        else:
+            urls_pendientes.append(url)
+
+    if urls_pendientes:
+        print(f"  🎭 {len(urls_pendientes)} producto(s) sin match en API, usando Playwright de respaldo...", flush=True)
+        resultados.extend(_enriquecer_via_playwright(urls_pendientes))
+
+    return resultados
+
+
+def verificar_via_api(items):
+    """
+    Dada una lista de productos de ML ya obtenidos por scraping (listados,
+    URL fija, etc.), intenta refrescar precio/título/imagen de cada uno vía
+    la API de catálogo — más confiable que lo leído del DOM en ese instante.
+
+    Si la API no puede resolver un producto (no es de catálogo, error de
+    red, etc.) se conserva el dato original scrapeado sin cambios: esto es
+    solo una verificación adicional, nunca reemplaza el scraping como
+    mecanismo de descubrimiento (la búsqueda/listado de ML sigue siendo
+    scraping — su API de búsqueda está bloqueada para esta app incluso
+    autenticada).
+    """
+    if not items:
+        return items
+
+    actualizados = 0
+    for item in items:
+        pid = item.get('id') or item.get('asin')
+        if not pid:
+            continue
+
+        verificado = _enriquecer_via_api(pid)
+        if not verificado:
+            continue
+
+        item['title'] = verificado['title'] or item.get('title', '')
+        item['price_discounted'] = verificado['price_discounted']
+        item['price_original'] = verificado['price_original']
+        item['descuento_pct'] = verificado['descuento_pct']
+        if verificado.get('img'):
+            item['img'] = verificado['img']
+        item['verificado_api'] = True
+        actualizados += 1
+
+    if actualizados:
+        print(f"  ✅ {actualizados}/{len(items)} productos de ML verificados/actualizados vía API", flush=True)
+
+    return items
+
+def extraer_mlm_de_url_producto(url):
+    """Extrae el ID MLM de una URL de producto (ej. .../p/MLM60359404 → MLM60359404)."""
+    if not url:
+        return None
+    m = re.search(r'MLM-?(\d{6,})', url, re.IGNORECASE)
+    return f"MLM{m.group(1)}" if m else None
 
 # ── SCRAPER DESDE HTML DESCARGADO (mismo flow que Amazon) ────────────
 def scrape_html_texto(html_texto, min_discount=0):
