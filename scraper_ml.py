@@ -775,9 +775,13 @@ def _enriquecer_via_api(mlm_id):
 
         desc_pct = round((precio_orig - precio_disc) / precio_orig * 100) if precio_orig > precio_disc else 0
 
+        # Link canónico del producto (ML lo resuelve aunque falte el slug de título).
+        # El caller puede sobreescribirlo si ya conoce la URL real (ej. desde Telegram).
+        link = f"https://www.mercadolibre.com.mx/p/{mlm_id}"
+
         return {
             "id": mlm_id, "asin": mlm_id, "source": "ml",
-            "title": titulo, "link": "", "img": img,
+            "title": titulo, "link": link, "img": img,
             "price_original": precio_orig, "price_discounted": precio_disc,
             "descuento_pct": desc_pct,
             "vigencia": "permanente", "tipo": "", "badge": "",

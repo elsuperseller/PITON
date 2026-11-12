@@ -3782,6 +3782,12 @@ class Handler(BaseHTTPRequestHandler):
                         'mercadolibre': canal_ml_override if canal_ml_override is not None else False
                     }
 
+                # Usado por TODAS las fuentes de esta búsqueda (URLs fijas, Keywords) —
+                # no solo por Keywords, para que "solo MercadoLibre" también aplique a URLs fijas.
+                canales_ofertas_global = perfil.get('canales_ofertas', {'amazon': True, 'mercadolibre': False})
+                buscar_amazon_global = canales_ofertas_global.get('amazon', True)
+                buscar_ml_global = canales_ofertas_global.get('mercadolibre', False)
+
                 cache = cargar_feed_cache()
 
                 # ✅ Clave de caché SIEMPRE incluye sort_by y canales para diferenciar resultados
@@ -3909,6 +3915,9 @@ class Handler(BaseHTTPRequestHandler):
                     print(f"  📱 Scrapeando {len(telegram_sources)} canal(es) de Telegram...", flush=True)
                     try:
                         import telegram_utils
+                        # Telegram NO se filtra por canal: es contenido curado a mano (no una
+                        # búsqueda costosa como Keywords), así que siempre trae ambas plataformas
+                        # tal como vengan en el canal.
                         asins_telegram_dict, ml_telegram_dict = telegram_utils.obtener_asins_de_telegram(perfil)
 
                         if asins_telegram_dict:
@@ -3998,7 +4007,13 @@ class Handler(BaseHTTPRequestHandler):
 
                 # 1. PROCESAR URLS FIJAS (si existen Y si se seleccionó o no hay filtro)
                 # OFERTAS: usar links_ofertas si existe, sino usar urls_fijas (retrocompatibilidad)
+                # Este bloque scrapea con el scraper de Amazon (_az) sin importar la URL —
+                # por eso se gatea con el canal Amazon igual que Keywords.
                 urls_fijas = perfil.get('links_ofertas', perfil.get('urls_fijas', []))
+
+                if not buscar_amazon_global:
+                    print(f"  ⏭️  Saltando URLs fijas (canal Amazon desactivado para este feed)", flush=True)
+                    urls_fijas = []
 
                 if urls_fijas and _AZ_OK and (not fuente_filtro or fuente_filtro == 'urls'):
                     print(f"  🔗 Procesando {len(urls_fijas)} URLs fijas primero...", flush=True)
@@ -4448,6 +4463,11 @@ class Handler(BaseHTTPRequestHandler):
                         'mercadolibre': canal_ml_override if canal_ml_override is not None else False
                     }
 
+                # Usado por TODAS las fuentes de esta búsqueda (Telegram, URLs fijas, Keywords)
+                canales_novedades_global = perfil.get('canales_novedades', {'amazon': True, 'mercadolibre': False})
+                buscar_amazon_global = canales_novedades_global.get('amazon', True)
+                buscar_ml_global = canales_novedades_global.get('mercadolibre', False)
+
                 # IMPORTANTE: Para novedades usamos un cache separado con sufijo "_novedades"
                 # ✅ SIEMPRE incluir sort_by y canales en la clave para diferenciar resultados
                 cache = cargar_feed_cache()
@@ -4557,6 +4577,9 @@ class Handler(BaseHTTPRequestHandler):
                     print(f"  📱 Scrapeando {len(telegram_sources)} canal(es) de Telegram...", flush=True)
                     try:
                         import telegram_utils
+                        # Telegram NO se filtra por canal: es contenido curado a mano (no una
+                        # búsqueda costosa como Keywords), así que siempre trae ambas plataformas
+                        # tal como vengan en el canal.
                         asins_telegram_dict, ml_telegram_dict = telegram_utils.obtener_asins_de_telegram(perfil)
 
                         if asins_telegram_dict:
@@ -4619,7 +4642,12 @@ class Handler(BaseHTTPRequestHandler):
 
                 # URLS FIJAS
                 # NOVEDADES: usar links_novedades si existe, sino usar urls_fijas (retrocompatibilidad)
+                # Este bloque scrapea con el scraper de Amazon (_az) sin importar la URL —
+                # por eso se gatea con el canal Amazon igual que Keywords.
                 urls_fijas = perfil.get('links_novedades', perfil.get('urls_fijas', []))
+                if not buscar_amazon_global:
+                    print(f"  ⏭️  Saltando URLs fijas (canal Amazon desactivado para este feed)", flush=True)
+                    urls_fijas = []
                 if urls_fijas and _AZ_OK:
                     print(f"  🔗 Procesando {len(urls_fijas)} URLs fijas...", flush=True)
                     for url_config in urls_fijas:
