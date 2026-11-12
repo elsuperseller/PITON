@@ -10,6 +10,7 @@ import re
 import time
 import os
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from bs4 import BeautifulSoup
@@ -75,9 +76,13 @@ def _descubrir_containers(base_url):
 def _paginar_url(url, pagina):
     """
     Construye la URL para la página N respetando el esquema de paginación de la URL base.
-    - URLs con ?page=N existente → incrementa desde ese número base
-    - /ofertas o ?container_id= → page=N  (containers usan page=, no _from=)
-    - Resto                      → _from=N (48 ítems por página, listados estándar)
+    - URLs con ?page=N existente        → incrementa desde ese número base
+    - /ofertas o ?container_id=          → page=N  (containers usan page=, no _from=)
+    - URLs "_Container_..._NoIndex_True" → _Desde_N_ como segmento de ruta (48/página),
+      insertado justo antes de "_NoIndex_True". Confirmado empíricamente: estas URLs
+      de listado filtrado IGNORAN tanto ?page=N como ?_from=N, solo respetan este
+      esquema de ruta.
+    - Resto                              → _from=N (48 ítems por página, listados estándar)
     El fragment (#...) se descarta: es solo para el browser, el server lo ignora.
     """
     if pagina <= 1:
@@ -85,14 +90,20 @@ def _paginar_url(url, pagina):
     parsed = urlparse(url)
     parsed = parsed._replace(fragment="")   # strip #fragment
     params = parse_qs(parsed.query, keep_blank_values=True)
+    desde = (pagina - 1) * 48 + 1
     if "page" in params:
         page_base = int(params["page"][0])
         params["page"] = [str(page_base + pagina - 1)]
+        return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
     elif "/ofertas" in parsed.path or "container_id" in parsed.query:
         params["page"] = [str(pagina)]
+        return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
+    elif "_NoIndex_True" in parsed.path:
+        nueva_ruta = parsed.path.replace("_NoIndex_True", f"_Desde_{desde}_NoIndex_True")
+        return urlunparse(parsed._replace(path=nueva_ruta))
     else:
-        params["_from"] = [str((pagina - 1) * 48)]
-    return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
+        params["_from"] = [str(desde - 1)]
+        return urlunparse(parsed._replace(query=urlencode(params, doseq=True)))
 
 
 def _extraer_items_de_html(html):
@@ -405,15 +416,9 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
             todos_productos = []
 
             for page_num in range(1, pages + 1):
-                # Construir URL de página
-                if page_num == 1:
-                    page_url = url
-                else:
-                    # Remover fragment (#...) antes de agregar page=
-                    # El fragment no se envía al servidor y causa que page= se ignore
-                    url_sin_fragment = url.split('#')[0]
-                    separator = '&' if '?' in url_sin_fragment else '?'
-                    page_url = f"{url_sin_fragment}{separator}page={page_num}"
+                # ✅ Usar el mismo esquema de paginación que el resto del módulo:
+                # /ofertas y container_id= → page=N ; listados "container" normales → _from=N (offset)
+                page_url = _paginar_url(url, page_num)
 
                 print(f"  📄 Página {page_num}/{pages}: {page_url}", flush=True)
 
@@ -731,13 +736,23 @@ def _enriquecer_via_api(mlm_id):
 
     headers = {"Authorization": f"Bearer {token}"}
 
+    def _get_con_retry(url):
+        """GET con un reintento ante 429 (rate limit) — necesario al llamar en paralelo."""
+        for intento in range(2):
+            resp = requests.get(url, headers=headers, timeout=15)
+            if resp.status_code == 429 and intento == 0:
+                time.sleep(2)
+                continue
+            return resp
+        return resp
+
     try:
-        r_prod = requests.get(f"https://api.mercadolibre.com/products/{mlm_id}", headers=headers, timeout=15)
+        r_prod = _get_con_retry(f"https://api.mercadolibre.com/products/{mlm_id}")
         if r_prod.status_code != 200:
             return None
         prod = r_prod.json()
 
-        r_items = requests.get(f"https://api.mercadolibre.com/products/{mlm_id}/items", headers=headers, timeout=15)
+        r_items = _get_con_retry(f"https://api.mercadolibre.com/products/{mlm_id}/items")
         if r_items.status_code != 200:
             return None
         resultados_items = r_items.json().get("results", [])
@@ -895,6 +910,79 @@ def enriquecer_urls_productos(urls):
     if urls_pendientes:
         print(f"  🎭 {len(urls_pendientes)} producto(s) sin match en API, usando Playwright de respaldo...", flush=True)
         resultados.extend(_enriquecer_via_playwright(urls_pendientes))
+
+    return resultados
+
+
+def buscar_por_keywords(keywords, min_discount=0, min_price=0, max_price=999999, max_resultados_por_keyword=20, cancelado_fn=None):
+    """
+    Busca productos de ML por palabra clave 100% vía API (sin Playwright/scraping).
+
+    Para cada keyword: GET /products/search?q={keyword} (buscador de catálogo),
+    y por cada catalog_product_id encontrado, verifica precio/descuento real vía
+    _enriquecer_via_api(). Filtra por descuento mínimo y rango de precio.
+
+    NOTA: /products/search no filtra por descuento — siempre trae TODOS los
+    productos de catálogo que matchean la keyword, con o sin oferta. El filtro
+    de descuento se aplica aquí, después de consultar el precio de cada uno
+    (mismo patrón que Amazon, pero sin parámetro nativo de "solo ofertas").
+
+    cancelado_fn: función sin argumentos que retorna True si el usuario pidió
+    cancelar (botón Detener) — se revisa entre cada keyword.
+    """
+    try:
+        import mercadolibre_auth
+    except Exception as e:
+        print(f"  ⚠️  No se pudo cargar mercadolibre_auth: {e}", flush=True)
+        return []
+
+    resultados = []
+    for keyword in keywords:
+        if cancelado_fn and cancelado_fn():
+            print(f"  🛑 Búsqueda de MercadoLibre cancelada por el usuario (keyword '{keyword}')", flush=True)
+            break
+        try:
+            token = mercadolibre_auth.get_valid_token()
+            headers = {"Authorization": f"Bearer {token}"}
+            r = requests.get("https://api.mercadolibre.com/products/search", headers=headers, params={
+                "status": "active", "site_id": "MLM", "q": keyword, "limit": max_resultados_por_keyword
+            }, timeout=15)
+
+            if r.status_code == 429:
+                print(f"    ⏳ Rate limit en /products/search para '{keyword}', esperando 3s...", flush=True)
+                time.sleep(3)
+                continue
+            if r.status_code != 200:
+                print(f"    ⚠️  /products/search '{keyword}' → status {r.status_code}", flush=True)
+                continue
+
+            catalog_ids = [item.get("catalog_product_id") or item.get("id")
+                           for item in r.json().get("results", [])]
+            catalog_ids = [cid for cid in catalog_ids if cid]
+            print(f"    🔎 ML '{keyword}': {len(catalog_ids)} productos de catálogo encontrados", flush=True)
+
+            # ✅ Verificar precio/descuento de varios productos en paralelo (5 a la vez)
+            # en vez de uno por uno — mismo trabajo, mucho menos tiempo de espera total.
+            aceptados = 0
+            with ThreadPoolExecutor(max_workers=5) as pool:
+                futuros = {pool.submit(_enriquecer_via_api, cid): cid for cid in catalog_ids}
+                for futuro in as_completed(futuros):
+                    producto = futuro.result()
+                    if not producto:
+                        continue
+                    if producto["descuento_pct"] < min_discount:
+                        continue
+                    precio = producto["price_discounted"]
+                    if precio < min_price or precio > max_price:
+                        continue
+                    resultados.append(producto)
+                    aceptados += 1
+
+            print(f"    ✅ ML '{keyword}': {aceptados} productos agregados", flush=True)
+
+        except Exception as e:
+            print(f"    ⚠️  Error buscando ML '{keyword}': {e}", flush=True)
+            continue
 
     return resultados
 
