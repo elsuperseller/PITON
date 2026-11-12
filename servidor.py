@@ -7,6 +7,7 @@ import re
 import os
 import sys as _sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 import time
 from datetime import datetime, timezone
@@ -21,6 +22,10 @@ import imagenes
 import threading
 import uuid
 JOBS_BACKGROUND = {}  # {job_id: {"status": "processing|completed|error", "progreso": {...}, "resultados": [...]}}
+
+# Botón "Detener": bandera global que los loops largos (keywords, etc.) revisan
+# entre iteraciones. El servidor NO se apaga — solo se corta la búsqueda en curso.
+CANCELAR_BUSQUEDA = {"activo": False}
 
 try:
     import scraper_ml as _ml
@@ -1150,6 +1155,15 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
+        if self.path == "/detener":
+            # Botón "Detener": corta la búsqueda en curso (los loops revisan
+            # esta bandera entre keywords). El servidor sigue corriendo.
+            CANCELAR_BUSQUEDA["activo"] = True
+            print("🛑 /detener → cancelando búsqueda en curso (servidor sigue activo)", flush=True)
+            self.send_response(200); self._cors()
+            self.send_header("Content-Type", "application/json"); self.end_headers()
+            self.wfile.write(json.dumps({"ok": True, "msg": "Búsqueda cancelada"}).encode())
+
         if self.path == "/buscar":
             try:
                 length = int(self.headers.get("Content-Length", 0))
@@ -3719,24 +3733,34 @@ class Handler(BaseHTTPRequestHandler):
 
         elif path.startswith("/feeds/"):
             try:
+                CANCELAR_BUSQUEDA["activo"] = False  # Nueva búsqueda: resetear cancelación previa
+
                 # Extraer audiencia_id del path (ej: /feeds/coleccionistas?refresh=true)
                 audiencia_id = path.split('/')[2].split('?')[0] if len(path.split('/')) > 2 else None
                 if not audiencia_id:
                     raise ValueError("audiencia_id requerido")
 
-                refresh = 'refresh=true' in path
+                # ✅ FIX: 'path' (más abajo) viene de urlparse().path y NUNCA tiene el
+                # '?query'. Había que leer el query string de self.path (la URL completa).
+                refresh = 'refresh=true' in self.path
 
                 # Extraer parámetros de fuente y ordenamiento
                 fuente_filtro = None
                 sort_by = 'Featured'  # Default
-                if '?' in path:
+                canal_amazon_override = None
+                canal_ml_override = None
+                if '?' in self.path:
                     try:
-                        query_params = path.split('?')[1]
+                        query_params = self.path.split('?')[1]
                         for param in query_params.split('&'):
                             if param.startswith('fuente='):
                                 fuente_filtro = param.split('=')[1]
                             elif param.startswith('sort_by='):
                                 sort_by = param.split('=')[1]
+                            elif param.startswith('canal_amazon='):
+                                canal_amazon_override = param.split('=')[1] == 'true'
+                            elif param.startswith('canal_ml='):
+                                canal_ml_override = param.split('=')[1] == 'true'
                     except:
                         pass
 
@@ -3749,10 +3773,19 @@ class Handler(BaseHTTPRequestHandler):
                     return
 
                 perfil = perfiles[audiencia_id]
+
+                # ✅ Los checkboxes de canal (arriba en la barra) tienen prioridad sobre
+                # lo guardado en el perfil — son para decidir rápido antes de cada búsqueda
+                if canal_amazon_override is not None or canal_ml_override is not None:
+                    perfil['canales_ofertas'] = {
+                        'amazon': canal_amazon_override if canal_amazon_override is not None else True,
+                        'mercadolibre': canal_ml_override if canal_ml_override is not None else False
+                    }
+
                 cache = cargar_feed_cache()
 
-                # ✅ Clave de caché SIEMPRE incluye sort_by para diferenciar ordenamientos
-                cache_key = f"{audiencia_id}_{sort_by}"
+                # ✅ Clave de caché SIEMPRE incluye sort_by y canales para diferenciar resultados
+                cache_key = f"{audiencia_id}_{sort_by}_am{canal_amazon_override}_ml{canal_ml_override}"
                 print(f"  🔑 Cache key: {cache_key}", flush=True)
 
                 # Si tiene cache y no es refresh, verificar expiración
@@ -4064,14 +4097,25 @@ class Handler(BaseHTTPRequestHandler):
                 # OFERTAS: usar keywords_ofertas si existe, sino usar keywords (retrocompatibilidad)
                 keywords = perfil.get('keywords_ofertas', perfil.get('keywords', []))
 
+                # Canales habilitados para búsqueda por keyword (default: solo Amazon, como siempre fue)
+                canales_ofertas = perfil.get('canales_ofertas', {'amazon': True, 'mercadolibre': False})
+                buscar_amazon_kw = canales_ofertas.get('amazon', True)
+                buscar_ml_kw = canales_ofertas.get('mercadolibre', False)
+
                 # Solo procesar keywords si no hay filtro de fuente o si se seleccionó keywords
-                if not fuente_filtro or fuente_filtro == 'keywords':
-                    print(f"  🔎 Procesando {len(keywords)} keywords...", flush=True)
+                if (not fuente_filtro or fuente_filtro == 'keywords') and buscar_amazon_kw:
+                    print(f"  🔎 Procesando {len(keywords)} keywords (Amazon)...", flush=True)
                 else:
-                    print(f"  ⏭️  Saltando keywords (fuente seleccionada: {fuente_filtro})", flush=True)
+                    if not buscar_amazon_kw:
+                        print(f"  ⏭️  Saltando keywords de Amazon (canal desactivado para este feed)", flush=True)
+                    else:
+                        print(f"  ⏭️  Saltando keywords (fuente seleccionada: {fuente_filtro})", flush=True)
                     keywords = []  # Vaciar lista para no procesarlas
 
                 for keyword in keywords:
+                    if CANCELAR_BUSQUEDA["activo"]:
+                        print(f"  🛑 Búsqueda cancelada por el usuario (keyword '{keyword}')", flush=True)
+                        break
                     try:
                         # OFERTAS: usar filtros_ofertas si existe, sino usar filtros legacy
                         filtros_ofertas = perfil.get('filtros_ofertas', perfil.get('filtros', {}))
@@ -4184,6 +4228,39 @@ class Handler(BaseHTTPRequestHandler):
                     except Exception as e:
                         print(f"  ⚠️  Error con keyword '{keyword}': {e}", flush=True)
                         continue
+
+                # MercadoLibre por keyword (100% API, sin Playwright) — solo si está habilitado para este feed
+                if buscar_ml_kw and (not fuente_filtro or fuente_filtro == 'keywords'):
+                    keywords_ml = perfil.get('keywords_ofertas', perfil.get('keywords', []))
+                    print(f"  🔎 Procesando {len(keywords_ml)} keywords (MercadoLibre)...", flush=True)
+                    try:
+                        import scraper_ml
+                        items_ml_kw = scraper_ml.buscar_por_keywords(
+                            keywords_ml,
+                            min_discount=perfil['filtros'].get('minSavingPercent', 0),
+                            min_price=perfil['filtros'].get('minPrice', 0),
+                            max_price=perfil['filtros'].get('maxPrice', 999999),
+                            cancelado_fn=lambda: CANCELAR_BUSQUEDA["activo"]
+                        )
+                        for p_ml in items_ml_kw:
+                            mlm_id = p_ml.get('asin', '')
+                            if esta_bloqueado(audiencia_id, mlm_id):
+                                continue
+                            productos.append({
+                                "asin": mlm_id,
+                                "title": p_ml.get("title", ""),
+                                "price": p_ml.get("price_discounted", 0),
+                                "discount": p_ml.get("descuento_pct", 0),
+                                "image": p_ml.get("img", ""),
+                                "link": p_ml.get("link", ""),
+                                "source_channel": f"Keyword ML",
+                                "source_type": "keyword",
+                                "platform": "mercadolibre",
+                                "keyword_match": ""
+                            })
+                        print(f"  ✅ {len(items_ml_kw)} productos de MercadoLibre agregados por keyword", flush=True)
+                    except Exception as e:
+                        print(f"  ⚠️  Error buscando MercadoLibre por keyword: {e}", flush=True)
 
                 # Deduplicar por ASIN
                 productos_unicos = {p['asin']: p for p in productos if p.get('asin')}.values()
@@ -4322,24 +4399,34 @@ class Handler(BaseHTTPRequestHandler):
             Muestra productos NUEVOS (novedad_score alto) aunque no tengan descuento.
             """
             try:
+                CANCELAR_BUSQUEDA["activo"] = False  # Nueva búsqueda: resetear cancelación previa
+
                 # Extraer audiencia_id del path
                 audiencia_id = path.split('/')[2].split('?')[0] if len(path.split('/')) > 2 else None
                 if not audiencia_id:
                     raise ValueError("audiencia_id requerido")
 
-                refresh = 'refresh=true' in path
+                # ✅ FIX: 'path' viene de urlparse().path y NUNCA tiene el '?query'.
+                # Había que leer el query string de self.path (la URL completa).
+                refresh = 'refresh=true' in self.path
 
                 # Extraer parámetros de fuente y ordenamiento
                 fuente_filtro = None
                 sort_by = 'Featured'  # Default
-                if '?' in path:
+                canal_amazon_override = None
+                canal_ml_override = None
+                if '?' in self.path:
                     try:
-                        query_params = path.split('?')[1]
+                        query_params = self.path.split('?')[1]
                         for param in query_params.split('&'):
                             if param.startswith('fuente='):
                                 fuente_filtro = param.split('=')[1]
                             elif param.startswith('sort_by='):
                                 sort_by = param.split('=')[1]
+                            elif param.startswith('canal_amazon='):
+                                canal_amazon_override = param.split('=')[1] == 'true'
+                            elif param.startswith('canal_ml='):
+                                canal_ml_override = param.split('=')[1] == 'true'
                     except:
                         pass
 
@@ -4353,10 +4440,18 @@ class Handler(BaseHTTPRequestHandler):
 
                 perfil = perfiles[audiencia_id]
 
+                # ✅ Los checkboxes de canal (arriba en la barra) tienen prioridad sobre
+                # lo guardado en el perfil — son para decidir rápido antes de cada búsqueda
+                if canal_amazon_override is not None or canal_ml_override is not None:
+                    perfil['canales_novedades'] = {
+                        'amazon': canal_amazon_override if canal_amazon_override is not None else True,
+                        'mercadolibre': canal_ml_override if canal_ml_override is not None else False
+                    }
+
                 # IMPORTANTE: Para novedades usamos un cache separado con sufijo "_novedades"
-                # ✅ SIEMPRE incluir sort_by en la clave para diferenciar ordenamientos
+                # ✅ SIEMPRE incluir sort_by y canales en la clave para diferenciar resultados
                 cache = cargar_feed_cache()
-                cache_key = f"{audiencia_id}_novedades_{sort_by}"
+                cache_key = f"{audiencia_id}_novedades_{sort_by}_am{canal_amazon_override}_ml{canal_ml_override}"
                 print(f"  🔑 Cache key: {cache_key}", flush=True)
 
                 # Si tiene cache y no es refresh, verificar expiración
@@ -4584,8 +4679,20 @@ class Handler(BaseHTTPRequestHandler):
                 # NOVEDADES: usar filtros_novedades si existe, sino usar filtros legacy
                 filtros_novedades = perfil.get('filtros_novedades', perfil.get('filtros', {}))
 
+                # Canales habilitados para búsqueda por keyword (default: solo Amazon, como siempre fue)
+                canales_novedades = perfil.get('canales_novedades', {'amazon': True, 'mercadolibre': False})
+                buscar_amazon_kw_nov = canales_novedades.get('amazon', True)
+                buscar_ml_kw_nov = canales_novedades.get('mercadolibre', False)
+
+                if not buscar_amazon_kw_nov:
+                    print(f"  ⏭️  Saltando keywords de Amazon (canal desactivado para este feed)", flush=True)
+                    keywords = []
+
                 print(f"  🔎 Procesando {len(keywords)} keywords con ordenamiento '{sort_by}'...", flush=True)
                 for keyword in keywords:
+                    if CANCELAR_BUSQUEDA["activo"]:
+                        print(f"  🛑 Búsqueda cancelada por el usuario (keyword '{keyword}')", flush=True)
+                        break
                     try:
                         # ✅ PAGINACIÓN: Obtener ASINs primero (máx 50), luego enriquecer
                         asins_keyword = obtener_asins_keyword(
@@ -4644,6 +4751,39 @@ class Handler(BaseHTTPRequestHandler):
 
                     except Exception as e:
                         print(f"  ⚠️  Error buscando '{keyword}': {e}", flush=True)
+
+                # MercadoLibre por keyword (100% API, sin Playwright) — solo si está habilitado para este feed
+                if buscar_ml_kw_nov:
+                    keywords_ml_nov = perfil.get('keywords_novedades', perfil.get('keywords', []))
+                    print(f"  🔎 Procesando {len(keywords_ml_nov)} keywords (MercadoLibre)...", flush=True)
+                    try:
+                        import scraper_ml
+                        items_ml_kw_nov = scraper_ml.buscar_por_keywords(
+                            keywords_ml_nov,
+                            min_discount=filtros_novedades.get('minSavingPercent', 0),
+                            min_price=filtros_novedades.get('minPrice', 0),
+                            max_price=filtros_novedades.get('maxPrice', 999999),
+                            cancelado_fn=lambda: CANCELAR_BUSQUEDA["activo"]
+                        )
+                        for p_ml in items_ml_kw_nov:
+                            mlm_id = p_ml.get('asin', '')
+                            if esta_bloqueado(audiencia_id, mlm_id):
+                                continue
+                            productos.append({
+                                "asin": mlm_id,
+                                "title": p_ml.get("title", ""),
+                                "price": p_ml.get("price_discounted", 0),
+                                "discount": p_ml.get("descuento_pct", 0),
+                                "image": p_ml.get("img", ""),
+                                "link": p_ml.get("link", ""),
+                                "source_channel": "Keyword ML",
+                                "source_type": "keyword",
+                                "platform": "mercadolibre",
+                                "keyword_match": ""
+                            })
+                        print(f"  ✅ {len(items_ml_kw_nov)} productos de MercadoLibre agregados por keyword", flush=True)
+                    except Exception as e:
+                        print(f"  ⚠️  Error buscando MercadoLibre por keyword: {e}", flush=True)
 
                 # Deduplicar por ASIN antes de aplicar scoring
                 productos_unicos = {}
@@ -4859,8 +4999,16 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # Suprimir logs de HTTP
 
-class _Servidor(HTTPServer):
-    """HTTPServer que suprime BrokenPipeError (cliente cierra conexión antes de recibir respuesta)."""
+class _Servidor(ThreadingMixIn, HTTPServer):
+    """
+    HTTPServer multi-hilo (cada request en su propio hilo) que suprime
+    BrokenPipeError (cliente cierra conexión antes de recibir respuesta).
+
+    Multi-hilo es necesario para que el botón "Detener" pueda llegarle al
+    servidor mientras está ocupado con una búsqueda larga (keywords, etc.) —
+    con un solo hilo, esa petición se quedaba en cola sin poder procesarse.
+    """
+    daemon_threads = True
     def handle_error(self, request, client_address):
         exc = _sys.exc_info()[1]
         if isinstance(exc, BrokenPipeError):
