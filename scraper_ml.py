@@ -416,15 +416,23 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
             todos_productos = []
 
             for page_num in range(1, pages + 1):
-                # ✅ Usar el mismo esquema de paginación que el resto del módulo:
-                # /ofertas y container_id= → page=N ; listados "container" normales → _from=N (offset)
-                page_url = _paginar_url(url, page_num)
-
-                print(f"  📄 Página {page_num}/{pages}: {page_url}", flush=True)
-
-                # Navegar a la página
-                page.goto(page_url, wait_until='networkidle', timeout=60000)
-                page.wait_for_timeout(4000)  # Esperar más para asegurar carga completa
+                if page_num == 1:
+                    print(f"  📄 Página {page_num}/{pages}: {url[:80]}", flush=True)
+                    page.goto(url, wait_until='networkidle', timeout=60000)
+                    page.wait_for_timeout(4000)  # Esperar más para asegurar carga completa
+                else:
+                    # ✅ Clic real en el botón "Siguiente" en vez de adivinar la URL de
+                    # paginación — ML usa esquemas distintos (page=, _from=, _Desde_N_ en
+                    # distintas posiciones de la ruta) según el tipo de listado, y adivinar
+                    # mal hace que se repita la misma página. El botón siempre es correcto.
+                    siguiente = page.locator('a.andes-pagination__link', has_text='Siguiente').first
+                    if siguiente.count() == 0:
+                        print(f"    ⏹️  No hay botón 'Siguiente' — se llegó a la última página ({page_num - 1})", flush=True)
+                        break
+                    print(f"  📄 Página {page_num}/{pages}: clic en 'Siguiente'", flush=True)
+                    siguiente.click()
+                    page.wait_for_load_state('domcontentloaded', timeout=30000)
+                    page.wait_for_timeout(4000)
 
                 # Scroll para asegurar que todo cargó
                 page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
