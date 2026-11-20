@@ -3257,9 +3257,12 @@ class Handler(BaseHTTPRequestHandler):
                             "source": "telegram"
                         }
 
-                        # Agregar timestamp de Telegram si existe
+                        # Agregar timestamp y canal real de Telegram si existe
                         if solo_telegram and asin in telegram_timestamps:
-                            producto["telegram_published"] = telegram_timestamps[asin]
+                            producto["telegram_published"] = telegram_timestamps[asin].get("timestamp")
+                            canal_real = telegram_timestamps[asin].get("canal", "Telegram")
+                            producto["source_channel"] = canal_real
+                            producto["keyword_match"] = f"📱 {canal_real}"
 
                         productos_validados.append(producto)
 
@@ -3293,6 +3296,9 @@ class Handler(BaseHTTPRequestHandler):
                         }
                         if solo_telegram and mlm_id in telegram_ml_metadata:
                             producto_ml["telegram_published"] = telegram_ml_metadata[mlm_id]["timestamp"]
+                            canal_real_ml = telegram_ml_metadata[mlm_id].get("canal", "Telegram")
+                            producto_ml["source_channel"] = canal_real_ml
+                            producto_ml["keyword_match"] = f"📱 {canal_real_ml}"
                         productos_validados.append(producto_ml)
                     print(f"  ✅ {len(items_ml)} productos de MercadoLibre agregados", flush=True)
 
@@ -3954,8 +3960,8 @@ class Handler(BaseHTTPRequestHandler):
                                 # Obtener precio (para mostrar, pero no filtrar)
                                 precio = extraer_precio(item) or parsed.get("price_discounted", 0)
 
-                                # Obtener nombre del canal
-                                canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
+                                # Nombre del canal real que trajo ESTE producto (no siempre el primero)
+                                canal_nombre = asins_telegram_dict.get(asin, {}).get('canal', 'Telegram')
 
                                 # Agregar SIN FILTROS - todo pasa
                                 productos.append({
@@ -3981,12 +3987,12 @@ class Handler(BaseHTTPRequestHandler):
                             urls_ml_telegram = [d["url"] for d in ml_telegram_dict.values()]
                             print(f"    🛒 {len(urls_ml_telegram)} productos de MercadoLibre a enriquecer", flush=True)
                             items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram)
-                            canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
                             items_ml_validos = 0
                             for p_ml in items_ml_telegram:
                                 mlm_id = p_ml.get("asin", "")
                                 if esta_bloqueado(audiencia_id, mlm_id):
                                     continue
+                                canal_nombre_ml = ml_telegram_dict.get(mlm_id, {}).get('canal', 'Telegram')
                                 productos.append({
                                     "asin": mlm_id,
                                     "title": p_ml.get("title", ""),
@@ -3994,10 +4000,10 @@ class Handler(BaseHTTPRequestHandler):
                                     "discount": p_ml.get("descuento_pct", 0),
                                     "image": p_ml.get("img", ""),
                                     "link": p_ml.get("link", ""),
-                                    "source_channel": canal_nombre,
+                                    "source_channel": canal_nombre_ml,
                                     "source_type": "telegram",
                                     "platform": "mercadolibre",
-                                    "keyword_match": f"📱 {canal_nombre}"
+                                    "keyword_match": f"📱 {canal_nombre_ml}"
                                 })
                                 items_ml_validos += 1
                             print(f"    ✅ {items_ml_validos} productos de MercadoLibre agregados al feed", flush=True)
@@ -4598,7 +4604,7 @@ class Handler(BaseHTTPRequestHandler):
                                     continue
 
                                 precio = extraer_precio(item) or parsed.get("price_discounted", 0)
-                                canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
+                                canal_nombre = asins_telegram_dict.get(asin, {}).get('canal', 'Telegram')
 
                                 productos.append({
                                     "asin": asin,
@@ -4618,11 +4624,11 @@ class Handler(BaseHTTPRequestHandler):
                             urls_ml_telegram = [d["url"] for d in ml_telegram_dict.values()]
                             print(f"    🛒 {len(urls_ml_telegram)} productos de MercadoLibre a enriquecer", flush=True)
                             items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram)
-                            canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
                             for p_ml in items_ml_telegram:
                                 mlm_id = p_ml.get("asin", "")
                                 if esta_bloqueado(audiencia_id, mlm_id):
                                     continue
+                                canal_nombre_ml = ml_telegram_dict.get(mlm_id, {}).get('canal', 'Telegram')
                                 productos.append({
                                     "asin": mlm_id,
                                     "title": p_ml.get("title", ""),
@@ -4630,10 +4636,10 @@ class Handler(BaseHTTPRequestHandler):
                                     "discount": p_ml.get("descuento_pct", 0),
                                     "image": p_ml.get("img", ""),
                                     "link": p_ml.get("link", ""),
-                                    "source_channel": canal_nombre,
+                                    "source_channel": canal_nombre_ml,
                                     "source_type": "telegram",
                                     "platform": "mercadolibre",
-                                    "keyword_match": f"📱 {canal_nombre}"
+                                    "keyword_match": f"📱 {canal_nombre_ml}"
                                 })
                             print(f"    ✅ {len(items_ml_telegram)} productos de MercadoLibre agregados", flush=True)
 
@@ -4946,7 +4952,6 @@ class Handler(BaseHTTPRequestHandler):
                     asins_telegram = list(asins_telegram_dict.keys())
                     print(f"  📦 {len(asins_telegram)} ASINs de Amazon + {len(ml_telegram_dict)} productos de MercadoLibre extraídos de Telegram", flush=True)
 
-                    canal_nombre = telegram_sources[0].get('nombre', 'Telegram') if telegram_sources else 'Telegram'
                     productos = []
 
                     # Enriquecer Amazon con API
@@ -4957,6 +4962,7 @@ class Handler(BaseHTTPRequestHandler):
                         for item in items_telegram:
                             p = parsear_item(item)
                             if p:
+                                canal_nombre = asins_telegram_dict.get(p.get('asin', ''), {}).get('canal', 'Telegram')
                                 p['source'] = 'telegram'
                                 p['source_type'] = 'telegram'
                                 p['source_channel'] = canal_nombre
@@ -4970,11 +4976,12 @@ class Handler(BaseHTTPRequestHandler):
                         print(f"  🛒 Enriqueciendo {len(urls_ml_telegram)} productos de MercadoLibre...", flush=True)
                         items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram)
                         for p_ml in items_ml_telegram:
+                            canal_nombre_ml = ml_telegram_dict.get(p_ml.get('asin', ''), {}).get('canal', 'Telegram')
                             p_ml['source'] = 'telegram'
                             p_ml['source_type'] = 'telegram'
-                            p_ml['source_channel'] = canal_nombre
+                            p_ml['source_channel'] = canal_nombre_ml
                             p_ml['platform'] = 'mercadolibre'
-                            p_ml['keyword_match'] = f"📱 {canal_nombre}"
+                            p_ml['keyword_match'] = f"📱 {canal_nombre_ml}"
                             productos.append(p_ml)
                         print(f"  ✅ {len(items_ml_telegram)} productos de MercadoLibre enriquecidos", flush=True)
 

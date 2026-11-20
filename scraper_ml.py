@@ -911,6 +911,7 @@ def enriquecer_urls_productos(urls):
             print(f"    ⚠️  No se pudo extraer ID de producto: {url[:60]}", flush=True)
             continue
 
+
         producto = _enriquecer_via_api(mlm_id)
         if producto:
             producto["link"] = url
@@ -1045,6 +1046,50 @@ def extraer_mlm_de_url_producto(url):
         return None
     m = re.search(r'MLM-?(\d{6,})', url, re.IGNORECASE)
     return f"MLM{m.group(1)}" if m else None
+
+
+def resolver_producto_destacado_social(url):
+    """
+    Resuelve un link de "perfil social" de ML (ej. /social/nombretienda?matt_word=...)
+    al producto DESTACADO que el afiliado está promocionando específicamente —
+    no cualquier producto de las recomendaciones genéricas que aparecen debajo.
+
+    ML marca internamente ese producto destacado con c_id=".../card-featured/element"
+    en el href del link. Es el "primer producto que aparece", como lo describe
+    el usuario: hay que visitar la página (no basta con la URL del perfil) y
+    tomar ese link específico.
+
+    Retorna (mlm_id, url_producto) o (None, None) si no se encuentra.
+    """
+    if not url or not _PLAYWRIGHT_OK:
+        return None, None
+    try:
+        with _sync_playwright() as pw:
+            ctx = pw.chromium.launch_persistent_context(
+                ML_BROWSER_PROFILE, headless=False, channel='chrome',
+                viewport={'width': 1280, 'height': 900}, locale='es-MX',
+                args=['--disable-blink-features=AutomationControlled'],
+            )
+            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            page.goto(url, wait_until='domcontentloaded', timeout=20000)
+            page.wait_for_timeout(3000)
+
+            href = page.evaluate("""() => {
+                const destacado = document.querySelector('a[href*="card-featured"]');
+                if (destacado) return destacado.href;
+                // Respaldo: primer link a un producto si no se encuentra el marcador
+                const primero = document.querySelector('a[href*="/p/MLM"], a[href*="/up/MLMU"]');
+                return primero ? primero.href : null;
+            }""")
+            ctx.close()
+
+            if href:
+                mlm_id = extraer_mlm_de_url_producto(href)
+                return mlm_id, href
+    except Exception as e:
+        print(f"    ⚠️  Error resolviendo producto destacado (perfil social): {e}", flush=True)
+
+    return None, None
 
 # ── SCRAPER DESDE HTML DESCARGADO (mismo flow que Amazon) ────────────
 def scrape_html_texto(html_texto, min_discount=0):

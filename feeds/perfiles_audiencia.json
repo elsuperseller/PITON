@@ -560,6 +560,11 @@
         "url": "https://t.me/s/goeyBOTS",
         "nombre": "goeyGEEKS.bot",
         "dias_historico": 2
+      },
+      {
+        "url": "https://t.me/s/The_Plastic_Hunter_Pitazos",
+        "nombre": "Plastic Hunter",
+        "dias_historico": 5
       }
     ],
     "urls_fijas": [

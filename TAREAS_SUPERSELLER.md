@@ -1,6 +1,6 @@
 # 📋 TAREAS - SUPERSELLER
 
-**Última actualización**: 2026-11-05
+**Última actualización**: 2026-11-20
 
 ---
 
@@ -27,6 +27,37 @@
 ---
 
 ## ✅ COMPLETADAS
+
+- [x] **Fix paginación de MercadoLibre: clic real en "Siguiente" en vez de adivinar la URL** (2026-11-20)
+  - **Problema**: el scraper de listados ML (`_scrape_listado_playwright`) construía la URL de la página 2/3 adivinando el esquema de paginación (`_Desde_N_` insertado antes de `_NoIndex_True`). El usuario confirmó que seguía fallando (repetía la página 1).
+  - **Causa real**: el botón "Siguiente" real de ML inserta `_Desde_N_` en una posición DISTINTA de la ruta (justo después del dominio, no antes de `_NoIndex_True`). Confirmado comparando ambas URLs directamente.
+  - **Solución**: se abandonó el intento de adivinar la URL. Ahora el scraper navega a la página 1 normalmente y para las siguientes páginas busca y hace **clic real** en el link `a.andes-pagination__link` con texto "Siguiente" — así nunca depende de adivinar el esquema correcto.
+  - **Verificado**: 94 productos únicos de 96 en 3 páginas (antes repetía los mismos ~28 tres veces).
+
+- [x] **Fix: productos de MercadoLibre por keyword no tenían link (abrían localhost)** (2026-11-20)
+  - **Causa**: `_enriquecer_via_api()` dejaba `link: ""` esperando que el caller lo llenara; `buscar_por_keywords()` nunca lo hacía (a diferencia de Telegram/URL fija, aquí no hay URL de origen, solo un ID de catálogo).
+  - **Fix**: se construye `https://www.mercadolibre.com.mx/p/{ID}` como link canónico — verificado con Playwright que carga la página real del producto sin necesitar el slug de título.
+
+- [x] **Fix: Telegram solo traía ~20 mensajes por canal (unas horas, no los días configurados)** (2026-11-20)
+  - **Causa**: `scrape_telegram_ultimos_dias()` hacía una sola petición a `t.me/s/canal`, que solo devuelve los últimos ~20 mensajes de Telegram (confirmado: cubría 8 horas, no 5 días). Explica por qué solo salían 12-16 ofertas de canales activos en "5 días".
+  - **Fix**: se agregó paginación real usando el parámetro `?before={id_mensaje}` que soporta la vista pública de Telegram, con tope de seguridad de 30 páginas (~600 mensajes) para no pedir infinito.
+  - **Verificado**: mismo canal pasó de 12 a **203 ASINs de Amazon** encontrados en una prueba real. Nota: canales muy activos pueden llegar al tope de 30 páginas sin cubrir el 100% de los días pedidos — subir el tope da más cobertura a cambio de más tiempo (cada página resuelve varios links cortos con peticiones HTTP reales).
+
+- [x] **Fix: todos los productos de Telegram mostraban el nombre del primer canal configurado** (2026-11-20)
+  - **Causa**: el código usaba `telegram_sources[0].get('nombre', ...)` fijo, sin importar cuál canal real trajo cada producto (relevante ahora que varios feeds tienen 2-3 canales de Telegram).
+  - **Fix**: `telegram_utils.py` ahora rastrea el canal de origen por cada ASIN/producto ML individualmente. Se actualizaron los 4 puntos de `servidor.py` que consumen esto (`/feeds/buscar`, Ofertas, Novedades, `/feeds/telegram-extract`) para mostrar el canal real por producto.
+
+- [x] **Confirmado: "Buscar por fuente → Telegram" se mantiene sin filtros de Ofertas/Novedades a propósito** (2026-11-20)
+  - Usuario preguntó por qué ese botón no respeta los filtros de descuento/precio de Ofertas o Novedades. Se confirmó que es diseño intencional ("modo aprendizaje": el canal ya fue curado a mano, se confía en él). Usuario confirmó dejarlo así, sin cambios.
+
+- [x] **Selector de canal (Amazon/MercadoLibre) agregado para Ofertas y Novedades** (2026-11-12/13)
+  - Checkboxes visibles junto a los botones "Ofertas"/"Novedades" en la barra principal (no en un modal escondido), mutuamente excluyentes (marcar uno desmarca el otro) para evitar que se sumen los tiempos de espera de ambos canales.
+  - Aplica a **Keywords** y **URLs fijas** (gatea cuál se busca). **Telegram queda exento a propósito**: es contenido curado a mano, siempre trae ambas plataformas sin importar el canal seleccionado.
+  - Fix de bug real en el camino: `do_GET` calculaba `path = urlparse(self.path).path` (sin query string) pero el código seguía buscando `?parámetros` dentro de esa misma variable — rompía silenciosamente `refresh`, `fuente`, `sort_by` y el nuevo selector de canal. Corregido usando `self.path` para leer la query string.
+
+- [x] **MercadoLibre por keyword paralelizado (5 a la vez) + botón Detener real** (2026-11-12)
+  - `buscar_por_keywords()` ahora verifica hasta 5 productos en paralelo (`ThreadPoolExecutor`) en vez de uno por uno — de ~20-26s/keyword a ~2.5s/keyword.
+  - Servidor migrado a multi-hilo (`ThreadingMixIn`) y nuevo endpoint `/detener` que activa una bandera global (`CANCELAR_BUSQUEDA`) revisada entre keywords — corta la búsqueda en curso sin apagar el servidor.
 
 - [x] **MercadoLibre: verificación vía API extendida también a URL fija** (2026-11-05)
   - **Pedido del usuario**: extender el enfoque híbrido (API) a todo lo que use el perfil de ML, no solo Telegram. Usuario aclaró que en la práctica solo usa Telegram y URL fija a diario.
