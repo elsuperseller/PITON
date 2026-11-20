@@ -28,6 +28,12 @@
 
 ## ✅ COMPLETADAS
 
+- [x] **Fix: links de MercadoLibre tipo "perfil social" no traían ningún producto** (2026-11-20)
+  - **Problema**: la mayoría de los links de ML compartidos en Telegram son del tipo `/social/tienda?matt_word=...` (página de perfil de afiliado), no un link directo a producto — por eso salían "0 productos de MercadoLibre" en casi todas las búsquedas, aunque el canal sí compartiera ofertas de ML.
+  - **Aclaración del usuario**: esas páginas muestran el producto promocionado como el primero/destacado de la lista — hay que entrar y tomar ese primero, no un link cualquiera de recomendaciones genéricas.
+  - **Fix**: nueva función `scraper_ml.resolver_producto_destacado_social()` — visita la página `/social/` y extrae el producto marcado internamente por ML como `card-featured` (el destacado real), en vez de ignorar el link por completo.
+  - **Verificado de punta a punta**: con el link real que compartió el usuario, extrajo `MLM75329393` y lo enriqueció correctamente vía API (título, $914.54 vs $1,299 original, 30% descuento, imagen).
+
 - [x] **Fix paginación de MercadoLibre: clic real en "Siguiente" en vez de adivinar la URL** (2026-11-20)
   - **Problema**: el scraper de listados ML (`_scrape_listado_playwright`) construía la URL de la página 2/3 adivinando el esquema de paginación (`_Desde_N_` insertado antes de `_NoIndex_True`). El usuario confirmó que seguía fallando (repetía la página 1).
   - **Causa real**: el botón "Siguiente" real de ML inserta `_Desde_N_` en una posición DISTINTA de la ruta (justo después del dominio, no antes de `_NoIndex_True`). Confirmado comparando ambas URLs directamente.
