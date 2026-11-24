@@ -1,10 +1,18 @@
 # 📋 TAREAS - SUPERSELLER
 
-**Última actualización**: 2026-11-20
+**Última actualización**: 2026-11-24
 
 ---
 
 ## ⏳ PENDIENTES
+
+- [ ] **Agregar pausas y freno de emergencia al scraping de respaldo de MercadoLibre (Playwright)**
+  - **Problema**: `_enriquecer_via_playwright()` en `scraper_ml.py` navega una página de producto tras otra sin pausas, usando siempre el mismo perfil de navegador. Esto disparó una advertencia real de "¿eres humano?" de MercadoLibre (2026-11-24) por volumen de búsquedas.
+  - **Mejoras propuestas, aún no implementadas**: pausas aleatorias (3-7s) entre cada página, freno de emergencia si detecta el muro de verificación (para no seguir intentando el resto del lote), y un tope máximo de productos por corrida (ej. 15).
+  - **Prioridad**: ALTA (riesgo de bloqueo de cuenta de MercadoLibre)
+
+- [ ] **Borrar filas de prueba en el Sheet de Collector Secret Society**
+  - 4 filas con título "TEST BORRAR - Producto ML" / "TEST BORRAR - Producto Amazon" quedaron de la verificación del fix de CANAL (2026-11-24).
 
 - [ ] **Configurar cron para limpieza automática de imágenes**
   - **Contexto**: Script `limpiar_imagenes_drive.py` elimina imágenes > 7 días de Google Drive
@@ -27,6 +35,30 @@
 ---
 
 ## ✅ COMPLETADAS
+
+- [x] **Fix: CANAL mostraba "Amazon" para todo en el export a Google Sheets (Collector Secret Society)** (2026-11-24)
+  - **Causa**: el Apps Script real (`doPost`) solo revisaba `item.source === "ml"`, pero muchos productos de MercadoLibre llegan con `source: null` y solo `platform: "mercadolibre"` seteado — por eso siempre caían en "Amazon".
+  - **Fix**: se corrigió la lógica del script para revisar `item.platform` también, no solo `item.source`. Se creó una implementación nueva en Apps Script (URL distinta a la anterior) y se actualizó `sheets_export_url` del feed `coleccionistas` en `perfiles_audiencia.json` para apuntar a la nueva URL.
+  - **Verificado**: prueba real enviada al nuevo endpoint — un producto de ML salió con CANAL "Mercado Libre" y uno de Amazon salió "Amazon", correctamente. Quedaron 4 filas de prueba por borrar en el Sheet (ver pendientes).
+  - **Nota importante descubierta en el camino**: el script de Collector Secret Society resultó ser una copia casi idéntica del script de Superseller (mismo bug) — probablemente se duplicó como plantilla al crear el proyecto. El de Superseller NO se tocó (no era el reportado).
+
+- [x] **Fix: "Ver en Amazon →" se mostraba para productos de MercadoLibre en localhost** (2026-11-24)
+  - **Causa**: el texto del botón "Ver en..." estaba fijo en "Amazon" en el template de la tarjeta de producto (`superseller.html`), sin revisar la plataforma real del producto.
+  - **Fix**: ahora el texto es condicional — revisa `p.platform === 'mercadolibre'`, `p.source === 'ml'`, o si `p.asin` empieza con `MLM`, y muestra "Ver en MercadoLibre →" en esos casos.
+  - **Verificado**: se confirmó que todo el caché de productos en disco (`feeds/feeds_cache.json`) tiene el campo `platform`/`source` correctamente seteado para ML — cero productos mal etiquetados.
+
+- [x] **Aclaración: por qué MercadoLibre mostró advertencia de "¿eres humano?"** (2026-11-24)
+  - **Causa raíz identificada**: `_enriquecer_via_playwright()` (respaldo cuando la API no reconoce un producto como "de catálogo") abre muchas páginas de producto seguidas sin pausas, con el mismo perfil de navegador — patrón típico de detección de bots. Pendiente implementar mitigación (ver PENDIENTES).
+
+- [x] **Aclaración: por qué una búsqueda de MercadoLibre se disparó sin que el usuario apretara ningún botón** (2026-11-24)
+  - **Causa real #1**: la caché de resultados expira por tiempo (ej. "cada_3_horas" en el feed Coleccionistas en realidad vence en **1 hora** reales, no 3 — reducción intencional hecha en una sesión anterior). Al reabrir la vista de Ofertas/Novedades después de ese tiempo, el sistema busca todo de nuevo automáticamente, sin que el usuario pida un "refresh" explícito.
+  - **Causa real #2**: los canales de Telegram están exentos a propósito del selector de canal Amazon/MercadoLibre (decisión explícita de una sesión anterior, confirmada de nuevo en esta) — así que aunque el usuario desactive MercadoLibre, los links de ML que vengan de Telegram se siguen procesando igual.
+  - **No se encontró ningún proceso en segundo plano, cron, ni temporizador** que dispare búsquedas por sí solo — se confirmó revisando el código (no hay `setInterval`, `Timer`, ni hilos que repitan búsquedas).
+  - **Sin cambios de código**: el usuario decidió dejar ambos comportamientos como están.
+
+- [x] **Seguridad: `.ml_browser_profile/` (perfil de navegador con cookies de MercadoLibre) se estaba subiendo a GitHub automáticamente** (2026-11-24)
+  - **Causa**: `auto-sync.sh` corre `git add -A` cada hora sin exclusiones, y esa carpeta nunca estuvo en `.gitignore`. El repo `elsuperseller/PITON` es **público**.
+  - **Fix**: se agregó al `.gitignore`, se dejó de rastrear, y se limpió del historial de git (ver commit de limpieza). Se recomendó además cerrar sesión/rotar la sesión de MercadoLibre por si alguna cookie quedó expuesta públicamente.
 
 - [x] **Fix: links de MercadoLibre tipo "perfil social" no traían ningún producto** (2026-11-20)
   - **Problema**: la mayoría de los links de ML compartidos en Telegram son del tipo `/social/tienda?matt_word=...` (página de perfil de afiliado), no un link directo a producto — por eso salían "0 productos de MercadoLibre" en casi todas las búsquedas, aunque el canal sí compartiera ofertas de ML.

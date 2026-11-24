@@ -37,3 +37,6 @@ cache_imagenes/
 google-drive-credentials.json
 drive_image_cache.json
 .env
+
+# Perfil de navegador de Playwright (cookies/sesión de MercadoLibre - NUNCA subir)
+.ml_browser_profile/
