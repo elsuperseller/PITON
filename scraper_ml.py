@@ -6,6 +6,7 @@ Normaliza al objeto oferta común compatible con Amazon.
 """
 
 import json
+import random
 import re
 import time
 import os
@@ -33,6 +34,16 @@ IMG_TPL     = "https://http2.mlstatic.com/D_NQ_NP_{pic_id}-2X.webp"
 
 # Perfil de Chrome persistente con sesión de ML
 ML_BROWSER_PROFILE = os.path.expanduser('~/Desktop/SUPERSELLER/.ml_browser_profile')
+
+# Freno de emergencia para _enriquecer_via_playwright(): evita que ML marque
+# la cuenta por abrir muchas páginas de producto seguidas sin pausas.
+ML_PAUSA_MIN_SEG = 3
+ML_PAUSA_MAX_SEG = 7
+ML_MAX_PRODUCTOS_PLAYWRIGHT = 15  # tope por corrida; el resto queda sin enriquecer
+ML_MURO_VERIFICACION_MARCADORES = (
+    "verificar tu cuenta", "verificar que no eres un robot", "no eres un robot",
+    "/security/", "/checkpoint/", "challenge.mercadolibre",
+)
 
 URLS_PREDEFINIDAS = {
     "ofertas_dia": [f"{ML_BASE}/ofertas"],   # punto de entrada; se expande automáticamente
@@ -800,15 +811,45 @@ def _enriquecer_via_api(mlm_id):
         return None
 
 
+def _detectar_muro_verificacion(page):
+    """
+    Revisa la página actual buscando el muro de verificación de cuenta de ML
+    ("¿eres humano?"). Usado como freno de emergencia en _enriquecer_via_playwright().
+    """
+    try:
+        url_actual = (page.url or "").lower()
+        texto = page.evaluate("() => document.body ? document.body.innerText.toLowerCase() : ''")
+    except Exception:
+        return False
+
+    return any(
+        marcador in url_actual or marcador in texto
+        for marcador in ML_MURO_VERIFICACION_MARCADORES
+    )
+
+
 def _enriquecer_via_playwright(urls):
     """
     Respaldo por scraping (Playwright) para URLs que la API no pudo resolver
     (ej. listados individuales de vendedores que no son producto de catálogo).
     Abre cada página de producto porque ML bloquea requests simples con un
     muro de verificación de cuenta ("account-verification").
+
+    Freno de emergencia (2026-11-24, tras advertencia real de ML):
+    - Tope de ML_MAX_PRODUCTOS_PLAYWRIGHT productos por corrida.
+    - Pausa aleatoria entre cada página para no parecer un bot.
+    - Si detecta el muro de verificación, corta el lote de inmediato.
     """
     if not urls or not _PLAYWRIGHT_OK:
         return []
+
+    if len(urls) > ML_MAX_PRODUCTOS_PLAYWRIGHT:
+        print(
+            f"  ⚠️  {len(urls)} productos pendientes de Playwright, "
+            f"tope de seguridad es {ML_MAX_PRODUCTOS_PLAYWRIGHT} — se procesan solo los primeros",
+            flush=True,
+        )
+        urls = urls[:ML_MAX_PRODUCTOS_PLAYWRIGHT]
 
     resultados = []
     try:
@@ -823,11 +864,24 @@ def _enriquecer_via_playwright(urls):
             )
             page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
-            for url in urls:
+            for i, url in enumerate(urls):
                 try:
+                    if i > 0:
+                        pausa = random.uniform(ML_PAUSA_MIN_SEG, ML_PAUSA_MAX_SEG)
+                        print(f"  ⏸️  Pausa de {pausa:.1f}s antes del siguiente producto...", flush=True)
+                        time.sleep(pausa)
+
                     print(f"  🎭 Playwright ML (respaldo, sin match en API): {url[:80]}", flush=True)
                     page.goto(url, wait_until='domcontentloaded', timeout=30000)
                     page.wait_for_timeout(3500)
+
+                    if _detectar_muro_verificacion(page):
+                        print(
+                            f"  🔴 FRENO DE EMERGENCIA: muro de verificación de ML detectado — "
+                            f"se corta el lote ({i}/{len(urls)} procesados, {len(urls) - i} se descartan)",
+                            flush=True,
+                        )
+                        break
 
                     data = page.evaluate("""() => {
                         const h1 = document.querySelector('h1');

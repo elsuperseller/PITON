@@ -6,11 +6,6 @@
 
 ## ⏳ PENDIENTES
 
-- [ ] **Agregar pausas y freno de emergencia al scraping de respaldo de MercadoLibre (Playwright)**
-  - **Problema**: `_enriquecer_via_playwright()` en `scraper_ml.py` navega una página de producto tras otra sin pausas, usando siempre el mismo perfil de navegador. Esto disparó una advertencia real de "¿eres humano?" de MercadoLibre (2026-11-24) por volumen de búsquedas.
-  - **Mejoras propuestas, aún no implementadas**: pausas aleatorias (3-7s) entre cada página, freno de emergencia si detecta el muro de verificación (para no seguir intentando el resto del lote), y un tope máximo de productos por corrida (ej. 15).
-  - **Prioridad**: ALTA (riesgo de bloqueo de cuenta de MercadoLibre)
-
 - [ ] **Borrar filas de prueba en el Sheet de Collector Secret Society**
   - 4 filas con título "TEST BORRAR - Producto ML" / "TEST BORRAR - Producto Amazon" quedaron de la verificación del fix de CANAL (2026-11-24).
 
@@ -35,6 +30,12 @@
 ---
 
 ## ✅ COMPLETADAS
+
+- [x] **Pausas y freno de emergencia en el scraping de respaldo de MercadoLibre (Playwright)** (2026-11-24)
+  - **Problema**: `_enriquecer_via_playwright()` en `scraper_ml.py` navegaba una página de producto tras otra sin pausas, usando siempre el mismo perfil de navegador — disparó una advertencia real de "¿eres humano?" de MercadoLibre por volumen de búsquedas.
+  - **Solución**: se agregó (1) pausa aleatoria de 3-7s (`random.uniform`) entre cada producto, (2) función `_detectar_muro_verificacion()` que revisa la URL y el texto de la página buscando señales del muro de ML ("verificar tu cuenta", "no eres un robot", rutas `/security/`, `/checkpoint/`, `challenge.mercadolibre`) — si lo detecta, corta el lote de inmediato con un log claro en vez de seguir intentando el resto, y (3) tope duro de `ML_MAX_PRODUCTOS_PLAYWRIGHT = 15` productos por corrida (configurable al inicio de `scraper_ml.py`), el resto queda sin enriquecer en vez de abrir 40+ páginas seguidas.
+  - **Verificado**: `python3 -m py_compile scraper_ml.py` sin errores. No se probó en vivo contra una corrida real con muchos productos (requeriría forzar el escenario de bloqueo).
+  - **Pendiente**: validar con una corrida real que el freno de emergencia se dispare correctamente si ML vuelve a mostrar el muro (los textos de detección son un supuesto razonable, no confirmados 1:1 contra el HTML real del muro).
 
 - [x] **Fix: CANAL mostraba "Amazon" para todo en el export a Google Sheets (Collector Secret Society)** (2026-11-24)
   - **Causa**: el Apps Script real (`doPost`) solo revisaba `item.source === "ml"`, pero muchos productos de MercadoLibre llegan con `source: null` y solo `platform: "mercadolibre"` seteado — por eso siempre caían en "Amazon".
