@@ -18,6 +18,8 @@ feeds/feeds_cache.json
 feeds/*/keyword_stats.json
 feeds/*/performance_stats.json
 feeds/*_backup_*.json
+historial.json.backup.*
+feeds/*/historial.json.backup.*
 
 # Cache de imágenes procesadas
 cache_imagenes/
