@@ -828,7 +828,7 @@ def _detectar_muro_verificacion(page):
     )
 
 
-def _enriquecer_via_playwright(urls):
+def _enriquecer_via_playwright(urls, cancelado_fn=None):
     """
     Respaldo por scraping (Playwright) para URLs que la API no pudo resolver
     (ej. listados individuales de vendedores que no son producto de catálogo).
@@ -839,6 +839,11 @@ def _enriquecer_via_playwright(urls):
     - Tope de ML_MAX_PRODUCTOS_PLAYWRIGHT productos por corrida.
     - Pausa aleatoria entre cada página para no parecer un bot.
     - Si detecta el muro de verificación, corta el lote de inmediato.
+
+    cancelado_fn: función sin argumentos que retorna True si el usuario pidió
+    cancelar (botón Detener) — se revisa entre cada producto. Antes, una vez
+    que este respaldo abría el navegador, corría hasta el final sin importar
+    qué hiciera el usuario mientras tanto (ej. iniciar otra búsqueda aparte).
     """
     if not urls or not _PLAYWRIGHT_OK:
         return []
@@ -865,6 +870,13 @@ def _enriquecer_via_playwright(urls):
             page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
             for i, url in enumerate(urls):
+                if cancelado_fn and cancelado_fn():
+                    print(
+                        f"  🛑 Enriquecimiento ML cancelado por el usuario "
+                        f"({i}/{len(urls)} procesados, {len(urls) - i} se descartan)",
+                        flush=True,
+                    )
+                    break
                 try:
                     if i > 0:
                         pausa = random.uniform(ML_PAUSA_MIN_SEG, ML_PAUSA_MAX_SEG)
@@ -941,7 +953,7 @@ def _enriquecer_via_playwright(urls):
     return resultados
 
 
-def enriquecer_urls_productos(urls):
+def enriquecer_urls_productos(urls, cancelado_fn=None):
     """
     Enriquece URLs de productos individuales de ML (ej. extraídas de Telegram).
 
@@ -950,6 +962,10 @@ def enriquecer_urls_productos(urls):
     API no puede resolverla (ej. no es un producto de catálogo), recurre a
     Playwright como respaldo — y en ese caso se abre el navegador una sola
     vez para todos los pendientes, no uno por uno.
+
+    cancelado_fn: función sin argumentos que retorna True si el usuario pidió
+    cancelar (botón Detener) — se pasa al respaldo de Playwright para poder
+    frenarlo a mitad de camino, no solo antes de empezar.
 
     Retorna lista de productos en el mismo formato que _normalizar().
     """
@@ -976,7 +992,7 @@ def enriquecer_urls_productos(urls):
 
     if urls_pendientes:
         print(f"  🎭 {len(urls_pendientes)} producto(s) sin match en API, usando Playwright de respaldo...", flush=True)
-        resultados.extend(_enriquecer_via_playwright(urls_pendientes))
+        resultados.extend(_enriquecer_via_playwright(urls_pendientes, cancelado_fn=cancelado_fn))
 
     return resultados
 

@@ -3271,7 +3271,7 @@ class Handler(BaseHTTPRequestHandler):
                     import scraper_ml
                     urls_ml = [data["url"] for data in telegram_ml_metadata.values()]
                     print(f"  🛒 Enriqueciendo {len(urls_ml)} productos de MercadoLibre de Telegram...", flush=True)
-                    items_ml = scraper_ml.enriquecer_urls_productos(urls_ml)
+                    items_ml = scraper_ml.enriquecer_urls_productos(urls_ml, cancelado_fn=lambda: CANCELAR_BUSQUEDA["activo"])
                     for p_ml in items_ml:
                         titulo_ml = p_ml.get("title", "").lower()
                         if any(ex.lower() in titulo_ml for ex in perfil['filtros'].get('excludeKeywords', [])):
@@ -3986,7 +3986,7 @@ class Handler(BaseHTTPRequestHandler):
                             import scraper_ml
                             urls_ml_telegram = [d["url"] for d in ml_telegram_dict.values()]
                             print(f"    🛒 {len(urls_ml_telegram)} productos de MercadoLibre a enriquecer", flush=True)
-                            items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram)
+                            items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram, cancelado_fn=lambda: CANCELAR_BUSQUEDA["activo"])
                             items_ml_validos = 0
                             for p_ml in items_ml_telegram:
                                 mlm_id = p_ml.get("asin", "")
@@ -4623,7 +4623,7 @@ class Handler(BaseHTTPRequestHandler):
                             import scraper_ml
                             urls_ml_telegram = [d["url"] for d in ml_telegram_dict.values()]
                             print(f"    🛒 {len(urls_ml_telegram)} productos de MercadoLibre a enriquecer", flush=True)
-                            items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram)
+                            items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram, cancelado_fn=lambda: CANCELAR_BUSQUEDA["activo"])
                             for p_ml in items_ml_telegram:
                                 mlm_id = p_ml.get("asin", "")
                                 if esta_bloqueado(audiencia_id, mlm_id):
@@ -4974,7 +4974,7 @@ class Handler(BaseHTTPRequestHandler):
                         import scraper_ml
                         urls_ml_telegram = [d["url"] for d in ml_telegram_dict.values()]
                         print(f"  🛒 Enriqueciendo {len(urls_ml_telegram)} productos de MercadoLibre...", flush=True)
-                        items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram)
+                        items_ml_telegram = scraper_ml.enriquecer_urls_productos(urls_ml_telegram, cancelado_fn=lambda: CANCELAR_BUSQUEDA["activo"])
                         for p_ml in items_ml_telegram:
                             canal_nombre_ml = ml_telegram_dict.get(p_ml.get('asin', ''), {}).get('canal', 'Telegram')
                             p_ml['source'] = 'telegram'
