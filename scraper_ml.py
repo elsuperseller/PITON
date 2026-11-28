@@ -429,7 +429,10 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
             for page_num in range(1, pages + 1):
                 if page_num == 1:
                     print(f"  📄 Página {page_num}/{pages}: {url[:80]}", flush=True)
-                    page.goto(url, wait_until='networkidle', timeout=60000)
+                    # 'networkidle' nunca llega en listados con tráfico de fondo constante
+                    # (ML sigue pidiendo analytics/ads sin parar) → timeout aunque la página
+                    # ya cargó. 'domcontentloaded' + espera explícita es más confiable.
+                    page.goto(url, wait_until='domcontentloaded', timeout=30000)
                     page.wait_for_timeout(4000)  # Esperar más para asegurar carga completa
                 else:
                     # ✅ Clic real en el botón "Siguiente" en vez de adivinar la URL de
@@ -454,15 +457,24 @@ def _scrape_listado_playwright(url, pages=3, min_discount=0, precio_min=0, preci
                 # Extraer productos del DOM (ML ya no usa JSON embebido)
                 productos_raw = page.evaluate("""() => {
                 const productos = [];
-                const cards = document.querySelectorAll('.poly-card, [class*="poly-card"]');
+                // ✅ Solo '.poly-card' (la tarjeta real); el selector combinado con
+                // '[class*="poly-card"]' también matcheaba sub-elementos internos de
+                // cada tarjeta (ej. wrappers de título/precio), triplicando el conteo.
+                const cards = document.querySelectorAll('.poly-card');
 
                 cards.forEach(card => {
                     try {
-                        const linkElem = card.querySelector('a[href*="/p/"]');
+                        // ✅ FIX 2026-11-28: productos de catálogo usan link "/p/MLM..."
+                        // pero la MAYORÍA de resultados (listings individuales de
+                        // vendedores: playeras, máscaras, figuras sueltas) usan
+                        // "/up/MLMU..." (prefijo MLMU, no MLM) — antes solo se
+                        // reconocía "/p/", descartando ~80% de los productos reales
+                        // de la página sin ningún aviso.
+                        const linkElem = card.querySelector('a[href*="/p/"], a[href*="/up/"]');
                         if (!linkElem) return;
 
                         const link = linkElem.href;
-                        const idMatch = link.match(/MLM\\d+/);
+                        const idMatch = link.match(/MLMU?\\d+/);
                         if (!idMatch) return;
                         const id = idMatch[0];
 
