@@ -1174,17 +1174,96 @@ def resolver_producto_destacado_social(url):
     return None, None
 
 # ── SCRAPER DESDE HTML DESCARGADO (mismo flow que Amazon) ────────────
+def _extraer_poly_cards_html(html):
+    """
+    Extrae productos de un HTML guardado manualmente (Cmd+S) parseando las
+    tarjetas '.poly-card' con BeautifulSoup — sin ejecutar JS, por eso solo
+    funciona si el navegador ya renderizó el DOM antes de guardar (Cmd+S
+    guarda el DOM ya renderizado, no el HTML original del servidor).
+
+    Mismo criterio que _scrape_listado_playwright(): acepta links de
+    catálogo ("/p/MLM...") y de listings individuales ("/up/MLMU...").
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    cards = soup.select(".poly-card")
+
+    items = []
+    vistos = set()
+    for card in cards:
+        link_tag = card.select_one('a[href*="/p/"]') or card.select_one('a[href*="/up/"]')
+        if not link_tag or not link_tag.get("href"):
+            continue
+        href = link_tag["href"]
+
+        m = re.search(r'MLMU?\d+', href)
+        if not m:
+            continue
+        pid = m.group(0)
+        if pid in vistos:
+            continue
+
+        title_tag = card.select_one('.poly-component__title') or card.select_one('[class*="title"]')
+        title = title_tag.get_text(strip=True) if title_tag else ""
+        if not title:
+            continue
+
+        precio_tags = card.select('.andes-money-amount__fraction')
+        if not precio_tags:
+            continue
+
+        def _num(tag):
+            return float(re.sub(r'[^\d]', '', tag.get_text()) or 0)
+
+        if len(precio_tags) >= 2:
+            price_orig = _num(precio_tags[0])
+            price_disc = _num(precio_tags[1])
+        else:
+            price_disc = _num(precio_tags[0])
+            price_orig = price_disc
+
+        if price_disc == 0:
+            continue
+
+        img_tag = card.select_one("img")
+        img = (img_tag.get("src") or img_tag.get("data-src") or "") if img_tag else ""
+
+        desc_pct = round((price_orig - price_disc) / price_orig * 100) if price_orig > price_disc else 0
+
+        vistos.add(pid)
+        items.append({
+            "id": pid, "asin": pid, "source": "ml",
+            "title": title, "link": href, "img": img,
+            "price_original": price_orig, "price_discounted": price_disc,
+            "descuento_pct": desc_pct,
+            "vigencia": "permanente", "tipo": "", "badge": "",
+            "start_time": "", "end_time": "",
+        })
+
+    return items
+
+
 def scrape_html_texto(html_texto, min_discount=0):
     """
     Procesa HTML descargado manualmente por el usuario desde su navegador.
     Compatible con páginas de búsqueda, categoría y ofertas de ML.
+
+    ML dejó de incrustar el JSON de productos en el HTML (ahora renderiza
+    todo client-side vía JS) — por eso primero se intenta el formato viejo
+    (JSON embebido, por si algún tipo de página todavía lo trae) y, si no
+    encuentra nada, se cae al parseo de tarjetas '.poly-card' del DOM ya
+    renderizado (el que realmente trae el HTML guardado con Cmd+S hoy).
     """
-    raw_items  = _extraer_items_de_html(html_texto)
-    resultados = []
-    for raw in raw_items:
-        p = _normalizar(raw)
-        if p and p["descuento_pct"] >= min_discount:
-            resultados.append(p)
+    raw_items = _extraer_items_de_html(html_texto)
+    if raw_items:
+        resultados = []
+        for raw in raw_items:
+            p = _normalizar(raw)
+            if p and p["descuento_pct"] >= min_discount:
+                resultados.append(p)
+        return resultados, len(raw_items)
+
+    raw_items = _extraer_poly_cards_html(html_texto)
+    resultados = [p for p in raw_items if p["descuento_pct"] >= min_discount]
     return resultados, len(raw_items)
 
 # ── DEDUPLICAR ──────────────────────────────────────────────────────
